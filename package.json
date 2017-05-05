@@ -1,0 +1,11 @@
+{
+  "name": "tendril",
+  "version": "0.0.1",
+  "description": "Actor based Node.js web framework.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lasana Murray <dev@quenk.com> (http://quenk.com)",
+  "license": "Apache-2.0"
+}
