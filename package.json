@@ -2,10 +2,22 @@
   "name": "tendril",
   "version": "0.0.1",
   "description": "Actor based Node.js web framework.",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
+    "build": "./node_modules/.bin/tsc --project src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lasana Murray <dev@quenk.com> (http://quenk.com)",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/bluebird": "^3.5.8",
+    "@types/express": "^4.0.36",
+    "@types/node": "^8.0.20",
+    "bluebird": "^3.5.0",
+    "typescript": "^2.4.2"
+  },
+  "dependencies": {
+    "afpl": "^0.5.1"
+  }
 }
