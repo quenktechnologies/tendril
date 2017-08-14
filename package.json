@@ -1,5 +1,5 @@
 {
-  "name": "tendril",
+  "name": "@quenk/tendril",
   "version": "0.0.2-0",
   "description": "Actor based Node.js web framework.",
   "main": "lib/index.js",
