@@ -14,11 +14,11 @@ export interface UnsafeStore<A> {
 /**
  * Connections is an unsafe (volatile) store for data connections
  */
-export class Connections {
+export class Connections<A> {
 
-    store: UnsafeStore<Connection> = {};
+    store: UnsafeStore<Connection<A>> = {};
 
-    add(key: string, conn: Connection): Bluebird<Connections> {
+    add(key: string, conn: Connection<A>): Bluebird<Connections<A>> {
 
         if (this.store[key] != null)
             return Bluebird.reject(new Error(`A connection already exists named '${key}'!`));
@@ -30,9 +30,9 @@ export class Connections {
     }
 
     /**
-     * get a pool member.
+     * get a unwraped pool member.
      */
-    get<A>(key: string): Bluebird<A> {
+    get(key: string): Bluebird<A> {
 
         if (this.store[key])
             return this.store[key].unwrap();

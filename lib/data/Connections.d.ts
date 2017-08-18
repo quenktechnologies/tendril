@@ -10,12 +10,12 @@ export interface UnsafeStore<A> {
 /**
  * Connections is an unsafe (volatile) store for data connections
  */
-export declare class Connections {
-    store: UnsafeStore<Connection>;
-    add(key: string, conn: Connection): Bluebird<Connections>;
+export declare class Connections<A> {
+    store: UnsafeStore<Connection<A>>;
+    add(key: string, conn: Connection<A>): Bluebird<Connections<A>>;
     /**
-     * get a pool member.
+     * get a unwraped pool member.
      */
-    get<A>(key: string): Bluebird<A>;
+    get(key: string): Bluebird<A>;
 }
-export declare const Pool: Connections;
+export declare const Pool: Connections<{}>;

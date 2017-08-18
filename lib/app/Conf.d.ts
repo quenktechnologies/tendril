@@ -36,7 +36,7 @@ export interface ConnectionsConf<A> {
  * ConnectionConf settings for a single connection.
  */
 export interface ConnectionConf<A> {
-    connector: (options: Options<A>) => Bluebird<data.Connection>;
+    connector: (options: Options<A>) => Bluebird<data.Connection<A>>;
     options?: Options<A>;
 }
 /**

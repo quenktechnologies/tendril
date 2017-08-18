@@ -1,5 +1,5 @@
 import * as Bluebird from 'bluebird';
-export interface Connection {
+export interface Connection<A> {
     disconnect(): Bluebird<void>;
-    unwrap<A>(): Bluebird<A>;
+    unwrap(): Bluebird<A>;
 }

@@ -52,7 +52,7 @@ export interface ConnectionsConf<A> {
  */
 export interface ConnectionConf<A> {
 
-    connector: (options: Options<A>) => Bluebird<data.Connection>
+    connector: (options: Options<A>) => Bluebird<data.Connection<A>>
     options?: Options<A>
 
 }
