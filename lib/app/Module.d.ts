@@ -25,6 +25,7 @@ export declare class Module<C> {
     onError(e: Error): void;
     render<A>(view: string, context?: A): Bluebird<View>;
     submodules(): Bluebird<void>;
+    initScripts(): Bluebird<void>;
     connections(): Bluebird<void>;
     middleware(): Bluebird<void>;
     routes(): Bluebird<void>;

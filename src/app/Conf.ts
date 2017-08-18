@@ -66,6 +66,7 @@ export interface AppConf<A> {
     filters?: FiltersConf<A>;
     views?: ViewsConf<A>;
     errors?: ErrorsConf<A>;
+    on?: EventsConf<A>
 
 }
 
@@ -131,6 +132,12 @@ export interface ViewsConf<A> {
 export interface ErrorsConf<C> {
 
     handler?: (e: Error, module: Module<C>) => void
+
+}
+
+export interface EventsConf<C> {
+
+    init?: (m: Module<C>) => Bluebird<void>
 
 }
 

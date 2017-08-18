@@ -79,6 +79,18 @@ export class Module<C>  {
 
     }
 
+    initScripts(): Bluebird<void> {
+
+        let t = this.configuration.tendril;
+
+        let p = (t && t.app.on && t.app.on.init) ?
+            t.app.on.init(this) :
+            Bluebird.resolve();
+
+        return this._modules.reduce((p, m) => p.then(() => m.initScripts()), p);
+
+    }
+
     connections(): Bluebird<void> {
 
         let t = this.configuration.tendril;
@@ -174,6 +186,7 @@ export class Module<C>  {
 
         return this
             .submodules()
+            .then(() => this.initScripts())
             .then(() => this.connections())
             .then(() => this.middleware())
             .then(() => this.routes())
