@@ -75,9 +75,7 @@ export class Module<C>  {
             this._modules.push.apply(map(t.app.modules,
                 (f, k) => this._modules.push(f(k))));
 
-        return Bluebird
-            .reduce(this._modules.slice(0, 1), (_: void, m: Module<C>) => m.submodules(), null)
-            .then(() => Bluebird.resolve());
+        return this._modules.reduce((p, m) => p.then(() => m.submodules()), Bluebird.resolve());
 
     }
 
@@ -97,10 +95,10 @@ export class Module<C>  {
 
         }
 
-        return p
-            .then(() => Bluebird
-                .reduce(this._modules, (_, m) => m.connections(), null)
-                .then(() => Bluebird.resolve()));
+        return this
+            ._modules
+            .reduce((p, m) => p.then(() => m.connections()), p)
+            .then(() => Bluebird.resolve());
 
     }
 
@@ -131,16 +129,17 @@ export class Module<C>  {
 
         }
 
-        return p.then(() => Bluebird
-            .reduce(this._modules, (_, m) => m.middleware(), null)
-            .then(() => Bluebird.resolve()));
+        return this._modules.reduce((p, m) => p.then(() => m.middleware()), p);
 
     }
 
     routes(): Bluebird<void> {
 
         return Bluebird.try(() => this.routeFn(this._app, this))
-            .then(() => Bluebird.reduce(this._modules, (_: void, m: Module<C>) => m.routes(), null));
+            .then(() =>
+                this
+                    ._modules
+                    .reduce((p, m) => p.then(() => m.routes()), Bluebird.resolve()));
 
     }
 
@@ -152,13 +151,16 @@ export class Module<C>  {
             t.app.views.engine.module(t.app.views.engine.options, this)
                 .then(r => { this._renderer = r }) :
             Bluebird.resolve())
-            .then(() => Bluebird.reduce(this._modules, (_, m) => m.views(), null));
+            .then(() =>
+                this
+                    ._modules
+                    .reduce((p, m) => p.then(() => m.views()), Bluebird.resolve()));
 
     }
 
     link(app: express.Application): Bluebird<void> {
 
-        return Bluebird.reduce(this._modules, (_, m) => m.link(this._app), null)
+        return this._modules.reduce((p, m) => p.then(() => m.link(this._app)), Bluebird.resolve())
             .then(() => { app.use(`/${this.name}`, this._app) });
 
     }
