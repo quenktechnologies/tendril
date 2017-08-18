@@ -66,15 +66,13 @@ export class Module<C>  {
 
         let t = this.configuration.tendril;
 
-        return (t && t.app && t.app.modules) ?
-            this._modules
-                .push
-                .apply(map(t.app.modules,
-                    (f, k) => this._modules.push(f(k))))
+        if (t && t.app && t.app.modules)
+            this._modules.push.apply(map(t.app.modules,
+                (f, k) => this._modules.push(f(k))));
 
-            : Bluebird
-                .reduce(this._modules, (_: void, m: Module<C>) => m.submodules())
-                .then(() => Bluebird.resolve());
+        return Bluebird
+            .reduce(this._modules, (_: void, m: Module<C>) => m.submodules())
+            .then(() => Bluebird.resolve());
 
     }
 

@@ -3,6 +3,7 @@
         "baseUrl": "src",
         "lib": ["ES2015"],
         "module": "commonjs",
+        "sourceMap": true,
         "target": "es5",
         "rootDir": ".",
         "outDir": "../lib",
@@ -13,7 +14,7 @@
         "noUnusedLocals": true,
         "sourceMap": true,
         "declaration": true,
-        "types":["node"],
+        "types": ["node"],
         "typeRoots": ["node_modules/@types"]
     },
     "exclude": ["node_modules"]
