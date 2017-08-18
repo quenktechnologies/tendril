@@ -88,7 +88,7 @@ export class Render<A, C> {
             .then(view => {
 
                 response.set(http.Headers.CONTENT_TYPE, view.contentType);
-                response.write(view);
+                response.write(view.content);
                 response.end();
 
             });
