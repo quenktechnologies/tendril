@@ -1,3 +1,4 @@
+import * as Promise from 'bluebird';
 import * as Response from './Response';
 import * as http from '../../http';
 import { Reader } from './Reader';
@@ -58,3 +59,5 @@ export const error = (err: Error) => new Reader(c => (new Response.InternalServe
 export const redirect = (url: string, code: number = http.Status.FOUND) => new Reader(c => (new Response.Redirect(url, code)).apply(c));
 
 export const render = <A>(view: string, context?: A) => new Reader(c => (new Response.Render(view, context || {})).apply(c));
+
+export const async = <C>(f: () => Promise<Result<C>>) => new Reader((c: Context<C>) => (new Response.Async(f)).apply(c));

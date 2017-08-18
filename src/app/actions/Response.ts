@@ -1,5 +1,7 @@
+import * as Promise from 'bluebird';
 import * as http from '../../http';
 import { Context } from './Context';
+import { Result } from './';
 
 /**
  * Response terminates the http request with an actual HTTP response.
@@ -95,5 +97,16 @@ export class Render<A, C> {
 
     }
 
+}
+
+export class Async<C> {
+
+    constructor(public f: () => Promise<Result<C>>) { }
+
+    apply(ctx: Context<C>): void {
+
+        this.f().then(r => r.run(ctx)).catch(e => ctx.module.onError(e));
+
+    }
 
 }

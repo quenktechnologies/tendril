@@ -1,4 +1,6 @@
+import * as Promise from 'bluebird';
 import { Context } from './Context';
+import { Result } from './';
 /**
  * Response terminates the http request with an actual HTTP response.
  */
@@ -55,4 +57,9 @@ export declare class Render<A, C> {
     context: A;
     constructor(view: string, context: A);
     apply({module, response}: Context<C>): void;
+}
+export declare class Async<C> {
+    f: () => Promise<Result<C>>;
+    constructor(f: () => Promise<Result<C>>);
+    apply(ctx: Context<C>): void;
 }
