@@ -24,6 +24,7 @@ export class Module<C>  {
 
     constructor(
         public name: string,
+        public path: string,
         public configuration: conf.Conf<C>,
         public routeFn: RouteFn<C>) { }
 

@@ -11,13 +11,14 @@ export interface RouteFn<C> {
  */
 export declare class Module<C> {
     name: string;
+    path: string;
     configuration: conf.Conf<C>;
     routeFn: RouteFn<C>;
     _modules: Module<C>[];
     _application: Application<C>;
     _app: express.Application;
     _renderer: Renderer;
-    constructor(name: string, configuration: conf.Conf<C>, routeFn: RouteFn<C>);
+    constructor(name: string, path: string, configuration: conf.Conf<C>, routeFn: RouteFn<C>);
     getApp(): Application<C>;
     getExpressApp(): express.Application;
     getConf(): conf.Conf<C>;

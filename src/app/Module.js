@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var Bluebird = require("bluebird");
 var express = require("express");
 var data = require("../data");
@@ -74,7 +74,7 @@ var Module = (function () {
             p = Bluebird.reduce(t.app.filters.enabled, function (_, name) {
                 var available = t.app.filters.available;
                 return (available && available[name]) ?
-                    Bluebird.try(function () {
+                    Bluebird["try"](function () {
                         return eapp.use(available[name].options ?
                             available[name].module(available[name].options) :
                             available[name].module());
@@ -91,7 +91,7 @@ var Module = (function () {
     };
     Module.prototype.routes = function () {
         var _this = this;
-        return Bluebird.try(function () { return _this.routeFn(_this._app, _this); })
+        return Bluebird["try"](function () { return _this.routeFn(_this._app, _this); })
             .then(function () { return Bluebird.reduce(_this._modules, function (_, m) { return m.routes(); }); });
     };
     Module.prototype.views = function () {
@@ -126,4 +126,3 @@ var Module = (function () {
     return Module;
 }());
 exports.Module = Module;
-//# sourceMappingURL=Module.js.map
