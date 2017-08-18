@@ -33,7 +33,7 @@ export class ManagedServer {
 
         return Bluebird.fromCallback(cb => {
             this.server.on('connection', socket => this.store(socket));
-            this.server.on('listening', () => cb(this));
+            this.server.on('listening', () => cb(null, this));
             this.server.listen(this.port, this.host);
         });
 
