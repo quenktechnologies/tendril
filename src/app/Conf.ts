@@ -130,7 +130,7 @@ export interface ViewsConf<A> {
 
 export interface ErrorsConf<C> {
 
-    handler?: (e: Error, req: express.Request, res: express.Response, module: Module<C>) => void
+    handler?: (e: Error, module: Module<C>) => void
 
 }
 

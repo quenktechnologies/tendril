@@ -17,7 +17,12 @@ export class Application<C> {
     public express: express.Application = express();
     public server: ManagedServer;
 
-    constructor(public main: Module<C>) { }
+    constructor(public main: Module<C>) {
+
+        process.on('unhandledRejection', (e: Error) => main.onError(e))
+        process.on('uncaughtException', (e: Error) => main.onError(e));
+
+    }
 
     start(): Bluebird<Application<C>> {
 

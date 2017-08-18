@@ -45,12 +45,16 @@ export class Module<C>  {
 
     }
 
-    onError(e: Error, req: express.Request, res: express.Response): void {
+    onError(e: Error): void {
 
         let t = this.configuration.tendril;
 
         if (t && t.app && t.app.errors && t.app.errors.handler)
-            return t.app.errors.handler(e, req, res, this);
+            return t.app.errors.handler(e, this);
+
+        console.error(`${this.name}: error occured!`);
+        console.error(e.stack ? e.stack : e);
+        process.exit(-1);
 
     }
 

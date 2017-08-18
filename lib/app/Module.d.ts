@@ -21,7 +21,7 @@ export declare class Module<C> {
     getApp(): Application<C>;
     getExpressApp(): express.Application;
     getConf(): conf.Conf<C>;
-    onError(e: Error, req: express.Request, res: express.Response): void;
+    onError(e: Error): void;
     render<A>(view: string, context?: A): Bluebird<View>;
     submodules(): Bluebird<void>;
     connections(): Bluebird<void>;
