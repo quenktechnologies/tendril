@@ -149,7 +149,7 @@ export class Module<C>  {
         let t = this.configuration.tendril;
 
         return ((t && t.app && t.app.views && t.app.views.engine) ?
-            t.app.views.engine.module(t.app.views.engine.options)
+            t.app.views.engine.module(t.app.views.engine.options, this)
                 .then(r => { this._renderer = r }) :
             Bluebird.resolve())
             .then(() => Bluebird.reduce(this._modules, (_, m) => m.views()));

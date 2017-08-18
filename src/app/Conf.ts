@@ -121,7 +121,7 @@ export interface ViewsConf<A> {
 
     engine: {
 
-        module: (options: Options<A>) => Bluebird<Renderer>
+        module: (options: Options<A>, m: Module<A>) => Bluebird<Renderer>
         options?: Options<A>
 
     }
