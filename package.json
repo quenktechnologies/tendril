@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "./node_modules/.bin/tsc --project src",
+    "build": "rm -R lib/*; ./node_modules/.bin/tsc --project src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lasana Murray <dev@quenk.com> (http://quenk.com)",
