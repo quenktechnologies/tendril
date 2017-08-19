@@ -117,29 +117,26 @@ export class Module<C>  {
     middleware(): Bluebird<void> {
 
         let t = this.configuration.tendril;
-        let eapp = this._app;
-        let p: Bluebird<void>;
+        let available = t.app.middleware.available;
+        let p: Bluebird<any>;
 
-        if (t && t.app && t.app.middleware && t.app.middleware.enabled) {
+        if (t && t.app && t.app.middleware && t.app.middleware.enabled)
+            p = Bluebird.try(() =>
+                t.app.middleware.enabled.reduce((app, name) => {
 
-            p = Bluebird.reduce(t.app.middleware.enabled, (_, name: string) => {
-
-                let available = t.app.middleware.available;
-
-                return (available && available[name]) ?
-                    Bluebird.try(() =>
-                        eapp.use(available[name].options ?
+                    if (available && available[name])
+                        app.use(available[name].options ?
                             available[name].module(available[name].options) :
-                            available[name].module())) :
-                    Bluebird.reject(new Error(`Unknown filter '${name}' in module '${this.name}'!`))
+                            available[name].module())
+                    else
+                        throw new Error(`Unknown filter '${name}' in module '${this.name}'!`);
 
-            }, null);
+                    return app;
 
-        } else {
+                }, this._app))
 
+        else
             p = Bluebird.resolve();
-
-        }
 
         return this._modules.reduce((p, m) => p.then(() => m.middleware()), p);
 

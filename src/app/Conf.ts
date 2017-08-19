@@ -101,6 +101,7 @@ export interface MiddlewareConf<A> {
 export interface AvailableMiddlewareConf<A> {
 
     [key: string]: {
+
         module: (options?: A) => express.RequestHandler
         options?: A
 
