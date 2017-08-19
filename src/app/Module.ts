@@ -117,10 +117,12 @@ export class Module<C>  {
     middleware(): Bluebird<void> {
 
         let t = this.configuration.tendril;
-        let available = t.app.middleware.available;
         let p: Bluebird<any>;
 
-        if (t && t.app && t.app.middleware && t.app.middleware.enabled)
+        if (t && t.app && t.app.middleware && t.app.middleware.enabled) {
+
+            let available = t.app.middleware.available;
+
             p = Bluebird.try(() =>
                 t.app.middleware.enabled.reduce((app, name) => {
 
@@ -135,9 +137,9 @@ export class Module<C>  {
 
                 }, this._app))
 
-        else
+        } else {
             p = Bluebird.resolve();
-
+        }
         return this._modules.reduce((p, m) => p.then(() => m.middleware()), p);
 
     }
