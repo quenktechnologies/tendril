@@ -44,7 +44,7 @@ export interface ConnectionConf<A> {
  */
 export interface AppConf<A> {
     modules?: ModulesConf<A>;
-    filters?: FiltersConf<A>;
+    middleware?: MiddlewareConf<A>;
     views?: ViewsConf<A>;
     errors?: ErrorsConf<A>;
     on?: EventsConf<A>;
@@ -59,24 +59,24 @@ export interface ModuleConf<C> {
     (name: string): Module<C>;
 }
 /**
- * FiltersConf settings for configuring middleware.
+ * MiddlewareConf settings for configuring middleware.
  */
-export interface FiltersConf<A> {
-    available?: AvailableFiltersConf<A>;
+export interface MiddlewareConf<A> {
+    available?: AvailableMiddlewareConf<A>;
     enabled?: string[];
 }
 /**
- * AvailableFiltersConf that can be used in the enabled section.
+ * AvailableMiddlewareConf that can be used in the enabled section.
  */
-export interface AvailableFiltersConf<A> {
-    [key: string]: FilterConf<A>;
+export interface AvailableMiddlewareConf<A> {
+    [key: string]: MiddlewareConf<A>;
 }
 /**
  * Filter settings for one one middleware.
  */
-export interface FilterConf<A> {
-    module: (options?: Options<A>) => express.RequestHandler;
-    options?: Options<A>;
+export interface MiddlewareConf<A> {
+    module: (options?: A) => express.RequestHandler;
+    options?: A;
 }
 /**
  * ViewsConf settings for configuring view engines.

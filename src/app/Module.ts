@@ -120,11 +120,11 @@ export class Module<C>  {
         let eapp = this._app;
         let p: Bluebird<void>;
 
-        if (t && t.app && t.app.filters && t.app.filters.enabled) {
+        if (t && t.app && t.app.middleware && t.app.middleware.enabled) {
 
-            p = Bluebird.reduce(t.app.filters.enabled, (_, name: string) => {
+            p = Bluebird.reduce(t.app.middleware.enabled, (_, name: string) => {
 
-                let available = t.app.filters.available;
+                let available = t.app.middleware.available;
 
                 return (available && available[name]) ?
                     Bluebird.try(() =>
