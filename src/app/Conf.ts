@@ -100,17 +100,11 @@ export interface MiddlewareConf<A> {
  */
 export interface AvailableMiddlewareConf<A> {
 
-    [key: string]: MiddlewareConf<A>
+    [key: string]: {
+        module: (options?: A) => express.RequestHandler
+        options?: A
 
-}
-
-/**
- * Filter settings for one one middleware.
- */
-export interface MiddlewareConf<A> {
-
-    module: (options?: A) => express.RequestHandler
-    options?: A
+    }
 
 }
 

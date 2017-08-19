@@ -69,14 +69,10 @@ export interface MiddlewareConf<A> {
  * AvailableMiddlewareConf that can be used in the enabled section.
  */
 export interface AvailableMiddlewareConf<A> {
-    [key: string]: MiddlewareConf<A>;
-}
-/**
- * Filter settings for one one middleware.
- */
-export interface MiddlewareConf<A> {
-    module: (options?: A) => express.RequestHandler;
-    options?: A;
+    [key: string]: {
+        module: (options?: A) => express.RequestHandler;
+        options?: A;
+    };
 }
 /**
  * ViewsConf settings for configuring view engines.
