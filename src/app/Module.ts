@@ -129,7 +129,7 @@ export class Module<C>  {
                     if (available && available[name])
                         app.use(available[name].options ?
                             available[name].module(available[name].options) :
-                            available[name].module())
+                            available[name].module)
                     else
                         throw new Error(`Unknown filter '${name}' in module '${this.name}'!`);
 
