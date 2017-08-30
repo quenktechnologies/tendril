@@ -61,3 +61,6 @@ export const redirect = (url: string, code: number = http.Status.FOUND) => new R
 export const render = <A>(view: string, context?: A) => new Reader(c => (new Response.Render(view, context || {})).apply(c));
 
 export const async = <C>(f: () => Promise<Result<C>>) => new Reader((c: Context<C>) => (new Response.Async(f)).apply(c));
+
+export const next = <C>(r?: http.Request) => new Reader((c: Context<C>) => (new Response.Next(r)).apply(c));
+

@@ -1,4 +1,5 @@
 import * as Promise from 'bluebird';
+import * as http from '../../http';
 import { Context } from './Context';
 import { Result } from './';
 /**
@@ -61,5 +62,10 @@ export declare class Render<A, C> {
 export declare class Async<C> {
     f: () => Promise<Result<C>>;
     constructor(f: () => Promise<Result<C>>);
+    apply(ctx: Context<C>): void;
+}
+export declare class Next<C> {
+    r: http.Request;
+    constructor(r?: http.Request);
     apply(ctx: Context<C>): void;
 }

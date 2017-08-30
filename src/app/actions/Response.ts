@@ -110,3 +110,15 @@ export class Async<C> {
     }
 
 }
+
+export class Next<C> {
+
+  constructor(public r?: http.Request) {}
+
+  apply(ctx:Context<C>):void {
+
+    ctx.next();
+
+  }
+
+}

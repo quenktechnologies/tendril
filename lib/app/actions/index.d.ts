@@ -34,3 +34,4 @@ export declare const error: (err: Error) => Reader<{}>;
 export declare const redirect: (url: string, code?: number) => Reader<{}>;
 export declare const render: <A>(view: string, context?: A) => Reader<{}>;
 export declare const async: <C>(f: () => Promise<Reader<C>>) => Reader<C>;
+export declare const next: <C>(r?: http.Request) => Reader<C>;
