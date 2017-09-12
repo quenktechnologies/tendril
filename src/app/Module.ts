@@ -96,6 +96,10 @@ export class Module<C>  {
         let t = this.configuration.tendril;
         let p: Bluebird<void | void[]>;
 
+        let onConnected = (t && t.app.on && t.app.on.connected) ?
+            t.app.on.connected : ()=>Bluebird.resolve();
+
+
         if (t && t.data && t.data.connections) {
 
             p = Bluebird
@@ -110,7 +114,7 @@ export class Module<C>  {
         return this
             ._modules
             .reduce((p, m) => p.then(() => m.connections()), p)
-            .then(() => Bluebird.resolve());
+            .then(()=> onConnected(this));
 
     }
 

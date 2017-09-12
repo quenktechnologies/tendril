@@ -88,6 +88,7 @@ export interface ErrorsConf<C> {
 }
 export interface EventsConf<C> {
     init?: (m: Module<C>) => Bluebird<void>;
+    connected?: (m: Module<C>) => Bluebird<void>;
 }
 /**
  * Options
