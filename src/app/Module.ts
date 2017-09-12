@@ -112,7 +112,7 @@ export class Module<C>  {
         return this
             ._modules
             .reduce((p, m) => p.then(() => m.connections()), p)
-            .then(() => Bluebird.all(onConnected))
+            .then(() => Bluebird.all(onConnected.map(f=>f(this))))
       .then(()=>{});
 
     }
