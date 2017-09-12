@@ -52,8 +52,8 @@ export interface ConnectionsConf<A> {
  */
 export interface ConnectionConf<A> {
 
-    connector: (options: Options<A>) => Bluebird<data.Connection<A>>
-    options?: Options<A>
+    connector: (options: Options) => Bluebird<data.Connection<A>>
+    options?: Options
 
 }
 
@@ -116,8 +116,8 @@ export interface ViewsConf<A> {
 
     engine: {
 
-        module: (options: Options<A>, m: Module<A>) => Bluebird<Renderer>
-        options?: Options<A>
+        module: (options: Options, m: Module<A>) => Bluebird<Renderer>
+        options?: Options
 
     }
 
@@ -131,7 +131,7 @@ export interface ErrorsConf<C> {
 
 export interface Hook<C> {
 
- (m: Module<C>):  Bluebird<void>;
+    (m: Module<C>): Bluebird<void>;
 
 }
 
@@ -145,9 +145,9 @@ export interface EventsConf<C> {
 /**
  * Options 
  */
-export interface Options<A> {
+export interface Options {
 
-    [key: string]: A
+    [key: string]: any
 
 }
 

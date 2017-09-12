@@ -36,8 +36,8 @@ export interface ConnectionsConf<A> {
  * ConnectionConf settings for a single connection.
  */
 export interface ConnectionConf<A> {
-    connector: (options: Options<A>) => Bluebird<data.Connection<A>>;
-    options?: Options<A>;
+    connector: (options: Options) => Bluebird<data.Connection<A>>;
+    options?: Options;
 }
 /**
  * AppConf settings for the application.
@@ -79,8 +79,8 @@ export interface AvailableMiddlewareConf<A> {
  */
 export interface ViewsConf<A> {
     engine: {
-        module: (options: Options<A>, m: Module<A>) => Bluebird<Renderer>;
-        options?: Options<A>;
+        module: (options: Options, m: Module<A>) => Bluebird<Renderer>;
+        options?: Options;
     };
 }
 export interface ErrorsConf<C> {
@@ -96,6 +96,6 @@ export interface EventsConf<C> {
 /**
  * Options
  */
-export interface Options<A> {
-    [key: string]: A;
+export interface Options {
+    [key: string]: any;
 }
