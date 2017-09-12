@@ -86,9 +86,12 @@ export interface ViewsConf<A> {
 export interface ErrorsConf<C> {
     handler?: (e: Error, module: Module<C>) => void;
 }
+export interface Hook<C> {
+    (m: Module<C>): Bluebird<void>;
+}
 export interface EventsConf<C> {
-    init?: (m: Module<C>) => Bluebird<void>;
-    connected?: (m: Module<C>) => Bluebird<void>;
+    init?: Hook<C>[];
+    connected?: Hook<C>[];
 }
 /**
  * Options

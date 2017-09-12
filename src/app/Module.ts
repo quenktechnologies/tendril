@@ -82,12 +82,12 @@ export class Module<C>  {
     initScripts(): Bluebird<void> {
 
         let t = this.configuration.tendril;
+        let scripts = (t && t.app.on && t.app.on.init) ? t.app.on.init : [];
+        let p = Bluebird.all(scripts.map(s => s(this)));
 
-        let p = (t && t.app.on && t.app.on.init) ?
-            t.app.on.init(this) :
-            Bluebird.resolve();
-
-        return this._modules.reduce((p, m) => p.then(() => m.initScripts()), p);
+        return this
+            ._modules
+            .reduce((p, m) => p.then(() => m.initScripts()), p.then(() => { }))
 
     }
 
@@ -96,9 +96,7 @@ export class Module<C>  {
         let t = this.configuration.tendril;
         let p: Bluebird<void | void[]>;
 
-        let onConnected = (t && t.app.on && t.app.on.connected) ?
-            t.app.on.connected : ()=>Bluebird.resolve();
-
+        let onConnected = (t && t.app.on && t.app.on.connected) ? t.app.on.connected : [];
 
         if (t && t.data && t.data.connections) {
 
@@ -114,7 +112,8 @@ export class Module<C>  {
         return this
             ._modules
             .reduce((p, m) => p.then(() => m.connections()), p)
-            .then(()=> onConnected(this));
+            .then(() => Bluebird.all(onConnected))
+      .then(()=>{});
 
     }
 

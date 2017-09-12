@@ -129,10 +129,16 @@ export interface ErrorsConf<C> {
 
 }
 
+export interface Hook<C> {
+
+ (m: Module<C>):  Bluebird<void>;
+
+}
+
 export interface EventsConf<C> {
 
-    init?: (m: Module<C>) => Bluebird<void>;
-    connected?:(m: Module<C>)=> Bluebird<void>;
+    init?: Hook<C>[];
+    connected?: Hook<C>[];
 
 }
 
