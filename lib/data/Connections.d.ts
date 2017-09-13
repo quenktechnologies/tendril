@@ -12,10 +12,12 @@ export interface UnsafeStore<A> {
  */
 export declare class Connections<A> {
     store: UnsafeStore<Connection<A>>;
+    each(f: (c: Connection<A>) => Bluebird<void>): Bluebird<void>;
     add(key: string, conn: Connection<A>): Bluebird<Connections<A>>;
     /**
      * get a unwraped pool member.
      */
     get(key: string): Bluebird<A>;
+    flush(): Bluebird<void>;
 }
 export declare const Pool: Connections<{}>;

@@ -1,6 +1,7 @@
 import * as http from 'http';
 import * as Bluebird from 'bluebird';
 import * as express from 'express';
+import { Pool } from '../data';
 import { ManagedServer } from '../server';
 import { Module } from './Module';
 
@@ -45,7 +46,8 @@ export class Application<C> {
 
     stop() {
 
-        return this.server.shutdown().then(() => this);
+        return this.server.shutdown().then(() => this)
+            .then(() => Pool.flush())
 
     }
 
