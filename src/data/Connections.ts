@@ -18,11 +18,11 @@ export class Connections<A> {
 
     store: UnsafeStore<Connection<A>> = {};
 
-  each(f:(c:Connection<A>)=>Bluebird<void>) : Bluebird<void>{
+    each(f: (c: Connection<A>) => Bluebird<void>): Bluebird<void> {
 
-    return Object.keys(this.store).reduce((p,k)=> p.then(()=>f(this.store[k])), Bluebird.resolve());
+        return Object.keys(this.store).reduce((p, k) => p.then(() => f(this.store[k])), Bluebird.resolve());
 
-  }
+    }
 
     add(key: string, conn: Connection<A>): Bluebird<Connections<A>> {
 
@@ -49,7 +49,7 @@ export class Connections<A> {
 
     flush(): Bluebird<void> {
 
-      return this.each(c=> c.disconnect());
+        return this.each(c => c.disconnect()).then(()=>{ this.store = {}});
 
     }
 
