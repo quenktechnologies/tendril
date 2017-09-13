@@ -11,4 +11,5 @@ export declare class Application<C> {
     server: ManagedServer;
     constructor(main: Module<C>);
     start(): Bluebird<Application<C>>;
+    stop(): Bluebird<this>;
 }

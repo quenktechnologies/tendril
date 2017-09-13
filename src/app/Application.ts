@@ -43,5 +43,11 @@ export class Application<C> {
 
     }
 
+    stop() {
+
+        return this.server.shutdown().then(() => this);
+
+    }
+
 }
 
