@@ -53,6 +53,17 @@ export class InternalServerError<C> extends Response<C> {
 
     }
 
+    apply(c: Context<C>): void {
+
+      //Log internal errors to console
+      //TODO: once we have actor support this will be sent
+      //to an actor address.
+      console.error(c);
+
+      return super.apply(c);
+
+    }
+
 }
 
 export class Status<C>{

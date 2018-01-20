@@ -41,6 +41,7 @@ export declare class InternalServerError<C> extends Response<C> {
     body: Error;
     status: number;
     constructor(body: Error);
+    apply(c: Context<C>): void;
 }
 export declare class Status<C> {
     code: number;
