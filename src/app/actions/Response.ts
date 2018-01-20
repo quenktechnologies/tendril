@@ -55,12 +55,17 @@ export class InternalServerError<C> extends Response<C> {
 
     apply(c: Context<C>): void {
 
-      //Log internal errors to console
-      //TODO: once we have actor support this will be sent
-      //to an actor address.
-      console.error(c);
+        if (!process.env.NO_LOG_INTERNAL_ERROR) {
+            //Log internal errors to console
+            //TODO: once we have actor support this will be sent
+            //to an actor address.
+            console.error(`Internal Error detected! To turn off this warning set ` +
+                `'NO_LOG_INTERNAL_ERROR' env var. Error:`);
+            console.error(c);
 
-      return super.apply(c);
+        }
+
+        return super.apply(c);
 
     }
 
@@ -124,12 +129,12 @@ export class Async<C> {
 
 export class Next<C> {
 
-  constructor(public r?: http.Request) {}
+    constructor(public r?: http.Request) { }
 
-  apply(ctx:Context<C>):void {
+    apply(ctx: Context<C>): void {
 
-    ctx.next();
+        ctx.next();
 
-  }
+    }
 
 }
