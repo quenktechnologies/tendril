@@ -5,6 +5,14 @@ import * as Headers from './Headers';
 export { Status };
 export { Headers };
 
-export interface Request extends express.Request { }
+export interface Request extends express.Request {
 
-export interface Response extends express.Response { }
+    [key: string]: any;
+
+}
+
+export interface Response extends express.Response { 
+
+  [key:string]: any;
+
+}
