@@ -1,6 +1,6 @@
 {
   "name": "@quenk/tendril",
-  "version": "0.15.8",
+  "version": "0.15.9",
   "description": "Actor based Node.js web framework.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
