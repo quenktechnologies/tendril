@@ -61,7 +61,7 @@ export class InternalServerError<C> extends Response<C> {
             //to an actor address.
             console.error(`Internal Error detected! To turn off this warning set ` +
                 `'NO_LOG_INTERNAL_ERROR' env var. Error:`);
-            console.error(c);
+            console.error(this.body);
 
         }
 
