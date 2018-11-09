@@ -34,6 +34,11 @@ export interface Module {
     path: string,
 
     /**
+     * address of the module in the system.
+     */
+    address:Address,
+
+    /**
      * parent context for this context.
      */
     parent: Maybe<Module>,

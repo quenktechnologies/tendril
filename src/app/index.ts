@@ -4,6 +4,7 @@ import * as show from './show';
 import * as hooks from './hooks';
 import * as conn from './connection';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
+import { join } from 'path';
 import { merge, reduce, map, values } from '@quenk/noni/lib/data/record';
 import {
     Maybe,
@@ -21,12 +22,7 @@ import {
     parallel,
     attempt
 } from '@quenk/noni/lib/control/monad/future';
-import {
-    State,
-    getParent,
-    getAddress,
-    put
-} from '@quenk/potoo/lib/actor/system/state';
+import { State, getAddress, put } from '@quenk/potoo/lib/actor/system/state';
 import { Envelope } from '@quenk/potoo/lib/actor/mailbox';
 import { Drop } from '@quenk/potoo/lib/actor/system/op/drop';
 import { System } from '@quenk/potoo/lib/actor/system';
@@ -49,7 +45,7 @@ export class App implements System<Context>, Executor<Context> {
 
     constructor(public main: Template, public configuration: config.Configuration) { }
 
-     state: State<Context> = { contexts: {}, routes: {} };
+    state: State<Context> = { contexts: {}, routes: {} };
 
     stack: Op<Context>[] = [];
 
@@ -118,8 +114,16 @@ export class App implements System<Context>, Executor<Context> {
 
     routing(): Future<App> {
 
-        return attempt(() => map(this.state.contexts, f =>
-            f.module.map(m => m.routes(m.module, m.app)))).map(cons(<App>this));
+        return attempt(() => map(this.state.contexts, c =>
+            c
+                .module
+                .map(m => {
+
+                    m.routes(m.module, m.app);
+                    m.parent.map(p => p.app.use(join('/', m.path), m.app));
+
+                })))
+            .map(cons(<App>this));
 
     }
 
@@ -138,9 +142,11 @@ export class App implements System<Context>, Executor<Context> {
 
         let module = tmpl.create(this);
         let app = express();
+        let address = defaultAddress(path, parent);
 
         let mctx: ModuleContext = {
             path,
+            address,
             parent,
             module,
             app,
@@ -150,17 +156,14 @@ export class App implements System<Context>, Executor<Context> {
                 available: defaultAvailableMiddleware(tmpl)
             },
             routes: defaultRoutes(tmpl),
-            show: defaultShow(tmpl, path, this),
+            show: defaultShow(tmpl, parent),
             connections: defaultConnections(tmpl)
         };
 
         put(this.state, path, newContext(just(mctx), module, tmpl));
 
-        parent.map(m => m.app.use(path, app));
-
         if (tmpl.app && tmpl.app.modules)
-            map(tmpl.app.modules, (m, k) =>
-                this.spawn(`${path}${path === '/' ? '' : '/'}${k}`, just(mctx), m));
+            map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
 
         return this;
 
@@ -243,7 +246,6 @@ export class App implements System<Context>, Executor<Context> {
                 this.state = { contexts: {}, routes: {} };
                 this.running = false;
                 this.pool = new Pool({});
-                this.paths = [];
 
             });
 
@@ -253,6 +255,13 @@ export class App implements System<Context>, Executor<Context> {
 
 const defaultServerConf = (conf: Configuration | undefined): Configuration =>
     merge({ port: 2407, host: '0.0.0.0' }, (conf == null) ? {} : conf);
+
+const defaultAddress = (path: string, parent: Maybe<ModuleContext>) =>
+    parent
+        .map(m => m.address)
+        .map(a => join(a, path))
+        .orJust(() => path)
+        .get();
 
 const defaultHooks = (t: Template) => (t.app && t.app.on) ?
     t.app.on : {}
@@ -274,12 +283,10 @@ const defaultEnabledMiddleware = (t: Template) =>
 const defaultRoutes = (t: Template) =>
     (t.app && t.app.routes) ? t.app.routes : noop;
 
-const defaultShow = (t: Template, path: Address, app: App): Maybe<show.Show> =>
+const defaultShow = (t: Template, parent: Maybe<ModuleContext>): Maybe<show.Show> =>
     (t.app && t.app.views) ?
-        just(t.app.views.provider.apply(null, t.app.views.options || [])) : (
-            getParent(app.state, path)
-                .chain(f => f.module)
-                .chain(m => m.show));
+        just(t.app.views.provider.apply(null, t.app.views.options || [])) :
+        parent.chain(m => m.show);
 
 const initContext = (f: Context): Future<void> =>
     f

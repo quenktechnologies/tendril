@@ -20,15 +20,13 @@ export const template: Template = {
                 new Context(m, req, res, [], () => pure(show('reports'))).run())
 
             app.get('/:report', (req, res) =>
-              new Context(m, req, res, [
-                filters.modify,
-                filters.isReport,
-                filters.quickShow
-              ], () => pure(show('reports'))).run())
+                new Context(m, req, res, [
+                    filters.modify,
+                    filters.isReport,
+                    filters.quickShow
+                ], () => pure(show('reports'))).run())
 
-
-
-        },
+        }
 
     }
 

@@ -68,7 +68,7 @@ describe('ledger', () => {
 
         let fourohfoured = false;
 
-      return  request
+        return request
             .get(`${ROUTE_REPORTS}/xincome`)
             .then((r: any) => must(r.text).be('income report'))
             .then(() => request.get(`${ROUTE_REPORTS}/xexpense`))
@@ -76,7 +76,7 @@ describe('ledger', () => {
             .then(() => request.get(`${ROUTE_REPORTS}/liabilities`))
             .catch(e => {
 
-                if (e.message !== 'Not Found') throw e;
+                if (e.message !== 'Forbidden') throw e;
 
                 fourohfoured = true;
                 return fourohfoured;
