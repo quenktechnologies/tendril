@@ -4,7 +4,7 @@ import * as show from './show';
 import * as hooks from './hooks';
 import * as conn from './connection';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
-import { merge, map, values } from '@quenk/noni/lib/data/record';
+import { merge, reduce, map, values } from '@quenk/noni/lib/data/record';
 import { Maybe, just, fromNullable, nothing } from '@quenk/noni/lib/data/maybe';
 import { Either, left, right } from '@quenk/noni/lib/data/either'
 import { cons, noop } from '@quenk/noni/lib/data/function';
@@ -60,6 +60,11 @@ export class App implements System<Context>, Executor<Context> {
 
     paths: string[] = [];
 
+    /**
+     * initialize the App
+     *
+     * Invokes the init hooks of all modules.
+     */
     initialize(): Future<App> {
 
         return parallel(values<Future<void>>(map(this.state.contexts,
@@ -67,10 +72,22 @@ export class App implements System<Context>, Executor<Context> {
 
     }
 
+    /**
+     * connections opens all the connections the modules of the App have
+     * declared.
+     *
+     * Connections are open in parallel, any failing will prevent the whole
+     * application from booting.
+     */
     connections(): Future<App> {
 
-        return this
-            .pool
+        return reduce(this.state.contexts, this.pool, (p, c) =>
+            c
+                .module
+                .map(m => map(m.connections, (c: conn.Connection, k) => p.add(k, c)))
+                .map(cons(p))
+                .orJust(() => p)
+                .get())
             .open()
             .chain(() => parallel(values(map(this.state.contexts, connectedFrame))))
             .map(cons(<App>this));
@@ -107,31 +124,31 @@ export class App implements System<Context>, Executor<Context> {
 
     }
 
-    spawn(path: string, tmpl: Template): App {
+    spawn(path: string, parent: express.Application, tmpl: Template): App {
 
-        let actor = tmpl.create(this);
+        let module = tmpl.create(this);
+        let app = express();
 
         let mctx: ModuleContext = {
             path,
-            module: actor,
-            app: express(),
+            module,
+            app,
             hooks: defaultHooks(tmpl),
             middleware: defaultEnabledMiddleware(tmpl),
             routes: defaultRoutes(tmpl),
-            show: defaultShow(tmpl, path, this)
+            show: defaultShow(tmpl, path, this),
+            connections: defaultConnections(tmpl)
         };
 
-        map(defaultConnections(tmpl),
-            (c: conn.Connection, k) => this.pool.add(k, c));
-
-        this.paths.push(path);
         this.middleware = merge(this.middleware, defaultMiddlware(tmpl));
 
-        put(this.state, path, newContext(just(mctx), actor, tmpl));
+        put(this.state, path, newContext(just(mctx), module, tmpl));
+
+        parent.use(path, app);
 
         if (tmpl.app && tmpl.app.modules)
             map(tmpl.app.modules, (m, k) =>
-                this.spawn(`${path}${path === '/' ? '' : '/'}${k}`, m));
+                this.spawn(`${path}${path === '/' ? '' : '/'}${k}`, app, m));
 
         return this;
 
@@ -190,12 +207,11 @@ export class App implements System<Context>, Executor<Context> {
     start(): Future<App> {
 
         return this
-            .spawn(this.main.id, this.main)
+            .spawn(this.main.id, this.express, this.main)
             .initialize()
             .chain(() => this.connections())
             .chain(() => this.middlewares())
             .chain(() => this.routing())
-            .chain(() => this.linking())
             .chain(() => this.server.listen(this.express))
             .map(cons(<App>this));
 

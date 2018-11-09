@@ -9,6 +9,7 @@ import { Hooks } from '../hooks';
 import { Routes } from '../configuration';
 import { Show } from '../show';
 import { Module } from '../module';
+import { Connections } from '../connection';
 
 /**
  * Context used for actor entries in the Application.
@@ -61,7 +62,12 @@ export interface ModuleContext {
     /**
      * show function configured for the module (if any).
      */
-    show: Maybe<Show>
+    show: Maybe<Show>,
+
+    /**
+     * connections belonging to the module.
+     */
+    connections: Connections
 
 }
 
