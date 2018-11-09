@@ -1,16 +1,19 @@
 import * as http from 'http';
 import * as net from 'net';
-import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
+import { Maybe, Nothing, just, nothing } from '@quenk/noni/lib/data/maybe';
 import {
     Future,
     fromCallback,
-    pure
+    pure,
+    raise
 } from '@quenk/noni/lib/control/monad/future';
 
 /**
  * Handler function type that is called with the incomming client request.
  */
-export type Handler = (req: http.IncomingMessage, res: http.ServerResponse) => void;
+export type Handler =
+    <I extends http.IncomingMessage,
+        R extends http.ServerResponse> (req: I, res: R) => void;
 
 /**
  * Configuration for a server.
@@ -53,30 +56,35 @@ export class Server {
      */
     listen(handler: Handler): Future<Server> {
 
-        this.handler = handler;
+        if (this.handle instanceof Nothing) {
 
-        this.handle = this
-            .handle
-            .orJust(() => http.createServer(handler));
+            this.handler = handler;
+            this.handle = just(http.createServer(handler));
 
-        return this
-            .handle
-            .map(h => <Future<Server>>fromCallback<Server>(cb => {
+            return this
+                .handle
+                .map(h => <Future<Server>>fromCallback<Server>(cb => {
 
-                h
-                    .on('connection', s => {
+                    h
+                        .on('connection', s => {
 
-                        this.sockets.push(s);
+                            this.sockets.push(s);
 
-                        s.on('close', () =>
-                            this.sockets = this.sockets.filter(sck => !(s === sck)));
+                            s.on('close', () => this.sockets =
+                                this.sockets.filter(sck => (s !== sck)));
 
-                    })
-                    .on('listening', () => cb(undefined, this))
-                    .listen(this.configuration);
+                        })
+                        .on('listening', () => cb(undefined, this))
+                        .listen(this.configuration);
 
-            }))
-            .get();
+                }))
+                .get();
+
+        } else {
+
+            return raise(new Error('listen: Server is already listening'));
+
+        }
 
     }
 
@@ -85,20 +93,25 @@ export class Server {
      */
     restart(): Future<Server> {
 
-        return this.stop().chain(() => this.listen(this.handler));
+        return this
+            .stop()
+            .chain(() => this.listen(this.handler));
 
     }
 
     /**
      * stop the Server
      */
-    stop(): Future<Server> {
+    stop(): Future<void> {
 
         return this
-            .handle
-            .map(h => fromCallback(cb => h.close(() => cb(undefined, this)))
-                .chain(() => this.flush()))
-            .get();
+            .flush()
+            .chain(s =>
+                s
+                    .handle
+                    .map(close(s))
+                    .get())
+            .map(() => { this.handle = nothing() })
 
     }
 
@@ -108,8 +121,12 @@ export class Server {
     flush(): Future<Server> {
 
         this.sockets.forEach(s => s.destroy());
+        this.sockets = [];
         return pure(<Server>this);
 
     }
 
 }
+
+const close = (s: Server) => (h: http.Server): Future<Server> =>
+    fromCallback<Server>(cb => h.close(() => cb(undefined, s)));
