@@ -28,7 +28,7 @@
     "typescript": "^3.1.4"
   },
   "dependencies": {
-    "@quenk/noni": "^1.2.0",
+    "@quenk/noni": "^1.2.5",
     "@quenk/potoo": "^1.4.0",
     "express": "^4.16.4"
   }
