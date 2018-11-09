@@ -33,7 +33,3 @@ node_modules
 .mongo
 .idea
 .env
-
-www
-experimental
-run

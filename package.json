@@ -1,28 +1,35 @@
 {
   "name": "@quenk/tendril",
   "version": "0.15.10",
-  "description": "Actor based Node.js web framework.",
+  "description": "Actor oriented web framework.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "rm -R lib/*; ./node_modules/.bin/tsc --project src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha --opts mocha.opts test"
   },
-  "author": "Lasana Murray <dev@quenk.com> (http://quenk.com)",
+  "author": "Quenk Technologies Limited <info@quenk.com> (http://quenk.com)",
   "license": "Apache-2.0",
-  "peerDependencies": {
-    "express": "^4.15.4",
-    "bluebird": "^3.5.0"
-  },
   "devDependencies": {
-    "@types/bluebird": "^3.5.8",
+    "@types/bluebird": "^3.5.24",
+    "@types/body-parser": "^1.17.0",
     "@types/express": "^4.0.36",
+    "@types/mocha": "^5.2.5",
+    "@types/morgan": "^1.7.35",
     "@types/node": "^8.0.20",
-    "typescript": "^2.4.2"
+    "bluebird": "^3.5.3",
+    "body-parser": "^1.18.3",
+    "mocha": "^5.2.0",
+    "morgan": "^1.9.1",
+    "must": "^0.13.4",
+    "serve-static": "^1.13.2",
+    "superagent": "^4.0.0-beta.5",
+    "ts-node": "^7.0.1",
+    "typedoc": "^0.13.0",
+    "typescript": "^3.1.4"
   },
   "dependencies": {
-    "bluebird": "^3.5.0",
-    "express": "^4.15.4",
-    "afpl": "^0.5.1"
+    "@quenk/noni": "^1.2.0",
+    "@quenk/potoo": "^1.4.0",
+    "express": "^4.16.4"
   }
 }
