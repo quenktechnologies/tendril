@@ -110,7 +110,7 @@ export class Server {
                 s
                     .handle
                     .map(close(s))
-                    .orJust(() => s)
+                    .orJust(() => pure(s))
                     .get())
             .map(() => { this.handle = nothing() })
 
