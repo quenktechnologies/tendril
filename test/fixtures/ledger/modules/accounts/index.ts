@@ -1,11 +1,10 @@
 import * as handlers from './handlers';
-import * as express from 'express';
 import * as reports from './modules/reports';
 import { pure } from '@quenk/noni/lib/control/monad/future';
 import { Template } from '../../../../../src/app/module/template';
 import { Module } from '../../../../../src/app/module';
 import { App } from '../../../../../src/app';
-import { Context, show } from '../../../../../src/app/api';
+import { show } from '../../../../../src/app/api';
 
 export const template: Template = {
 
@@ -15,13 +14,10 @@ export const template: Template = {
 
     app: {
 
-        routes: (m: Module, app: express.Application) => {
+        routes: (m: Module) => {
 
-            app.post('/', (req, res) =>
-                new Context(m, req, res, [], handlers.create).run())
-
-            app.get('/balance', (req, res) =>
-                new Context(m, req, res, [], () => pure(show('balance'))).run())
+            m.install('post', '/', [], handlers.create);
+            m.install('get', '/balance', [], () => pure(show('balance')));
 
         },
 

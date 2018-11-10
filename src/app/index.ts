@@ -43,7 +43,9 @@ import { Context, Module as ModuleContext, getModule } from './state/context';
  */
 export class App implements System<Context>, Executor<Context> {
 
-    constructor(public main: Template, public configuration: config.Configuration) { }
+    constructor(
+        public main: Template,
+        public configuration: config.Configuration = {}) { }
 
     state: State<Context> = { contexts: {}, routes: {} };
 
@@ -54,6 +56,88 @@ export class App implements System<Context>, Executor<Context> {
     server: Server = new Server(defaultServerConf(this.main.server));
 
     pool: Pool = new Pool({});
+
+    allocate(t: PotooTemplate<Context>): Context {
+
+        let actor = t.create(this);
+        return actor.init(newContext(nothing(), actor, t));
+
+    }
+
+    init(c: Context): Context {
+
+        return c;
+
+    }
+
+    identify(actor: Actor<Context>): Address {
+
+        return getAddress(this.state, actor)
+            .orJust(() => ADDRESS_DISCARD)
+            .get();
+
+    }
+
+    exec(code: Op<Context>): App {
+
+        this.stack.push(code);
+        this.run();
+        return this;
+
+    }
+
+    accept({ to, from, message }: Envelope): App {
+
+        return this.exec(new Drop(to, from, message));
+
+    }
+
+    run(): void {
+
+      let policy = <config.LogPolicy>(this.configuration.log||{});
+
+        if (this.running) return;
+
+        this.running = true;
+
+        while (this.stack.length > 0)
+            log(policy.level || 0, policy.logger || console,
+                <Op<Context>>this.stack.pop()).exec(this);
+
+        this.running = false;
+
+    }
+
+    spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
+
+        let module = tmpl.create(this);
+        let app = express();
+        let address = defaultAddress(path, parent);
+
+        let mctx: ModuleContext = {
+            path,
+            address,
+            parent,
+            module,
+            app,
+            hooks: defaultHooks(tmpl),
+            middleware: {
+                enabled: defaultEnabledMiddleware(tmpl),
+                available: defaultAvailableMiddleware(tmpl)
+            },
+            routes: defaultRoutes(tmpl),
+            show: defaultShow(tmpl, parent),
+            connections: defaultConnections(tmpl)
+        };
+
+        put(this.state, path, newContext(just(mctx), module, tmpl));
+
+        if (tmpl.app && tmpl.app.modules)
+            map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
+
+        return this;
+
+    }
 
     /**
      * initialize the App
@@ -112,6 +196,10 @@ export class App implements System<Context>, Executor<Context> {
 
     }
 
+    /**
+     * routing installs all the routes of each module and creates a tree
+     * out of express.
+     */
     routing(): Future<App> {
 
         return attempt(() => map(this.state.contexts, c =>
@@ -119,7 +207,7 @@ export class App implements System<Context>, Executor<Context> {
                 .module
                 .map(m => {
 
-                    m.routes(m.module, m.app);
+                    m.routes(m.module);
                     m.parent.map(p => p.app.use(join('/', m.path), m.app));
 
                 })))
@@ -138,87 +226,9 @@ export class App implements System<Context>, Executor<Context> {
 
     }
 
-    spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
-
-        let module = tmpl.create(this);
-        let app = express();
-        let address = defaultAddress(path, parent);
-
-        let mctx: ModuleContext = {
-            path,
-            address,
-            parent,
-            module,
-            app,
-            hooks: defaultHooks(tmpl),
-            middleware: {
-                enabled: defaultEnabledMiddleware(tmpl),
-                available: defaultAvailableMiddleware(tmpl)
-            },
-            routes: defaultRoutes(tmpl),
-            show: defaultShow(tmpl, parent),
-            connections: defaultConnections(tmpl)
-        };
-
-        put(this.state, path, newContext(just(mctx), module, tmpl));
-
-        if (tmpl.app && tmpl.app.modules)
-            map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
-
-        return this;
-
-    }
-
-    allocate(t: PotooTemplate<Context>): Context {
-
-        let actor = t.create(this);
-        return actor.init(newContext(nothing(), actor, t));
-
-    }
-
-    init(c: Context): Context {
-
-        return c;
-
-    }
-
-    identify(actor: Actor<Context>): Address {
-
-        return getAddress(this.state, actor)
-            .orJust(() => ADDRESS_DISCARD)
-            .get();
-
-    }
-
-    exec(code: Op<Context>): App {
-
-        this.stack.push(code);
-        this.run();
-        return this;
-
-    }
-
-    accept({ to, from, message }: Envelope): App {
-
-        return this.exec(new Drop(to, from, message));
-
-    }
-
-    run(): void {
-
-        let { level, logger } = <config.LogPolicy>this.configuration.log;
-
-        if (this.running) return;
-
-        this.running = true;
-
-        while (this.stack.length > 0)
-            log(level || 0, logger || console, <Op<Context>>this.stack.pop()).exec(this);
-
-        this.running = false;
-
-    }
-
+    /**
+     * start the App.
+     */
     start(): Future<App> {
 
         return this

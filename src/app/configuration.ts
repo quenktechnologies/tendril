@@ -1,4 +1,3 @@
-import * as express from 'express';
 import * as hooks from './hooks';
 import * as show from './show';
 import * as template from './module/template';
@@ -8,7 +7,7 @@ import * as mod from './module';
 /**
  * Routes function is used to install application routes.
  */
-export type Routes = (m: mod.Module, a: express.Application) => void;
+export type Routes = (m: mod.Module) => void;
 
 /**
  * MiddlewareProvider

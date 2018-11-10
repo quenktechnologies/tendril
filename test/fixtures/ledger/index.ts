@@ -1,7 +1,6 @@
 import * as accounts from './modules/accounts';
 import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
-import { Application } from 'express';
 import { static as statc } from 'express';
 import { pure } from '@quenk/noni/lib/control/monad/future';
 import { App } from '../../../src/app';
@@ -9,7 +8,7 @@ import { Module } from '../../../src/app/module';
 import { Template } from '../../../src/app/module/template';
 import { memdb } from '../memgodb';
 import { show } from './show';
-import { Context, show as view } from '../../../src/app/api';
+import {  show as view } from '../../../src/app/api';
 
 export const template: Template = {
 
@@ -86,10 +85,9 @@ export const template: Template = {
 
         },
 
-        routes: (m: Module, app: Application) => {
+        routes: (m: Module) => {
 
-            app.get('/', (req, res) => new Context(m, req, res, [], () =>
-                pure(view('index'))).run())
+            m.install('get', '/', [], () => pure(view('index')));
 
         },
 
