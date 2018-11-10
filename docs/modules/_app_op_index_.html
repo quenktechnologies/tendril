@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Connection | @quenk/tendril</title>
+	<title>&quot;app/op/index&quot; | @quenk/tendril</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style type="text/css">/*! normalize.css v1.1.3 | MIT License | git.io/normalize */
@@ -907,138 +907,79 @@ img { max-width: 100%; }
 </header>
 <nav class="tsd-navigation secondary">
 	<ul>
-		<li class=" tsd-kind-class tsd-parent-kind-external-module">
-			<a href="../classes/_app_connection_.pool.html" class="tsd-kind-icon">Pool</a>
+		<li class=" tsd-kind-variable tsd-parent-kind-external-module">
+			<a href="_app_op_index_.html#op_disable" class="tsd-kind-icon">OP_<wbr>DISABLE</a>
 		</li>
-		<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-			<a href="_app_connection_.connection.html" class="tsd-kind-icon">Connection</a>
-			<ul>
-				<li class=" tsd-kind-method tsd-parent-kind-interface">
-					<a href="_app_connection_.connection.html#checkout" class="tsd-kind-icon">checkout</a>
-				</li>
-				<li class=" tsd-kind-method tsd-parent-kind-interface">
-					<a href="_app_connection_.connection.html#close" class="tsd-kind-icon">close</a>
-				</li>
-				<li class=" tsd-kind-method tsd-parent-kind-interface">
-					<a href="_app_connection_.connection.html#open" class="tsd-kind-icon">open</a>
-				</li>
-			</ul>
+		<li class=" tsd-kind-variable tsd-parent-kind-external-module">
+			<a href="_app_op_index_.html#op_enable" class="tsd-kind-icon">OP_<wbr>ENABLE</a>
 		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-			<a href="_app_connection_.connections.html" class="tsd-kind-icon">Connections</a>
+		<li class=" tsd-kind-variable tsd-parent-kind-external-module">
+			<a href="_app_op_index_.html#op_redirect" class="tsd-kind-icon">OP_<wbr>REDIRECT</a>
 		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-			<a href="_app_connection_.store.html" class="tsd-kind-icon">Store</a>
+		<li class=" tsd-kind-variable tsd-parent-kind-external-module">
+			<a href="_app_op_index_.html#op_route" class="tsd-kind-icon">OP_<wbr>ROUTE</a>
 		</li>
 	</ul>
 </nav>
 <div class="container container-main">
 	<div class="content-wrap">
-		<section class="tsd-panel tsd-comment">
-			<div class="tsd-comment tsd-typography">
-				<div class="lead">
-					<p>Connection</p>
-				</div>
-			</div>
-		</section>
-		<section class="tsd-panel tsd-hierarchy">
-			<h3>Hierarchy</h3>
-			<ul class="tsd-hierarchy">
-				<li>
-					<span class="target">Connection</span>
-				</li>
-			</ul>
-		</section>
 		<section class="tsd-panel-group tsd-index-group">
 			<h2>Index</h2>
 			<section class="tsd-panel tsd-index-panel">
 				<div class="tsd-index-content">
 					<section class="tsd-index-section ">
-						<h3>Methods</h3>
+						<h3>Variables</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_app_connection_.connection.html#checkout" class="tsd-kind-icon">checkout</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_app_connection_.connection.html#close" class="tsd-kind-icon">close</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_app_connection_.connection.html#open" class="tsd-kind-icon">open</a></li>
+							<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_app_op_index_.html#op_disable" class="tsd-kind-icon">OP_<wbr>DISABLE</a></li>
+							<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_app_op_index_.html#op_enable" class="tsd-kind-icon">OP_<wbr>ENABLE</a></li>
+							<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_app_op_index_.html#op_redirect" class="tsd-kind-icon">OP_<wbr>REDIRECT</a></li>
+							<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_app_op_index_.html#op_route" class="tsd-kind-icon">OP_<wbr>ROUTE</a></li>
 						</ul>
 					</section>
 				</div>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
-			<h2>Methods</h2>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-				<a name="checkout" class="tsd-anchor"></a>
-				<h3>checkout</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">checkout<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/connection.ts#L47">app/connection.ts:47</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>checkout the actual connection implementation.</p>
-							</div>
-							<p>This is the value will be used by applications
-							to run queries, send data etc.</p>
-							<p>NOTE: We use any here to avoid carrying the type
-								all the way to the application. That may be the safer
-								thing to do but is a pain manage.
-								It looks like with strict:true, typescript won&#39;t allow
-								implementors to override a method type parameter here
-							that is determined by return value only.</p>
-						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
-					</li>
-				</ul>
+			<h2>Variables</h2>
+			<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
+				<a name="op_disable" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> OP_<wbr>DISABLE</h3>
+				<div class="tsd-signature tsd-kind-icon">OP_<wbr>DISABLE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">513</span><span class="tsd-signature-symbol"> =&nbsp;513</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/op/index.ts#L3">app/op/index.ts:3</a></li>
+					</ul>
+				</aside>
 			</section>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-				<a name="close" class="tsd-anchor"></a>
-				<h3>close</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">close<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/connection.ts#L52">app/connection.ts:52</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>close the connection.</p>
-							</div>
-						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-					</li>
-				</ul>
+			<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
+				<a name="op_enable" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> OP_<wbr>ENABLE</h3>
+				<div class="tsd-signature tsd-kind-icon">OP_<wbr>ENABLE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">514</span><span class="tsd-signature-symbol"> =&nbsp;514</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/op/index.ts#L4">app/op/index.ts:4</a></li>
+					</ul>
+				</aside>
 			</section>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-				<a name="open" class="tsd-anchor"></a>
-				<h3>open</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">open<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_connection_.connection.html" class="tsd-signature-type">Connection</a><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/connection.ts#L32">app/connection.ts:32</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>open the connection.</p>
-							</div>
-						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_connection_.connection.html" class="tsd-signature-type">Connection</a><span class="tsd-signature-symbol">&gt;</span></h4>
-					</li>
-				</ul>
+			<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
+				<a name="op_redirect" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> OP_<wbr>REDIRECT</h3>
+				<div class="tsd-signature tsd-kind-icon">OP_<wbr>REDIRECT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">515</span><span class="tsd-signature-symbol"> =&nbsp;515</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/op/index.ts#L5">app/op/index.ts:5</a></li>
+					</ul>
+				</aside>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
+				<a name="op_route" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> OP_<wbr>ROUTE</h3>
+				<div class="tsd-signature tsd-kind-icon">OP_<wbr>ROUTE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">512</span><span class="tsd-signature-symbol"> =&nbsp;512</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3a48f8b/lib/app/op/index.ts#L2">app/op/index.ts:2</a></li>
+					</ul>
+				</aside>
 			</section>
 		</section>
 		<footer class="with-border-bottom">
