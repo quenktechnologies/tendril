@@ -1,33 +1,32 @@
 import * as log from '@quenk/potoo/lib/actor/system/log';
 import * as express from 'express';
+import * as codes from './';
 import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { Context, getModule } from './state/context';
-import { Filter, Handler, Context as RequestContext } from './api';
-import { Module } from './module';
-import { App } from './';
-
-export const OP_ROUTE = 0x200;
+import { Context, getModule } from '../state/context';
+import { Filter, Handler, Context as RequestContext } from '../api';
+import { Module } from '../module';
+import { App } from '../';
 
 /**
  * SupportedMethod
- */ 
+ */
 export type SupportedMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 /**
- * Install instructs the App to install a new route
+ * Route instructs the App to install a new route
  * for a module.
  */
-export class Install<A> extends Op<Context> {
+export class Route<A> extends Op<Context> {
 
     constructor(
         public module: Address,
-      public method: SupportedMethod,
+        public method: SupportedMethod,
         public path: string,
         public filters: Filter<A>[],
         public handler: Handler<A>) { super(); }
 
-    code = OP_ROUTE;
+    code = codes.OP_ROUTE;
 
     level = log.INFO;
 
@@ -68,6 +67,6 @@ export class Install<A> extends Op<Context> {
 }
 
 const dispatch = <A>
-    (r: Install<A>, m: Module) =>
+    (r: Route<A>, m: Module) =>
     (req: express.Request, res: express.Response) =>
         new RequestContext(m, req, res, r.filters, r.handler).run();

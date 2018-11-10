@@ -10,7 +10,7 @@ import {
     Maybe,
     just,
     fromNullable,
-    fromArray,
+    fromBoolean,
     nothing
 } from '@quenk/noni/lib/data/maybe';
 import { Either, left, right } from '@quenk/noni/lib/data/either'
@@ -24,7 +24,9 @@ import {
 } from '@quenk/noni/lib/control/monad/future';
 import { State, getAddress, put } from '@quenk/potoo/lib/actor/system/state';
 import { Envelope } from '@quenk/potoo/lib/actor/mailbox';
+import { Message } from '@quenk/potoo/lib/actor/message';
 import { Drop } from '@quenk/potoo/lib/actor/system/op/drop';
+import { Tell } from '@quenk/potoo/lib/actor/system/op/tell';
 import { System } from '@quenk/potoo/lib/actor/system';
 import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
@@ -94,14 +96,14 @@ export class App implements System<Context>, Executor<Context> {
 
     run(): void {
 
-      let policy = <config.LogPolicy>(this.configuration.log||{});
+        let policy = <config.LogPolicy>(this.configuration.log || {});
 
         if (this.running) return;
 
         this.running = true;
 
         while (this.stack.length > 0)
-            log(policy.level || 0, policy.logger || console,
+            log(policy.level || 1, policy.logger || console,
                 <Op<Context>>this.stack.pop()).exec(this);
 
         this.running = false;
@@ -127,15 +129,26 @@ export class App implements System<Context>, Executor<Context> {
             },
             routes: defaultRoutes(tmpl),
             show: defaultShow(tmpl, parent),
-            connections: defaultConnections(tmpl)
+            connections: defaultConnections(tmpl),
+            disabled: tmpl.disabled || false,
+            redirect: nothing()
         };
 
-        put(this.state, path, newContext(just(mctx), module, tmpl));
+        put(this.state, address, module.init(newContext(just(mctx), module, tmpl)));
 
         if (tmpl.app && tmpl.app.modules)
             map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
 
         return this;
+
+    }
+
+    /**
+     * tell a message to an actor in the system.
+     */
+    tell(to: Address, msg: Message): App {
+
+        return this.exec(new Tell(to, '$', msg));
 
     }
 
@@ -183,12 +196,7 @@ export class App implements System<Context>, Executor<Context> {
                 .module
                 .map(m =>
                     getMwares(m)
-                        .map(wares =>
-                            wares
-                                .map(list => m.app.use.apply(m.app, list))
-                                .orJust(() => { })
-                                .map(() => p)
-                                .get())
+                        .map(list => m.app.use.apply(m.app, list))
                         .orRight(e => raise(e))
                         .takeRight())
                 .orJust(() => p)
@@ -245,7 +253,6 @@ export class App implements System<Context>, Executor<Context> {
     stop(): Future<void> {
 
         //@todo stop child actors
-
         return this
             .server
             .stop()
@@ -314,12 +321,18 @@ const dispatchConnected = (f: Context): Future<void> =>
         .orJust(() => pure(noop()))
         .get();
 
-const getMwares = (m: ModuleContext): Either<Error, Maybe<mware.Middleware[]>> =>
+const getMwares = (m: ModuleContext): Either<Error, mware.Middleware[]> =>
     m
         .middleware
         .enabled
-        .reduce(swap(m), right([]))
-        .map(fromArray);
+        .reduce(swap(m), right([preroute(m)]))
+
+const preroute = (module: ModuleContext) =>
+    (_: express.Request, res: express.Response, next: express.NextFunction) =>
+        fromBoolean(module.disabled)
+            .map(() => res.status(404).end())
+            .orElse(() => module.redirect.map(r => res.redirect(r.status, r.location)))
+            .orJust(() => next());
 
 const swap = (m: ModuleContext) => (p: Either<Error, mware.Middleware[]>, c: string)
     : Either<Error, mware.Middleware[]> =>
@@ -348,7 +361,7 @@ const newContext = (
         mailbox: nothing(),
         actor,
         behaviour: [],
-        flags: { immutable: true, buffered: true },
+        flags: { immutable: true, buffered: false },
         template
 
     });

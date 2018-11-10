@@ -36,7 +36,7 @@ export interface Module {
     /**
      * address of the module in the system.
      */
-    address:Address,
+    address: Address,
 
     /**
      * parent context for this context.
@@ -77,6 +77,18 @@ export interface Module {
      * connections belonging to the module.
      */
     connections: Connections
+
+    /**
+     * disabled indicates whether the routes of the module should be
+     * served or not.
+     */
+    disabled: boolean,
+
+    /**
+     * redirect if set will force redirect all requests to
+     * the module's routes.
+     */
+    redirect: Maybe<{status:number, location:string}>
 
 }
 

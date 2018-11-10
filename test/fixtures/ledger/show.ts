@@ -5,14 +5,15 @@ const views: { [key: string]: string } = {
 
     index: '<b>Index</b>',
 
+    accounts: 'Chart of Accounts',
+
     balance: '$0.00',
 
-  reports: 'A list of reports',
+    reports: 'A list of reports',
 
-  income: 'income report'
+    income: 'Income Report'
 
 }
 
 export const show = (view: string): Future<Content> =>
     pure(<Content>{ type: 'text/plain', content: views[view] })
-

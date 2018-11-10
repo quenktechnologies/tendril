@@ -14,7 +14,9 @@ import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free, liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
-import { noop } from '@quenk/noni/lib/data/function';
+import { noop, compose,identity } from '@quenk/noni/lib/data/function';
+import { Address } from '@quenk/potoo/lib/actor/address';
+import { Message } from '@quenk/potoo/lib/actor/message';
 import { Module } from '../module';
 import { getModule } from '../state/context';
 
@@ -187,6 +189,52 @@ export class Wait<N, A> extends Action<A>{
 }
 
 /**
+ * Tell action.
+ */
+export class Tell<N, A> extends Action<A>{
+
+    constructor(
+        public to: Address,
+        public message: Message,
+        public next: A) { super(next); }
+
+    map<B>(f: (a: A) => B): Tell<N, B> {
+
+        return new Tell(this.to, this.message, f(this.next));
+
+    }
+
+    exec(ctx: Context<A>): Future<A> {
+
+        return pure(ctx.module.tell(this.to, this.message))
+            .map(() => this.next);
+
+    }
+
+}
+
+/**
+ * Self instruction.
+ */
+export class Self<N, A> extends Action<A> {
+
+    constructor(public next: (a: any) => A) { super(next); }
+
+    map<B>(f: (a: A) => B): Self<N, B> {
+
+        return new Self(compose(this.next, f));
+
+    }
+
+    exec(ctx: Context<A>): Future<A> {
+
+        return pure(this.next(ctx.module.self()));
+
+    }
+
+}
+
+/**
  * next gives the go ahead to interpret the 
  * actions of the next Filter chain.
  *
@@ -207,3 +255,15 @@ export const show = <C>(view: string, context?: C): ActionM<undefined> =>
  */
 export const wait = (f: Future<ActionM<undefined>>): ActionM<undefined> =>
     liftF(new Wait(f, undefined));
+
+/**
+ * tell sends a message to another actor.
+ */
+export const tell = (to: string, m: Message): ActionM<undefined> =>
+    liftF(new Tell(to, m, undefined));
+
+/**
+ * self provides the address of the module.
+ */
+export const self = () : ActionM<Address> =>
+  liftF(new Self(identity));

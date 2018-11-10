@@ -1,4 +1,6 @@
 import * as accounts from './modules/accounts';
+import * as admin from './modules/admin';
+import * as analytics from './modules/analytics';
 import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
 import { static as statc } from 'express';
@@ -8,7 +10,7 @@ import { Module } from '../../../src/app/module';
 import { Template } from '../../../src/app/module/template';
 import { memdb } from '../memgodb';
 import { show } from './show';
-import {  show as view } from '../../../src/app/api';
+import { show as view } from '../../../src/app/api';
 
 export const template: Template = {
 
@@ -99,7 +101,11 @@ export const template: Template = {
 
         modules: {
 
-            accounts: accounts.template
+            accounts: accounts.template,
+
+          admin: admin.template,
+
+          analytics: analytics.template
 
         }
 
