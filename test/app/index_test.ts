@@ -7,8 +7,10 @@ import { template } from '../fixtures/ledger';
 const URL = 'localhost:8888';
 const FILE_STYLE_CSS = `${URL}/style.css`;
 const ROUTE_ACCOUNTS = `${URL}/accounts`;
-const BALANCE_ACCOUNTS = `${ROUTE_ACCOUNTS}/balance`;
+const ROUTE_ACCOUNTS_BALANCE = `${ROUTE_ACCOUNTS}/balance`;
 const ROUTE_REPORTS = `${ROUTE_ACCOUNTS}/reports`;
+const ROUTE_ADMIN = `${URL}/admin`;
+const ROUTE_ANALYTICS = `${URL}/analytics`;
 
 describe('ledger', () => {
 
@@ -41,7 +43,7 @@ describe('ledger', () => {
 
     it('should show parent views if none configured for child', () =>
         request
-            .get(BALANCE_ACCOUNTS)
+            .get(ROUTE_ACCOUNTS_BALANCE)
             .then((r: any) =>
                 must(r.text).be('$0.00')));
 
@@ -68,15 +70,15 @@ describe('ledger', () => {
 
         let fourohfoured = false;
 
-      return  request
+        return request
             .get(`${ROUTE_REPORTS}/xincome`)
-            .then((r: any) => must(r.text).be('income report'))
+            .then((r: any) => must(r.text).be('Income Report'))
             .then(() => request.get(`${ROUTE_REPORTS}/xexpense`))
             .then((r: any) => must(r.text).be('A list of reports'))
             .then(() => request.get(`${ROUTE_REPORTS}/liabilities`))
-            .catch(e => {
+            .catch((e: Error) => {
 
-                if (e.message !== 'Not Found') throw e;
+                if (e.message !== 'Forbidden') throw e;
 
                 fourohfoured = true;
                 return fourohfoured;
@@ -84,5 +86,76 @@ describe('ledger', () => {
             })
 
     });
+
+    it('should allow modules to be recursively disabled', () =>
+        request
+            .get(ROUTE_ACCOUNTS)
+            .then((r: any) => must(r.text).be('Chart of Accounts'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('$0.00'))
+            .then(() => request.delete(ROUTE_ADMIN))
+            .then(() => request.get(ROUTE_ACCOUNTS)
+                .catch((e: Error) => must(e.message).be('Not Found')))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
+                .catch((e: Error) => must(e.message).be('Not Found'))));
+
+    it('should allow modules to enable each other recursively', () =>
+        request
+            .get(ROUTE_ACCOUNTS)
+            .then((r: any) => must(r.text).be('Chart of Accounts'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('$0.00'))
+            .then(() => request.delete(ROUTE_ADMIN))
+            .then(() => request.get(ROUTE_ACCOUNTS)
+                .catch((e: Error) => must(e.message).be('Not Found')))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
+                .catch((e: Error) => must(e.message).be('Not Found')))
+            .then(() => request.post(ROUTE_ADMIN))
+            .then(() => request.get(ROUTE_ACCOUNTS))
+            .then((r: any) => must(r.text).be('Chart of Accounts'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('$0.00')));
+
+    it('should allow modules to redirect each other recursively', () =>
+        request
+            .get(ROUTE_ACCOUNTS)
+            .then((r: any) => must(r.text).be('Chart of Accounts'))
+            .then(() => request.put(ROUTE_ADMIN))
+            .then(() => request.get(ROUTE_ACCOUNTS))
+            .then((r: any) => must(r.text).be('<b>Index</b>'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('<b>Index</b>')));
+
+    it('should stop redirecting enabled modules', () =>
+        request
+            .get(ROUTE_ACCOUNTS)
+            .then((r: any) => must(r.text).be('Chart of Accounts'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('$0.00'))
+            .then(() => request.put(ROUTE_ADMIN))
+            .then(() => request.get(ROUTE_ACCOUNTS))
+            .then((r: any) => must(r.text).be('<b>Index</b>'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('<b>Index</b>'))
+            .then(() => request.post(ROUTE_ADMIN))
+            .then(() => request.get(ROUTE_ACCOUNTS))
+            .then((r: any) => must(r.text).be('Chart of Accounts'))
+            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+            .then((r: any) => must(r.text).be('$0.00')))
+
+    it('should acknowledge some modules start disabled', () =>
+        request
+            .get(ROUTE_ANALYTICS)
+            .catch((e: Error) => must(e.message).be('Not Found')));
+
+    it('should spawn child actors', () => {
+
+        must(process.env.CHILD_RUNNING).be('yes');
+
+    });
+
+    it('should stop child actors', () =>
+        liftP(app.stop())
+            .then(() => must(process.env.CHILD_RUNNING).be('no')));
 
 });

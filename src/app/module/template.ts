@@ -17,6 +17,11 @@ export type Connector = (...options: any[]) => connection.Connection;
 export interface Template extends T.Template<Context> {
 
     /**
+     * disabled indicates whether the module should be disabled or not.
+     */
+    disabled?: boolean,
+
+    /**
      * create a Module.
      *
      * Overrides the base function to specifically provide a module.
@@ -37,11 +42,6 @@ export interface Template extends T.Template<Context> {
      * app configuration settings.
      */
     app?: app.Configuration,
-
-    /**
-     * actors the module wants spawned. 
-     */
-    actors?: T.Template<Context>[]
 
 }
 

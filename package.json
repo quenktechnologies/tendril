@@ -1,11 +1,11 @@
 {
   "name": "@quenk/tendril",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Actor oriented web framework.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --opts mocha.opts test"
+    "test": "./node_modules/.bin/mocha --opts mocha.opts 'test/**/*_test.ts'"
   },
   "author": "Quenk Technologies Limited <info@quenk.com> (http://quenk.com)",
   "license": "Apache-2.0",
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@quenk/noni": "^1.2.5",
-    "@quenk/potoo": "^1.4.0",
+    "@quenk/potoo": "^1.4.2",
     "express": "^4.16.4"
   }
 }

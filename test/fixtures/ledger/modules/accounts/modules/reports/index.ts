@@ -1,10 +1,9 @@
-import * as express from 'express';
 import * as filters from './filters';
 import { pure } from '@quenk/noni/lib/control/monad/future';
 import { Template } from '../../../../../../../src/app/module/template';
 import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
-import { Context, show } from '../../../../../../../src/app/api';
+import {  show } from '../../../../../../../src/app/api';
 
 export const template: Template = {
 
@@ -14,21 +13,17 @@ export const template: Template = {
 
     app: {
 
-        routes: (m: Module, app: express.Application) => {
+        routes: (m: Module) => {
 
-            app.get('/', (req, res) =>
-                new Context(m, req, res, [], () => pure(show('reports'))).run())
+          m.install('get', '/',  [], () => pure(show('reports')));
 
-            app.get('/:report', (req, res) =>
-              new Context(m, req, res, [
-                filters.modify,
-                filters.isReport,
-                filters.quickShow
-              ], () => pure(show('reports'))).run())
+          m.install('get', '/:report',  [
+                    filters.modify,
+                    filters.isReport,
+                    filters.quickShow
+          ], () => pure(show('reports')));
 
-
-
-        },
+        }
 
     }
 
