@@ -1,14 +1,14 @@
 import * as express from 'express';
 import * as context from '@quenk/potoo/lib/actor/context';
-import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
-import { Actor } from '@quenk/potoo/lib/actor';
+import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { Template } from '@quenk/potoo/lib/actor/template';
 import { State, get } from '@quenk/potoo/lib/actor/system/state';
 import { Hooks } from '../hooks';
 import { Routes } from '../configuration';
 import { Show } from '../show';
-import { Module } from '../module';
+import { Module as M } from '../module';
+import { Connections } from '../connection';
+import { Middlewares } from '../middleware';
 
 /**
  * Context used for actor entries in the Application.
@@ -19,14 +19,14 @@ export interface Context extends context.Context {
      * module contains module specific context information
      * for actors that are also modules.
      */
-    module: Maybe<ModuleContext>
+    module: Maybe<Module>
 
 }
 
 /**
- * ModuleContext stores information related to modules.
+ * Module stores information related to modules.
  */
-export interface ModuleContext {
+export interface Module {
 
     /**
      * path is the mount point of the module.
@@ -34,9 +34,19 @@ export interface ModuleContext {
     path: string,
 
     /**
+     * address of the module in the system.
+     */
+    address: Address,
+
+    /**
+     * parent context for this context.
+     */
+    parent: Maybe<Module>,
+
+    /**
      * module instance
      */
-    module: Module
+    module: M
 
     /**
      * app (express) for the module.
@@ -51,7 +61,7 @@ export interface ModuleContext {
     /**
      * middleware configuration for the module.
      */
-    middleware: string[],
+    middleware: { enabled: string[], available: Middlewares },
 
     /**
      * routes (express) for the module.
@@ -61,7 +71,24 @@ export interface ModuleContext {
     /**
      * show function configured for the module (if any).
      */
-    show: Maybe<Show>
+    show: Maybe<Show>,
+
+    /**
+     * connections belonging to the module.
+     */
+    connections: Connections
+
+    /**
+     * disabled indicates whether the routes of the module should be
+     * served or not.
+     */
+    disabled: boolean,
+
+    /**
+     * redirect if set will force redirect all requests to
+     * the module's routes.
+     */
+    redirect: Maybe<{status:number, location:string}>
 
 }
 
@@ -69,22 +96,5 @@ export interface ModuleContext {
  * getModule provides a module given an address.
  */
 export const getModule =
-    (s: State<Context>, addr: Address): Maybe<ModuleContext> =>
+    (s: State<Context>, addr: Address): Maybe<Module> =>
         get(s, addr).chain((c: Context) => c.module);
-
-/**
- * newContext produces a new plain context.
- */
-export const newContext = (
-    module: Maybe<ModuleContext>,
-    actor: Actor<Context>,
-    template: Template<Context>): Context => ({
-
-        module,
-        mailbox: nothing(),
-        actor,
-        behaviour: [],
-        flags: { immutable: true, buffered: true },
-        template
-
-    });

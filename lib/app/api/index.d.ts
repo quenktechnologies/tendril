@@ -12,6 +12,8 @@ import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free } from '@quenk/noni/lib/control/monad/free';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
+import { Address } from '@quenk/potoo/lib/actor/address';
+import { Message } from '@quenk/potoo/lib/actor/message';
 import { Module } from '../module';
 /**
  * ActionM represents a sequence of actions the app takes
@@ -99,6 +101,26 @@ export declare class Wait<N, A> extends Action<A> {
     exec(ctx: Context<A>): Future<A>;
 }
 /**
+ * Tell action.
+ */
+export declare class Tell<N, A> extends Action<A> {
+    to: Address;
+    message: Message;
+    next: A;
+    constructor(to: Address, message: Message, next: A);
+    map<B>(f: (a: A) => B): Tell<N, B>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
+ * Self instruction.
+ */
+export declare class Self<N, A> extends Action<A> {
+    next: (a: any) => A;
+    constructor(next: (a: any) => A);
+    map<B>(f: (a: A) => B): Self<N, B>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
  * next gives the go ahead to interpret the
  * actions of the next Filter chain.
  *
@@ -115,3 +137,11 @@ export declare const show: <C>(view: string, context?: C | undefined) => Free<Ac
  * action to carry out.
  */
 export declare const wait: (f: Future<Free<Action<any>, undefined>>) => Free<Action<any>, undefined>;
+/**
+ * tell sends a message to another actor.
+ */
+export declare const tell: (to: string, m: any) => Free<Action<any>, undefined>;
+/**
+ * self provides the address of the module.
+ */
+export declare const self: () => Free<Action<any>, string>;

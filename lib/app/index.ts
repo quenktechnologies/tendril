@@ -4,26 +4,31 @@ import * as show from './show';
 import * as hooks from './hooks';
 import * as conn from './connection';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
-import { merge, map, values } from '@quenk/noni/lib/data/record';
-import { Maybe, just, fromNullable, nothing } from '@quenk/noni/lib/data/maybe';
+import { join } from 'path';
+import { merge, reduce, map, values } from '@quenk/noni/lib/data/record';
+import {
+    Maybe,
+    just,
+    fromNullable,
+    fromBoolean,
+    nothing
+} from '@quenk/noni/lib/data/maybe';
 import { Either, left, right } from '@quenk/noni/lib/data/either'
 import { cons, noop } from '@quenk/noni/lib/data/function';
 import {
     Future,
     pure,
+    raise,
     parallel,
     attempt
 } from '@quenk/noni/lib/control/monad/future';
-import {
-    State,
-    getParent,
-    getChildren,
-    getAddress,
-    get,
-    put
-} from '@quenk/potoo/lib/actor/system/state';
+import { State, getAddress, getInstance, put } from '@quenk/potoo/lib/actor/system/state';
 import { Envelope } from '@quenk/potoo/lib/actor/mailbox';
+import { Message } from '@quenk/potoo/lib/actor/message';
 import { Drop } from '@quenk/potoo/lib/actor/system/op/drop';
+import { Tell } from '@quenk/potoo/lib/actor/system/op/tell';
+import { Spawn } from '@quenk/potoo/lib/actor/system/op/spawn';
+import { Kill } from '@quenk/potoo/lib/actor/system/op/kill';
 import { System } from '@quenk/potoo/lib/actor/system';
 import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
@@ -32,7 +37,7 @@ import { Executor, Op, log } from '@quenk/potoo/lib/actor/system/op';
 import { Server, Configuration } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
-import { Context, ModuleContext, newContext } from './state/context';
+import { Context, Module as ModuleContext, getModule } from './state/context';
 
 /**
  * App is the main class of the framework.
@@ -42,100 +47,19 @@ import { Context, ModuleContext, newContext } from './state/context';
  */
 export class App implements System<Context>, Executor<Context> {
 
-    constructor(public main: Template, public configuration: config.Configuration) { }
+    constructor(
+        public main: Template,
+        public configuration: config.Configuration = {}) { }
 
-    public state: State<Context> = { contexts: {}, routes: {} };
+    state: State<Context> = newState(this);
 
     stack: Op<Context>[] = [];
 
     running: boolean = false;
 
-    express: express.Application = express();
-
     server: Server = new Server(defaultServerConf(this.main.server));
 
     pool: Pool = new Pool({});
-
-    middleware: { [key: string]: mware.Middleware } = {};
-
-    paths: string[] = [];
-
-    initialize(): Future<App> {
-
-        return parallel(values<Future<void>>(map(this.state.contexts,
-            initContext))).map(cons(<App>this));
-
-    }
-
-    connections(): Future<App> {
-
-        return this
-            .pool
-            .open()
-            .chain(() => parallel(values(map(this.state.contexts, connectedFrame))))
-            .map(cons(<App>this));
-
-    }
-
-    middlewares(): Future<App> {
-
-        map(this.state.contexts, f =>
-            f.module.map(m => installMiddleware(this, m)));
-
-        return pure(<App>this);
-
-    }
-
-    routing(): Future<App> {
-
-        return attempt(() => map(this.state.contexts, f =>
-            f.module.map(m => m.routes(m.module, m.app)))).map(cons(<App>this));
-
-    }
-
-    linking() {
-
-        map(this.state.contexts, (pc, k) =>
-            map(getChildren(this.state, k), (c: Context, path) =>
-                pc.module.chain(m => c.module.map(cm => m.app.use(path, cm.app)))));
-
-        get(this.state, this.paths[0])
-            .chain(c => c.module)
-            .map(m => this.express.use(m.app));
-
-        return pure(<App>this);
-
-    }
-
-    spawn(path: string, tmpl: Template): App {
-
-        let actor = tmpl.create(this);
-
-        let mctx: ModuleContext = {
-            path,
-            module: actor,
-            app: express(),
-            hooks: defaultHooks(tmpl),
-            middleware: defaultEnabledMiddleware(tmpl),
-            routes: defaultRoutes(tmpl),
-            show: defaultShow(tmpl, path, this)
-        };
-
-        map(defaultConnections(tmpl),
-            (c: conn.Connection, k) => this.pool.add(k, c));
-
-        this.paths.push(path);
-        this.middleware = merge(this.middleware, defaultMiddlware(tmpl));
-
-        put(this.state, path, newContext(just(mctx), actor, tmpl));
-
-        if (tmpl.app && tmpl.app.modules)
-            map(tmpl.app.modules, (m, k) =>
-                this.spawn(`${path}${path === '/' ? '' : '/'}${k}`, m));
-
-        return this;
-
-    }
 
     allocate(t: PotooTemplate<Context>): Context {
 
@@ -174,50 +98,178 @@ export class App implements System<Context>, Executor<Context> {
 
     run(): void {
 
-        let { level, logger } = <config.LogPolicy>this.configuration.log;
+        let policy = <config.LogPolicy>(this.configuration.log || {});
 
         if (this.running) return;
 
         this.running = true;
 
         while (this.stack.length > 0)
-            log(level || 0, logger || console, <Op<Context>>this.stack.pop()).exec(this);
+            log(policy.level || 1, policy.logger || console,
+                <Op<Context>>this.stack.pop()).exec(this);
 
         this.running = false;
 
     }
 
+    spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
+
+        let module = tmpl.create(this);
+        let app = express();
+        let address = defaultAddress(path, parent);
+
+        let mctx: ModuleContext = {
+            path,
+            address,
+            parent,
+            module,
+            app,
+            hooks: defaultHooks(tmpl),
+            middleware: {
+                enabled: defaultEnabledMiddleware(tmpl),
+                available: defaultAvailableMiddleware(tmpl)
+            },
+            routes: defaultRoutes(tmpl),
+            show: defaultShow(tmpl, parent),
+            connections: defaultConnections(tmpl),
+            disabled: tmpl.disabled || false,
+            redirect: nothing()
+        };
+
+        put(this.state, address, module.init(newContext(just(mctx), module, tmpl)));
+
+        if (tmpl.app && tmpl.app.modules)
+            map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
+
+        if (Array.isArray(tmpl.children))
+            tmpl.children.forEach(c => this.exec(new Spawn(module, c)));
+
+        return this;
+
+    }
+
+    /**
+     * tell a message to an actor in the system.
+     */
+    tell(to: Address, msg: Message): App {
+
+        return this.exec(new Tell(to, '$', msg));
+
+    }
+
+    /**
+     * initialize the App
+     *
+     * Invokes the init hooks of all modules.
+     */
+    initialize(): Future<App> {
+
+        return parallel(values<Future<void>>(map(this.state.contexts,
+            initContext))).map(cons(<App>this));
+
+    }
+
+    /**
+     * connections opens all the connections the modules of the App have
+     * declared.
+     *
+     * Connections are open in parallel, any failing will prevent the whole
+     * application from booting.
+     */
+    connections(): Future<App> {
+
+        return reduce(this.state.contexts, this.pool, (p, c) =>
+            c
+                .module
+                .map(m => map(m.connections, (c: conn.Connection, k) => p.add(k, c)))
+                .map(cons(p))
+                .orJust(() => p)
+                .get())
+            .open()
+            .chain(() => parallel(values(map(this.state.contexts, dispatchConnected))))
+            .map(cons(<App>this));
+
+    }
+
+    /**
+     * middlewares installs the middleware each module declares.
+     */
+    middlewares(): Future<App> {
+
+        return reduce(this.state.contexts, pure(<App>this), (p, c) =>
+            c
+                .module
+                .map(m =>
+                    getMwares(m)
+                        .map(list => m.app.use.apply(m.app, list))
+                        .orRight(e => raise(e))
+                        .takeRight())
+                .orJust(() => p)
+                .get());
+
+    }
+
+    /**
+     * routing installs all the routes of each module and creates a tree
+     * out of express.
+     */
+    routing(): Future<App> {
+
+        return attempt(() => map(this.state.contexts, c =>
+            c
+                .module
+                .map(m => {
+
+                    m.routes(m.module);
+                    m.parent.map(p => p.app.use(join('/', m.path), m.app));
+
+                })))
+            .map(cons(<App>this));
+
+    }
+
+    /**
+     * listen for incomming connections.
+     */
+    listen() {
+
+        return getModule(this.state, this.main.id)
+            .map(m => this.server.listen(m.app))
+            .get();
+
+    }
+
+    /**
+     * start the App.
+     */
     start(): Future<App> {
 
         return this
-            .spawn(this.main.id, this.main)
+            .spawn(this.main.id, nothing(), this.main)
             .initialize()
             .chain(() => this.connections())
             .chain(() => this.middlewares())
             .chain(() => this.routing())
-            .chain(() => this.linking())
-            .chain(() => this.server.listen(this.express))
+            .chain(() => this.listen())
             .map(cons(<App>this));
 
     }
 
     stop(): Future<void> {
 
-        //@todo stop child actors
-
         return this
             .server
             .stop()
             .chain(() => this.pool.close())
+            .map(() =>
+                getInstance(this.state, this.main.id)
+                    .map(actor => this.exec(new Kill(actor, this.main.id))))
             .map(() => {
 
                 this.stack = [];
                 this.state = { contexts: {}, routes: {} };
                 this.running = false;
-                this.express = express();
                 this.pool = new Pool({});
-                this.middleware = {};
-                this.paths = [];
 
             });
 
@@ -228,6 +280,13 @@ export class App implements System<Context>, Executor<Context> {
 const defaultServerConf = (conf: Configuration | undefined): Configuration =>
     merge({ port: 2407, host: '0.0.0.0' }, (conf == null) ? {} : conf);
 
+const defaultAddress = (path: string, parent: Maybe<ModuleContext>) =>
+    parent
+        .map(m => m.address)
+        .map(a => join(a, path))
+        .orJust(() => path)
+        .get();
+
 const defaultHooks = (t: Template) => (t.app && t.app.on) ?
     t.app.on : {}
 
@@ -236,7 +295,7 @@ const defaultConnections = (t: Template): conn.Connections => t.connections ?
         c.connector.apply(null, c.options || []) :
         c.connector) : {};
 
-const defaultMiddlware = (t: Template) =>
+const defaultAvailableMiddleware = (t: Template): mware.Middlewares =>
     (t.app && t.app.middleware && t.app.middleware.available) ?
         map(t.app.middleware.available, m =>
             m.provider.apply(null, m.options || [])) : {}
@@ -248,12 +307,10 @@ const defaultEnabledMiddleware = (t: Template) =>
 const defaultRoutes = (t: Template) =>
     (t.app && t.app.routes) ? t.app.routes : noop;
 
-const defaultShow = (t: Template, path: Address, app: App): Maybe<show.Show> =>
+const defaultShow = (t: Template, parent: Maybe<ModuleContext>): Maybe<show.Show> =>
     (t.app && t.app.views) ?
-        just(t.app.views.provider.apply(null, t.app.views.options || [])) : (
-            getParent(app.state, path)
-                .chain(f => f.module)
-                .chain(m => m.show));
+        just(t.app.views.provider.apply(null, t.app.views.options || [])) :
+        parent.chain(m => m.show);
 
 const initContext = (f: Context): Future<void> =>
     f
@@ -263,7 +320,7 @@ const initContext = (f: Context): Future<void> =>
         .orJust(() => pure(noop()))
         .get();
 
-const connectedFrame = (f: Context): Future<void> =>
+const dispatchConnected = (f: Context): Future<void> =>
     f
         .module
         .chain(m => fromNullable(m.hooks.connected))
@@ -271,22 +328,58 @@ const connectedFrame = (f: Context): Future<void> =>
         .orJust(() => pure(noop()))
         .get();
 
-const installMiddleware = (app: App, m: ModuleContext): Either<Error, void> =>
+const getMwares = (m: ModuleContext): Either<Error, mware.Middleware[]> =>
     m
         .middleware
-        .reduce(verifyMiddleware(app), right([]))
-        .map((list: mware.Middleware[]) => (list.length > 0) ?
-            m.app.use.apply(m.app, list) :
-            right(noop()))
-        .map(noop);
+        .enabled
+        .reduce(swap(m), right([preroute(m)]))
 
-const verifyMiddleware =
-    (app: App) => (p: Either<Error, mware.Middleware[]>, c: string) =>
-        p.chain(verifyMiddleware_(c, app.middleware));
+const preroute = (module: ModuleContext) =>
+    (_: express.Request, res: express.Response, next: express.NextFunction) =>
+        fromBoolean(module.disabled)
+            .map(() => res.status(404).end())
+            .orElse(() => module.redirect.map(r => res.redirect(r.status, r.location)))
+            .orJust(() => next());
 
-const verifyMiddleware_ =
-    (curr: string, wares: mware.Middlewares) => (list: mware.Middleware[])
-        : Either<Error, mware.Middleware[]> =>
-        wares.hasOwnProperty(curr) ?
-            right(list.concat(wares[curr])) :
-            left(new Error(`Unknown wares "${curr}"!`));
+const swap = (m: ModuleContext) => (p: Either<Error, mware.Middleware[]>, c: string)
+    : Either<Error, mware.Middleware[]> =>
+    m.middleware.available.hasOwnProperty(c) ?
+        p
+            .map(concatMware(m, c)) :
+        m
+            .parent
+            .map(parent => swap(parent)(p, c))
+            .orJust(errMware(m.path, c))
+            .get();
+
+const concatMware = (m: ModuleContext, key: string) => (list: mware.Middleware[]) =>
+    list.concat(m.middleware.available[key])
+
+const errMware = (path: string, key: string) => ()
+    : Either<Error, mware.Middleware[]> =>
+    left(new Error(`${path}: Unknown middleware "${key}"!`));
+
+const newState = (app: App): State<Context> => ({
+
+    contexts: {
+
+        $: newContext(nothing(), app, { id: '$', create: () => new App(app.main) })
+
+    },
+    routes: {}
+
+});
+
+const newContext = (
+    module: Maybe<ModuleContext>,
+    actor: Actor<Context>,
+    template: PotooTemplate<Context>): Context => ({
+
+        module,
+        mailbox: nothing(),
+        actor,
+        behaviour: [],
+        flags: { immutable: true, buffered: false },
+        template
+
+    });
