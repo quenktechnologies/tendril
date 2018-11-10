@@ -22,18 +22,16 @@ import {
     parallel,
     attempt
 } from '@quenk/noni/lib/control/monad/future';
-import { State, getAddress, getInstance, put } from '@quenk/potoo/lib/actor/system/state';
-import { Envelope } from '@quenk/potoo/lib/actor/mailbox';
+import { State, getInstance, put } from '@quenk/potoo/lib/actor/system/state';
 import { Message } from '@quenk/potoo/lib/actor/message';
-import { Drop } from '@quenk/potoo/lib/actor/system/op/drop';
 import { Tell } from '@quenk/potoo/lib/actor/system/op/tell';
 import { Spawn } from '@quenk/potoo/lib/actor/system/op/spawn';
 import { Kill } from '@quenk/potoo/lib/actor/system/op/kill';
-import { System } from '@quenk/potoo/lib/actor/system';
+import { AbstractSystem } from '@quenk/potoo/lib/actor/system';
 import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
-import { ADDRESS_DISCARD, Address } from '@quenk/potoo/lib/actor/address';
-import { Executor, Op, log } from '@quenk/potoo/lib/actor/system/op';
+import { Address } from '@quenk/potoo/lib/actor/address';
+import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Server, Configuration } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
@@ -45,11 +43,11 @@ import { Context, Module as ModuleContext, getModule } from './state/context';
  * This class functions as an actor system and your
  * application.
  */
-export class App implements System<Context>, Executor<Context> {
+export class App extends AbstractSystem<Context> {
 
     constructor(
         public main: Template,
-        public configuration: config.Configuration = {}) { }
+        public configuration: config.Configuration = {}) { super(configuration); }
 
     state: State<Context> = newState(this);
 
@@ -68,50 +66,12 @@ export class App implements System<Context>, Executor<Context> {
 
     }
 
-    init(c: Context): Context {
-
-        return c;
-
-    }
-
-    identify(actor: Actor<Context>): Address {
-
-        return getAddress(this.state, actor)
-            .orJust(() => ADDRESS_DISCARD)
-            .get();
-
-    }
-
-    exec(code: Op<Context>): App {
-
-        this.stack.push(code);
-        this.run();
-        return this;
-
-    }
-
-    accept({ to, from, message }: Envelope): App {
-
-        return this.exec(new Drop(to, from, message));
-
-    }
-
-    run(): void {
-
-        let policy = <config.LogPolicy>(this.configuration.log || {});
-
-        if (this.running) return;
-
-        this.running = true;
-
-        while (this.stack.length > 0)
-            log(policy.level || 1, policy.logger || console,
-                <Op<Context>>this.stack.pop()).exec(this);
-
-        this.running = false;
-
-    }
-
+  /**
+   * spawn a Module (not a generic actor) from a template.
+   *
+   * A module may or may not have a parent. In the case of the latter the
+   * module should be the root module of tha App.
+   */
     spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
 
         let module = tmpl.create(this);
@@ -153,7 +113,7 @@ export class App implements System<Context>, Executor<Context> {
      */
     tell(to: Address, msg: Message): App {
 
-        return this.exec(new Tell(to, '$', msg));
+        return <App>this.exec(new Tell(to, '$', msg));
 
     }
 

@@ -2,13 +2,11 @@ import * as config from '@quenk/potoo/lib/actor/system/configuration';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { State } from '@quenk/potoo/lib/actor/system/state';
-import { Envelope } from '@quenk/potoo/lib/actor/mailbox';
 import { Message } from '@quenk/potoo/lib/actor/message';
-import { System } from '@quenk/potoo/lib/actor/system';
-import { Actor } from '@quenk/potoo/lib/actor';
+import { AbstractSystem } from '@quenk/potoo/lib/actor/system';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { Executor, Op } from '@quenk/potoo/lib/actor/system/op';
+import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Server } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
@@ -19,7 +17,7 @@ import { Context, Module as ModuleContext } from './state/context';
  * This class functions as an actor system and your
  * application.
  */
-export declare class App implements System<Context>, Executor<Context> {
+export declare class App extends AbstractSystem<Context> {
     main: Template;
     configuration: config.Configuration;
     constructor(main: Template, configuration?: config.Configuration);
@@ -29,11 +27,6 @@ export declare class App implements System<Context>, Executor<Context> {
     server: Server;
     pool: Pool;
     allocate(t: PotooTemplate<Context>): Context;
-    init(c: Context): Context;
-    identify(actor: Actor<Context>): Address;
-    exec(code: Op<Context>): App;
-    accept({ to, from, message }: Envelope): App;
-    run(): void;
     spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App;
     /**
      * tell a message to an actor in the system.
