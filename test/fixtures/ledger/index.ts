@@ -11,6 +11,7 @@ import { Template } from '../../../src/app/module/template';
 import { memdb } from '../memgodb';
 import { show } from './show';
 import { show as view } from '../../../src/app/api';
+import {Child} from '../child';
 
 export const template: Template = {
 
@@ -103,12 +104,14 @@ export const template: Template = {
 
             accounts: accounts.template,
 
-          admin: admin.template,
+            admin: admin.template,
 
-          analytics: analytics.template
+            analytics: analytics.template
 
         }
 
-    }
+    },
+
+    children: [{id: 'child', create: (app:App) => new Child(app)}]
 
 }

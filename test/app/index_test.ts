@@ -148,4 +148,14 @@ describe('ledger', () => {
             .get(ROUTE_ANALYTICS)
             .catch((e: Error) => must(e.message).be('Not Found')));
 
+    it('should spawn child actors', () => {
+
+        must(process.env.CHILD_RUNNING).be('yes');
+
+    });
+
+    it('should stop child actors', () =>
+        liftP(app.stop())
+            .then(() => must(process.env.CHILD_RUNNING).be('no')));
+
 });

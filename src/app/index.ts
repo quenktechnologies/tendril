@@ -22,11 +22,13 @@ import {
     parallel,
     attempt
 } from '@quenk/noni/lib/control/monad/future';
-import { State, getAddress, put } from '@quenk/potoo/lib/actor/system/state';
+import { State, getAddress, getInstance, put } from '@quenk/potoo/lib/actor/system/state';
 import { Envelope } from '@quenk/potoo/lib/actor/mailbox';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Drop } from '@quenk/potoo/lib/actor/system/op/drop';
 import { Tell } from '@quenk/potoo/lib/actor/system/op/tell';
+import { Spawn } from '@quenk/potoo/lib/actor/system/op/spawn';
+import { Kill } from '@quenk/potoo/lib/actor/system/op/kill';
 import { System } from '@quenk/potoo/lib/actor/system';
 import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
@@ -49,7 +51,7 @@ export class App implements System<Context>, Executor<Context> {
         public main: Template,
         public configuration: config.Configuration = {}) { }
 
-    state: State<Context> = { contexts: {}, routes: {} };
+    state: State<Context> = newState(this);
 
     stack: Op<Context>[] = [];
 
@@ -138,6 +140,9 @@ export class App implements System<Context>, Executor<Context> {
 
         if (tmpl.app && tmpl.app.modules)
             map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
+
+        if (Array.isArray(tmpl.children))
+            tmpl.children.forEach(c => this.exec(new Spawn(module, c)));
 
         return this;
 
@@ -252,11 +257,13 @@ export class App implements System<Context>, Executor<Context> {
 
     stop(): Future<void> {
 
-        //@todo stop child actors
         return this
             .server
             .stop()
             .chain(() => this.pool.close())
+            .map(() =>
+                getInstance(this.state, this.main.id)
+                    .map(actor => this.exec(new Kill(actor, this.main.id))))
             .map(() => {
 
                 this.stack = [];
@@ -351,6 +358,17 @@ const concatMware = (m: ModuleContext, key: string) => (list: mware.Middleware[]
 const errMware = (path: string, key: string) => ()
     : Either<Error, mware.Middleware[]> =>
     left(new Error(`${path}: Unknown middleware "${key}"!`));
+
+const newState = (app: App): State<Context> => ({
+
+    contexts: {
+
+        $: newContext(nothing(), app, { id: '$', create: () => new App(app.main) })
+
+    },
+    routes: {}
+
+});
 
 const newContext = (
     module: Maybe<ModuleContext>,
