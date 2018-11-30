@@ -23,14 +23,11 @@ import { Module } from '../module';
  */
 export declare type ActionM<A> = Free<Action<any>, A>;
 /**
- * Filter functions are applied to the request
- * just before handling.
+ * Filter functions are applied to the request.
+ *
+ * These can either transform the request or terminate.
  */
 export declare type Filter<A> = (r: Request) => Future<ActionM<A>>;
-/**
- * Handler functions terminate the client request.
- */
-export declare type Handler<A> = (r: Request) => Future<ActionM<A>>;
 /**
  * Request represents a client request.
  */
@@ -46,8 +43,7 @@ export declare class Context<A> {
     request: express.Request;
     response: express.Response;
     filters: Filter<A>[];
-    handler: Handler<A>;
-    constructor(module: Module, request: express.Request, response: express.Response, filters: Filter<A>[], handler: Handler<A>);
+    constructor(module: Module, request: express.Request, response: express.Response, filters: Filter<A>[]);
     next(): Future<ActionM<A>>;
     /**
      * run processes the next filter or action in the chain.

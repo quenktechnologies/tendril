@@ -66,6 +66,12 @@ export class App extends AbstractSystem<Context> {
 
     }
 
+  /**
+   * spawn a Module (not a generic actor) from a template.
+   *
+   * A module may or may not have a parent. In the case of the latter the
+   * module should be the root module of tha App.
+   */
     spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
 
         let module = tmpl.create(this);
@@ -107,7 +113,7 @@ export class App extends AbstractSystem<Context> {
      */
     tell(to: Address, msg: Message): App {
 
-      return <App>this.exec(new Tell(to, '$', msg));
+        return <App>this.exec(new Tell(to, '$', msg));
 
     }
 
