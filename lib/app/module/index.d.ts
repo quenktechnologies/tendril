@@ -1,7 +1,7 @@
 import { Immutable, Case } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../state/context';
 import { SupportedMethod } from '../op/route';
-import { Handler, Filter } from '../api';
+import { Filter } from '../api';
 import { App } from '../';
 /**
  * Messages supported by modules.
@@ -49,6 +49,6 @@ export declare class Module extends Immutable<Messages<any>, Context> {
      *
      * This is done as sys op to provide transparency.
      */
-    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[], handler: Handler<A>): void;
+    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]): void;
     run(): void;
 }

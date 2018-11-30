@@ -4,7 +4,7 @@ import * as codes from './';
 import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Context, getModule } from '../state/context';
-import { Filter, Handler, Context as RequestContext } from '../api';
+import { Filter, Context as RequestContext } from '../api';
 import { Module } from '../module';
 import { App } from '../';
 
@@ -23,8 +23,7 @@ export class Route<A> extends Op<Context> {
         public module: Address,
         public method: SupportedMethod,
         public path: string,
-        public filters: Filter<A>[],
-        public handler: Handler<A>) { super(); }
+        public filters: Filter<A>[]) { super(); }
 
     code = codes.OP_ROUTE;
 
@@ -66,7 +65,7 @@ export class Route<A> extends Op<Context> {
 
 }
 
-const dispatch = <A>
-    (r: Route<A>, m: Module) =>
-    (req: express.Request, res: express.Response) =>
-        new RequestContext(m, req, res, r.filters, r.handler).run();
+const dispatch =
+    <A>(r: Route<A>, m: Module) =>
+        (req: express.Request, res: express.Response) =>
+            new RequestContext(m, req, res, r.filters.slice()).run();

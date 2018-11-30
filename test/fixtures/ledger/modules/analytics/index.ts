@@ -16,7 +16,7 @@ export const template: Template = {
 
         routes: (m: Module) => {
 
-            m.install('get', '/', [], () => pure(show('analytics')));
+            m.install('get', '/', [ () => pure(show('analytics'))]);
 
         }
 

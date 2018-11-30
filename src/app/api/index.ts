@@ -14,7 +14,7 @@ import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free, liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
-import { noop, compose,identity } from '@quenk/noni/lib/data/function';
+import { noop, compose, identity } from '@quenk/noni/lib/data/function';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Module } from '../module';
@@ -29,15 +29,11 @@ import { getModule } from '../state/context';
 export type ActionM<A> = Free<Action<any>, A>;
 
 /**
- * Filter functions are applied to the request
- * just before handling.
+ * Filter functions are applied to the request.
+ * 
+ * These can either transform the request or terminate.
  */
 export type Filter<A> = (r: Request) => Future<ActionM<A>>;
-
-/**
- * Handler functions terminate the client request.
- */
-export type Handler<A> = (r: Request) => Future<ActionM<A>>;
 
 /**
  * Request represents a client request.
@@ -55,16 +51,12 @@ export class Context<A> {
         public module: Module,
         public request: express.Request,
         public response: express.Response,
-        public filters: Filter<A>[],
-        public handler: Handler<A>) { }
+        public filters: Filter<A>[]) { }
 
     next(): Future<ActionM<A>> {
-
-        let f = (this.filters.length > 0) ?
-            <Filter<A>>this.filters.pop() :
-            this.handler;
-
-        return f(this.request);
+        return (this.filters.length > 0) ?
+            (<Filter<A>>this.filters.shift())(this.request) :
+            raise(new Error(`${this.module.self()}: No more filters!`));
 
     }
 
@@ -265,5 +257,5 @@ export const tell = (to: string, m: Message): ActionM<undefined> =>
 /**
  * self provides the address of the module.
  */
-export const self = () : ActionM<Address> =>
-  liftF(new Self(identity));
+export const self = (): ActionM<Address> =>
+    liftF(new Self(identity));

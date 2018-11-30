@@ -4,7 +4,7 @@ import { Route, SupportedMethod } from '../op/route';
 import { Disable as DisableOp } from '../op/disable';
 import { Enable as EnableOp } from '../op/enable';
 import { Redirect as RedirectOp } from '../op/redirect';
-import { Handler, Filter } from '../api';
+import { Filter } from '../api';
 import { App } from '../';
 
 /**
@@ -62,13 +62,9 @@ export class Module extends Immutable<Messages<any>, Context> {
      *
      * This is done as sys op to provide transparency.
      */
-    install<A>(
-        method: SupportedMethod,
-        path: string,
-        filters: Filter<A>[],
-        handler: Handler<A>) {
+    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]) {
 
-        this.system.exec(new Route(this.self(), method, path, filters, handler));
+        this.system.exec(new Route(this.self(), method, path, filters));
 
     }
 

@@ -16,9 +16,9 @@ export const template: Template = {
 
         routes: (m: Module) => {
 
-            m.install('get', '/', [], ()=> pure(show('accounts')));
-            m.install('post', '/', [], handlers.create);
-            m.install('get', '/balance', [], () => pure(show('balance')));
+            m.install('get', '/', [()=> pure(show('accounts'))]);
+            m.install('post', '/', [handlers.create]);
+            m.install('get', '/balance', [() => pure(show('balance'))]);
 
         },
 
