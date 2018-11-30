@@ -7,15 +7,22 @@ const reports = ['expense', 'income', 'assets'];
 export const modify = (r: Request): Future<ActionM<undefined>> => {
 
     r.params['report'] = r.params['report'].split('x').join('');
-    return pure(next(r));
+console.error('well look dry backanal          ', r.params['report']);
+  return pure(next(r));
 
 }
 
-export const isReport = (r: Request): Future<ActionM<undefined>> =>
-    (reports.indexOf(r.params['report']) > -1) ?
+export const isReport = (r: Request): Future<ActionM<undefined>> => {
+  console.error(`is r.params ${r.params['report']}`);
+  return    (reports.indexOf(r.params['report']) > -1) ?
         pure(next(r)) :
-        pure(forbidden());
+    pure(forbidden());
 
-export const quickShow = (r: Request): Future<ActionM<undefined>> =>
-    pure((r.params['report'] === 'income') ? show('income') : next(r));
+}
+
+export const quickShow = (r: Request): Future<ActionM<undefined>> => {
+    console.error(`going to quickly show ${r.params['report']} becuse we can !`)
+    return pure((r.params['report'] === 'income') ? show('income') : next(r));
+
+}
 

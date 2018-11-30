@@ -3,7 +3,7 @@ import { pure } from '@quenk/noni/lib/control/monad/future';
 import { Template } from '../../../../../../../src/app/module/template';
 import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
-import {  show } from '../../../../../../../src/app/api';
+import { show } from '../../../../../../../src/app/api';
 
 export const template: Template = {
 
@@ -15,13 +15,13 @@ export const template: Template = {
 
         routes: (m: Module) => {
 
-          m.install('get', '/',  [], () => pure(show('reports')));
+            m.install('get', '/', [() => pure(show('reports'))]);
 
-          m.install('get', '/:report',  [
-                    filters.modify,
-                    filters.isReport,
-                    filters.quickShow
-          ], () => pure(show('reports')));
+            m.install('get', '/:report', [
+                filters.modify,
+                filters.isReport,
+                filters.quickShow,
+                () => pure(show('reports'))]);
 
         }
 

@@ -90,7 +90,7 @@ export const template: Template = {
 
         routes: (m: Module) => {
 
-            m.install('get', '/', [], () => pure(view('index')));
+            m.install('get', '/', [() => pure(view('index'))]);
 
         },
 
