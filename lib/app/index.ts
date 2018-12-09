@@ -66,12 +66,12 @@ export class App extends AbstractSystem<Context> {
 
     }
 
-  /**
-   * spawn a Module (not a generic actor) from a template.
-   *
-   * A module may or may not have a parent. In the case of the latter the
-   * module should be the root module of tha App.
-   */
+    /**
+     * spawn a Module (not a generic actor) from a template.
+     *
+     * A module may or may not have a parent. In the case of the latter the
+     * module should be the root module of tha App.
+     */
     spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
 
         let module = tmpl.create(this);
@@ -159,11 +159,7 @@ export class App extends AbstractSystem<Context> {
         return reduce(this.state.contexts, pure(<App>this), (p, c) =>
             c
                 .module
-                .map(m =>
-                    getMwares(m)
-                        .map(list => m.app.use.apply(m.app, list))
-                        .orRight(e => raise(e))
-                        .takeRight())
+                .map(applyMware(p))
                 .orJust(() => p)
                 .get());
 
@@ -288,11 +284,15 @@ const dispatchConnected = (f: Context): Future<void> =>
         .orJust(() => pure(noop()))
         .get();
 
-const getMwares = (m: ModuleContext): Either<Error, mware.Middleware[]> =>
+const applyMware = (app: Future<App>) => (m: ModuleContext): Future<App> =>
     m
         .middleware
         .enabled
         .reduce(swap(m), right([preroute(m)]))
+        .map(list => m.app.use.apply(m.app, list))
+        .map(() => app)
+        .orRight(e => <Future<App>>raise(e))
+        .takeRight();
 
 const preroute = (module: ModuleContext) =>
     (_: express.Request, res: express.Response, next: express.NextFunction) =>
