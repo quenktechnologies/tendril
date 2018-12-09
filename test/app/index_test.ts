@@ -1,6 +1,6 @@
 import * as must from 'must/register';
 import * as request from 'superagent';
-import { liftP } from '@quenk/noni/lib/control/monad/future';
+import { toPromise } from '@quenk/noni/lib/control/monad/future';
 import { App } from '../../src/app';
 import { template } from '../fixtures/ledger';
 
@@ -22,9 +22,9 @@ describe('ledger', () => {
 
     beforeEach(() => process.env.APP_START = '');
 
-    beforeEach(() => liftP(app.start()));
+    beforeEach(() => toPromise(app.start()));
 
-    afterEach(() => liftP(app.stop()));
+    afterEach(() => toPromise(app.stop()));
 
     it('should invoke init hook',
         () => must(process.env.APP_INIT).be('true'));
@@ -155,7 +155,7 @@ describe('ledger', () => {
     });
 
     it('should stop child actors', () =>
-        liftP(app.stop())
+        toPromise(app.stop())
             .then(() => must(process.env.CHILD_RUNNING).be('no')));
 
 });

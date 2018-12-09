@@ -2,7 +2,7 @@ import * as http from 'http';
 import * as must from 'must/register';
 import * as request from 'superagent';
 import * as Promise from 'bluebird';
-import { liftP } from '@quenk/noni/lib/control/monad/future';
+import { toPromise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
 import { Server } from '../../../src/net/http/server';
 
@@ -25,12 +25,12 @@ describe('server', () => {
 
             let s = newServer();
 
-            return liftP(s.listen(writeOk))
+            return toPromise(s.listen(writeOk))
                 .then(() =>
                     request
                         .get('localhost:8888')
                         .then((r: any) => must(r.text).be('ok'))
-                        .then(() => liftP(s.stop())))
+                        .then(() => toPromise(s.stop())))
 
 
         });
@@ -39,7 +39,7 @@ describe('server', () => {
 
             let s = newServer();
 
-            liftP(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
+            toPromise(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
 
                 must(s.sockets.length).be(1);
                 res.end();
@@ -49,7 +49,7 @@ describe('server', () => {
                 .then(() =>
                     request
                         .get('localhost:8888')
-                        .then(() => liftP(s.stop())))
+                        .then(() => toPromise(s.stop())))
                 .catch(e => cb(e))
         });
 
@@ -73,7 +73,7 @@ describe('server', () => {
 
             }, 1000);
 
-            liftP(s.listen(writeNothing))
+            toPromise(s.listen(writeNothing))
                 .then(() => Promise.all([
                     request.get('localhost:8888').catch(noop),
                     request.get('localhost:8888').catch(noop),
@@ -89,16 +89,16 @@ describe('server', () => {
 
             let state: number[] = [];
 
-            return liftP(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
+            return toPromise(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
 
                 state.push(1);
                 res.end('ok');
 
             }))
                 .then(() => request.get('localhost:8888'))
-                .then(() => liftP(s.stop()))
+                .then(() => toPromise(s.stop()))
                 .then(() =>
-                    liftP(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
+                    toPromise(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
 
                         state.push(2);
                         res.end('ok');
@@ -106,7 +106,7 @@ describe('server', () => {
                     })))
                 .then(() => request.get('localhost:8888'))
                 .then(() => must(state).eql([1, 2]))
-                .then(() => liftP(s.stop()));
+                .then(() => toPromise(s.stop()));
 
         });
 
