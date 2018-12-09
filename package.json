@@ -7,6 +7,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha --opts mocha.opts 'test/**/*_test.ts'"
   },
+  "files": ["lib"],
   "author": "Quenk Technologies Limited <info@quenk.com> (http://quenk.com)",
   "license": "Apache-2.0",
   "devDependencies": {
