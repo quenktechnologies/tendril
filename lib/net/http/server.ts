@@ -25,7 +25,7 @@ export interface Configuration {
     /**
      * port to bind to.
      */
-    port: number,
+    port: number|string,
 
     /**
      * host to bind to.
