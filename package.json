@@ -23,7 +23,6 @@
     "body-parser": "^1.18.3",
     "mocha": "^5.2.0",
     "morgan": "^1.9.1",
-    "must": "^0.13.4",
     "serve-static": "^1.13.2",
     "superagent": "^4.0.0",
     "ts-node": "^7.0.1",
@@ -31,6 +30,7 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
+    "@quenk/must": "^1.0.4",
     "@quenk/noni": "^1.8.5",
     "@quenk/potoo": "^1.5.1",
     "express": "^4.16.4"
