@@ -1051,7 +1051,7 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">module<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Maybe</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_state_context_.module.html" class="tsd-signature-type">Module</a><span class="tsd-signature-symbol">&gt;</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3452f6c/lib/app/state/context.ts#L22">app/state/context.ts:22</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/de4ea6d/lib/app/state/context.ts#L22">app/state/context.ts:22</a></li>
 					</ul>
 				</aside>
 				<div class="tsd-comment tsd-typography">
@@ -1064,7 +1064,7 @@ img { max-width: 100%; }
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 				<a name="template" class="tsd-anchor"></a>
 				<h3>template</h3>
-				<div class="tsd-signature tsd-kind-icon">template<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Template</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
+				<div class="tsd-signature tsd-kind-icon">template<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Template</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
 				<aside class="tsd-sources">
 					<p>Inherited from Context.template</p>
 					<ul>
@@ -1075,9 +1075,9 @@ img { max-width: 100%; }
 					<div class="lead">
 						<p>template used to create new instances of the actor.</p>
 					</div>
-					<p>XXX: We use the any type here because the this effectively
+					<p>XXX: We use the any type here because this is
 						a cyclical constraint. In the future we may refactor to find a
-					way around this.</p>
+					way around this but for now it keeps things going.</p>
 				</div>
 			</section>
 		</section>

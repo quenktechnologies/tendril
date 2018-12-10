@@ -937,8 +937,11 @@ img { max-width: 100%; }
 		<section class="tsd-panel tsd-comment">
 			<div class="tsd-comment tsd-typography">
 				<div class="lead">
-					<p>Connection</p>
+					<p>Connection interface.</p>
 				</div>
+				<p>This interface is used to abstract various data stores and
+					third party services the app may maintain persistenta open connections
+				to.</p>
 			</div>
 		</section>
 		<section class="tsd-panel tsd-hierarchy">
@@ -976,21 +979,19 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3452f6c/lib/app/connection.ts#L47">app/connection.ts:47</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/de4ea6d/lib/app/connection.ts#L53">app/connection.ts:53</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>checkout the actual connection implementation.</p>
+								<p>checkout the actual underlying implementation.</p>
 							</div>
-							<p>This is the value will be used by applications
-							to run queries, send data etc.</p>
-							<p>NOTE: We use any here to avoid carrying the type
-								all the way to the application. That may be the safer
-								thing to do but is a pain manage.
-								It looks like with strict:true, typescript won&#39;t allow
-								implementors to override a method type parameter here
-							that is determined by return value only.</p>
+							<p>This method provides the interface (in an unsafe manner)
+								to the library that is used to actually interface with the
+							remote service.</p>
+							<p>NOTE: We use <any> here to avoid carrying the type
+							all the way to the App class.</p>
+							<p>This was done to ease the burden of using this API.</p>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 					</li>
@@ -1006,7 +1007,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3452f6c/lib/app/connection.ts#L52">app/connection.ts:52</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/de4ea6d/lib/app/connection.ts#L58">app/connection.ts:58</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -1028,13 +1029,15 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/3452f6c/lib/app/connection.ts#L32">app/connection.ts:32</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/de4ea6d/lib/app/connection.ts#L39">app/connection.ts:39</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
 								<p>open the connection.</p>
 							</div>
+							<p>When called this method can initialize a new connection/pool or
+							simply lie for connections that are not meant to be kept open.</p>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_connection_.connection.html" class="tsd-signature-type">Connection</a><span class="tsd-signature-symbol">&gt;</span></h4>
 					</li>
