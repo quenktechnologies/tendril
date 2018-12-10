@@ -11,7 +11,7 @@ import { App } from '../';
  *
  * Removes the disable flag and redirecting from a module.
  */
-export class Enable extends Op<Context> {
+export class Enable extends Op<Context, App> {
 
     constructor(public module: Module) { super(); }
 
