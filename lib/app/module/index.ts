@@ -51,7 +51,7 @@ export class Redirect {
  * This makes debugging slightly easier as we can review to some extent what
  * individual modules are doing via the op log.
  */
-export class Module extends Immutable<Messages<any>, Context> {
+export class Module extends Immutable<Messages<any>, Context, App> {
 
     constructor(public system: App) { super(system); }
 

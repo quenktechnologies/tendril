@@ -17,7 +17,7 @@ export type SupportedMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
  * Route instructs the App to install a new route
  * for a module.
  */
-export class Route<A> extends Op<Context> {
+export class Route<A> extends Op<Context,App> {
 
     constructor(
         public module: Address,

@@ -7,7 +7,7 @@ import { App } from '../';
  *
  * Forces a module to redirect all requests to a new location.
  */
-export declare class Redirect extends Op<Context> {
+export declare class Redirect extends Op<Context, App> {
     module: Module;
     status: number;
     location: string;

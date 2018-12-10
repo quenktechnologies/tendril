@@ -10,7 +10,7 @@ import { App } from '../';
  *
  * Sets the disable flag.
  */
-export class Disable extends Op<Context> {
+export class Disable extends Op<Context,App> {
 
     constructor(public module: Module) { super(); }
 

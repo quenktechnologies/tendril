@@ -11,7 +11,7 @@ export declare type SupportedMethod = 'get' | 'post' | 'put' | 'patch' | 'delete
  * Route instructs the App to install a new route
  * for a module.
  */
-export declare class Route<A> extends Op<Context> {
+export declare class Route<A> extends Op<Context, App> {
     module: Address;
     method: SupportedMethod;
     path: string;

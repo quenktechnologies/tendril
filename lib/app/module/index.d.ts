@@ -40,7 +40,7 @@ export declare class Redirect {
  * This makes debugging slightly easier as we can review to some extent what
  * individual modules are doing via the op log.
  */
-export declare class Module extends Immutable<Messages<any>, Context> {
+export declare class Module extends Immutable<Messages<any>, Context, App> {
     system: App;
     constructor(system: App);
     receive: Case<Messages<void>>[];

@@ -3,7 +3,8 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { State } from '@quenk/potoo/lib/actor/system/state';
 import { Message } from '@quenk/potoo/lib/actor/message';
-import { AbstractSystem } from '@quenk/potoo/lib/actor/system';
+import { AbstractSystem } from '@quenk/potoo/lib/actor/system/abstract';
+import { System } from '@quenk/potoo/lib/actor/system';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Op } from '@quenk/potoo/lib/actor/system/op';
@@ -17,16 +18,16 @@ import { Context, Module as ModuleContext } from './state/context';
  * This class functions as an actor system and your
  * application.
  */
-export declare class App extends AbstractSystem<Context> {
+export declare class App extends AbstractSystem<Context> implements System<Context> {
     main: Template;
     configuration: config.Configuration;
     constructor(main: Template, configuration?: config.Configuration);
     state: State<Context>;
-    stack: Op<Context>[];
+    stack: Op<Context, App>[];
     running: boolean;
     server: Server;
     pool: Pool;
-    allocate(t: PotooTemplate<Context>): Context;
+    allocate(t: PotooTemplate<Context, App>): Context;
     /**
      * spawn a Module (not a generic actor) from a template.
      *

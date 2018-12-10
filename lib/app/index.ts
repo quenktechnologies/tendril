@@ -27,7 +27,8 @@ import { Message } from '@quenk/potoo/lib/actor/message';
 import { Tell } from '@quenk/potoo/lib/actor/system/op/tell';
 import { Spawn } from '@quenk/potoo/lib/actor/system/op/spawn';
 import { Kill } from '@quenk/potoo/lib/actor/system/op/kill';
-import { AbstractSystem } from '@quenk/potoo/lib/actor/system';
+import { AbstractSystem } from '@quenk/potoo/lib/actor/system/abstract';
+import { System } from '@quenk/potoo/lib/actor/system';
 import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
@@ -43,7 +44,7 @@ import { Context, Module as ModuleContext, getModule } from './state/context';
  * This class functions as an actor system and your
  * application.
  */
-export class App extends AbstractSystem<Context> {
+export class App extends AbstractSystem<Context> implements System<Context> {
 
     constructor(
         public main: Template,
@@ -51,7 +52,7 @@ export class App extends AbstractSystem<Context> {
 
     state: State<Context> = newState(this);
 
-    stack: Op<Context>[] = [];
+    stack: Op<Context, App>[] = [];
 
     running: boolean = false;
 
@@ -59,7 +60,7 @@ export class App extends AbstractSystem<Context> {
 
     pool: Pool = new Pool({});
 
-    allocate(t: PotooTemplate<Context>): Context {
+    allocate(t: PotooTemplate<Context, App>): Context {
 
         let actor = t.create(this);
         return actor.init(newContext(nothing(), actor, t));
@@ -333,7 +334,7 @@ const newState = (app: App): State<Context> => ({
 const newContext = (
     module: Maybe<ModuleContext>,
     actor: Actor<Context>,
-    template: PotooTemplate<Context>): Context => ({
+    template: PotooTemplate<Context, App>): Context => ({
 
         module,
         mailbox: nothing(),
