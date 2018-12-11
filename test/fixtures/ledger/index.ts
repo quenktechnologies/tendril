@@ -45,7 +45,9 @@ export const template: Template = {
 
       init: () => pure(void (process.env.APP_INIT = 'true')),
 
-      connected: () => pure(void (process.env.APP_CONNECTED = 'true'))
+      connected: () => pure(void (process.env.APP_CONNECTED = 'true')),
+
+      start: ()=> pure(void (process.env.APP_START = 'true'))
 
     },
 

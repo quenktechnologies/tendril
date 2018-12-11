@@ -32,6 +32,9 @@ describe('ledger', () => {
     it('should invoke connected hook',
         () => must(process.env.APP_CONNECTED).equal('true'));
 
+    it('should invoke connected hook',
+        () => must(process.env.APP_START).equal('true'));
+
     it('should have connections',
         () => must(app.pool.store['main']).not.be.undefined());
 
