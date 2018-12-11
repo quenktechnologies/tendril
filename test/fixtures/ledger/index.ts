@@ -15,103 +15,103 @@ import {Child} from '../child';
 
 export const template: Template = {
 
-    id: '/',
+  id: '/',
 
-    create: (a: App) => new Module(a),
+  create: (a: App) => new Module(a),
 
-    server: {
+  server: {
 
-        host: 'localhost',
+    host: 'localhost',
 
-        port: 8888
+    port: 8888
+
+  },
+
+  connections: {
+
+    main: {
+
+      connector: memdb,
+
+      options: [{}]
+
+    }
+
+  },
+
+  app: {
+
+    on: {
+
+      init: () => pure(void (process.env.APP_INIT = 'true')),
+
+      connected: () => pure(void (process.env.APP_CONNECTED = 'true'))
 
     },
 
-    connections: {
+    middleware: {
 
-        main: {
+      available: {
 
-            connector: memdb,
+        log: {
 
-            options: [{}]
+          provider: morgan,
+
+          options: [process.env.HTTP_LOG_FORMAT]
+
+        },
+
+        static: {
+
+          provider: statc,
+
+          options: [`${__dirname}/static`, { maxAge: 0 }]
+
+        },
+
+
+        json: {
+
+          provider: bodyParser.json
+
+        },
+
+        urlencoded: {
+
+          provider: bodyParser.urlencoded
 
         }
 
-    },
+      },
 
-    app: {
-
-        on: {
-
-            init: () => pure(void (process.env.APP_INIT = 'true')),
-
-            connected: () => pure(void (process.env.APP_CONNECTED = 'true'))
-
-        },
-
-        middleware: {
-
-            available: {
-
-                log: {
-
-                    provider: morgan,
-
-                    options: [process.env.HTTP_LOG_FORMAT]
-
-                },
-
-                static: {
-
-                    provider: statc,
-
-                    options: [`${__dirname}/static`, { maxAge: 0 }]
-
-                },
-
-
-                json: {
-
-                    provider: bodyParser.json
-
-                },
-
-                urlencoded: {
-
-                    provider: bodyParser.urlencoded
-
-                }
-
-            },
-
-            enabled: ['log', 'static', 'json', 'urlencoded']
-
-        },
-
-        routes: (m: Module) => {
-
-            m.install('get', '/', [() => pure(view('index'))]);
-
-        },
-
-        views: {
-
-            provider: () => show
-
-        },
-
-        modules: {
-
-            accounts: accounts.template,
-
-            admin: admin.template,
-
-            analytics: analytics.template
-
-        }
+      enabled: ['log', 'static', 'json', 'urlencoded']
 
     },
 
-    children: [{id: 'child', create: (app:App) => new Child(app)}]
+    routes: (m: Module) => {
+
+      m.install('get', '/', [() => pure(view('index'))]);
+
+    },
+
+    views: {
+
+      provider: () => show
+
+    },
+
+    modules: {
+
+      accounts: accounts.template,
+
+      admin: admin.template,
+
+      analytics: analytics.template
+
+    }
+
+  },
+
+  children: [{id: 'child', create: (app:App) => new Child(app)}]
 
 }
