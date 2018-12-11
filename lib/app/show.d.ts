@@ -4,7 +4,7 @@ import { Future } from '@quenk/noni/lib/control/monad/future';
  * Show is a function the application can use to produce
  * content for a client.
  */
-export declare type Show = <C>(view: string, context?: C) => Future<Content>;
+export declare type Show = (view: string, context?: object) => Future<Content>;
 /**
  * Content to send to the client.
  */
