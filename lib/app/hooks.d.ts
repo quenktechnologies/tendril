@@ -8,9 +8,9 @@ export declare type Init = () => Future<void>;
  */
 export declare type Connected = () => Future<void>;
 /**
- * Started function type.
+ * Start function type.
  */
-export declare type Started = () => Future<void>;
+export declare type Start = () => Future<void>;
 /**
  * Configuration section.
  */
@@ -24,7 +24,7 @@ export interface Hooks {
      */
     connected?: Connected;
     /**
-     * started is invoked when the application is ready to serve requests.
+     * start is invoked when the application is ready to serve requests.
      */
-    started?: Started;
+    start?: Start;
 }
