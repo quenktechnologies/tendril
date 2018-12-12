@@ -10,7 +10,6 @@ import { Module } from '../../../src/app/module';
 import { Template } from '../../../src/app/module/template';
 import { memdb } from '../memgodb';
 import { show } from './show';
-import { show as view } from '../../../src/app/api';
 import {Child} from '../child';
 
 export const template: Template = {
@@ -92,7 +91,7 @@ export const template: Template = {
 
     routes: (m: Module) => {
 
-      m.install('get', '/', [() => pure(view('index'))]);
+      m.install('get', '/', [m.show('index')]);
 
     },
 

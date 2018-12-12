@@ -1,10 +1,11 @@
+import {  pure } from '@quenk/noni/lib/control/monad/future';
 import { Immutable, Case } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../state/context';
 import { Route, SupportedMethod } from '../op/route';
 import { Disable as DisableOp } from '../op/disable';
 import { Enable as EnableOp } from '../op/enable';
 import { Redirect as RedirectOp } from '../op/redirect';
-import { Filter } from '../api';
+import { Filter, show } from '../api';
 import { App } from '../';
 
 /**
@@ -62,9 +63,18 @@ export class Module extends Immutable<Messages<any>, Context, App> {
      *
      * This is done as sys op to provide transparency.
      */
-    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]) {
+    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]): void {
 
         this.system.exec(new Route(this.self(), method, path, filters));
+
+    }
+
+    /**
+     * show constructrs a Filter for displaying a view.
+     */
+    show(name: string, ctx?: object): Filter<undefined> {
+
+        return () => pure(show(name, ctx));
 
     }
 

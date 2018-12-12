@@ -50,5 +50,9 @@ export declare class Module extends Immutable<Messages<any>, Context, App> {
      * This is done as sys op to provide transparency.
      */
     install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]): void;
+    /**
+     * show constructrs a Filter for displaying a view.
+     */
+    show(name: string, ctx?: object): Filter<undefined>;
     run(): void;
 }
