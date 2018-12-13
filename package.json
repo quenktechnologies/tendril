@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@quenk/must": "^1.0.4",
-    "@quenk/noni": "^1.8.5",
+    "@quenk/noni": "^1.8.6",
     "@quenk/potoo": "^1.6.0",
     "express": "^4.16.4"
   }

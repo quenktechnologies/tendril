@@ -208,8 +208,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
             .chain(() => this.connections())
             .chain(() => this.middlewares())
             .chain(() => this.routing())
-            .chain(() => this.listen())
-            .map(cons(<App>this));
+            .chain(() => startListening(this));
 
     }
 
@@ -248,10 +247,11 @@ const defaultAddress = (path: string, parent: Maybe<ModuleContext>) =>
 const defaultHooks = (t: Template) => (t.app && t.app.on) ?
     t.app.on : {}
 
-const defaultConnections = (t: Template): conn.Connections => t.connections ?
+const defaultConnections = (t: Template): conn.Connections =>
+  <conn.Connections>  ( t.connections ?
     map(t.connections, c => c.options ?
         c.connector.apply(null, c.options || []) :
-        c.connector) : {};
+        c.connector) : {});
 
 const defaultAvailableMiddleware = (t: Template): mware.Middlewares =>
     (t.app && t.app.middleware && t.app.middleware.available) ?
@@ -270,7 +270,7 @@ const defaultShow = (t: Template, parent: Maybe<ModuleContext>): Maybe<show.Show
         just(t.app.views.provider.apply(null, t.app.views.options || [])) :
         parent.chain(m => m.show);
 
-const initContext = (a:App) => ( c: Context): Future<void> =>
+const initContext = (a: App) => (c: Context): Future<void> =>
     c
         .module
         .chain(m => fromNullable(m.hooks.init))
@@ -320,6 +320,23 @@ const concatMware = (m: ModuleContext, key: string) => (list: mware.Middleware[]
 const errMware = (path: string, key: string) => ()
     : Either<Error, mware.Middleware[]> =>
     left(new Error(`${path}: Unknown middleware "${key}"!`));
+
+const startListening = (a: App): Future<App> => {
+
+    let list: Future<void>[] = values(map(a.state.contexts, dispatchStart(a)));
+
+    return parallel([a.listen().map(() => { }), ...list])
+        .map(() => a);
+
+}
+
+const dispatchStart = (a: App) => (c: Context): Future<void> =>
+    c
+        .module
+        .chain(m => fromNullable(m.hooks.start))
+        .map((h: hooks.Start) => h(a))
+        .orJust(() => pure(noop()))
+        .get();
 
 const newState = (app: App): State<Context> => ({
 
