@@ -126,7 +126,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
     initialize(): Future<App> {
 
         return parallel(values<Future<void>>(map(this.state.contexts,
-            initContext))).map(cons(<App>this));
+            initContext(this)))).map(cons(<App>this));
 
     }
 
@@ -147,7 +147,8 @@ export class App extends AbstractSystem<Context> implements System<Context> {
                 .orJust(() => p)
                 .get())
             .open()
-            .chain(() => parallel(values(map(this.state.contexts, dispatchConnected))))
+            .chain(() => parallel(values(map(this.state.contexts,
+                dispatchConnected(this)))))
             .map(cons(<App>this));
 
     }
@@ -269,19 +270,19 @@ const defaultShow = (t: Template, parent: Maybe<ModuleContext>): Maybe<show.Show
         just(t.app.views.provider.apply(null, t.app.views.options || [])) :
         parent.chain(m => m.show);
 
-const initContext = (f: Context): Future<void> =>
-    f
+const initContext = (a:App) => ( c: Context): Future<void> =>
+    c
         .module
         .chain(m => fromNullable(m.hooks.init))
-        .map((i: hooks.Init) => i())
+        .map((i: hooks.Init) => i(a))
         .orJust(() => pure(noop()))
         .get();
 
-const dispatchConnected = (f: Context): Future<void> =>
-    f
+const dispatchConnected = (a: App) => (c: Context): Future<void> =>
+    c
         .module
         .chain(m => fromNullable(m.hooks.connected))
-        .map((c: hooks.Connected) => c())
+        .map((c: hooks.Connected) => c(a))
         .orJust(() => pure(noop()))
         .get();
 

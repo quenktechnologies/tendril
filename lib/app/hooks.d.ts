@@ -1,16 +1,17 @@
 import { Future } from '@quenk/noni/lib/control/monad/future';
+import { App } from './';
 /**
  * Init function type.
  */
-export declare type Init = () => Future<void>;
+export declare type Init = (app: App) => Future<void>;
 /**
  * Connected function type.
  */
-export declare type Connected = () => Future<void>;
+export declare type Connected = (app: App) => Future<void>;
 /**
  * Start function type.
  */
-export declare type Start = () => Future<void>;
+export declare type Start = (app: App) => Future<void>;
 /**
  * Configuration section.
  */

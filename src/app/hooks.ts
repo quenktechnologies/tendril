@@ -1,19 +1,20 @@
 import { Future } from '@quenk/noni/lib/control/monad/future';
+import { App } from './';
 
 /**
  * Init function type.
  */
-export type Init = () => Future<void>;
+export type Init = (app:App) => Future<void>;
 
 /**
  * Connected function type.
  */
-export type Connected = () => Future<void>;
+export type Connected = (app: App) => Future<void>;
 
 /**
  * Start function type.
  */
-export type Start = () => Future<void>;
+export type Start = (app:App) => Future<void>;
 
 /**
  * Configuration section.
@@ -33,6 +34,6 @@ export interface Hooks {
     /**
      * start is invoked when the application is ready to serve requests.
      */
-  start?: Start;
+    start?: Start;
 
 }
