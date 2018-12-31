@@ -4,7 +4,7 @@ import * as Promise from 'bluebird';
 import { must } from '@quenk/must';
 import { toPromise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
-import { Server } from '../../../src/net/http/server';
+import { Server } from '../../../../src/net/http/server';
 
 const writeOk = (_: http.IncomingMessage, res: http.ServerResponse) => {
 

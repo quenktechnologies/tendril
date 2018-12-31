@@ -68,12 +68,33 @@ export class App extends AbstractSystem<Context> implements System<Context> {
     }
 
     /**
-     * spawn a Module (not a generic actor) from a template.
+     * tell a message to an actor in the system.
+     */
+    tell(to: Address, msg: Message): App {
+
+        return <App>this.exec(new Tell(to, '$', msg));
+
+    }
+
+    /**
+     * spawn a regular actor from a template.
+     *
+     * This actor must use the same Context type as the App.
+     */
+  spawn(tmpl: PotooTemplate<Context, App>): App {
+
+        this.exec(new Spawn(this, tmpl));
+        return this;
+
+    }
+
+    /**
+     * spawnModule (not a generic actor) from a template.
      *
      * A module may or may not have a parent. In the case of the latter the
      * module should be the root module of tha App.
      */
-    spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
+    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
 
         let module = tmpl.create(this);
         let app = express();
@@ -100,21 +121,12 @@ export class App extends AbstractSystem<Context> implements System<Context> {
         put(this.state, address, module.init(newContext(just(mctx), module, tmpl)));
 
         if (tmpl.app && tmpl.app.modules)
-            map(tmpl.app.modules, (m, k) => this.spawn(k, just(mctx), m));
+            map(tmpl.app.modules, (m, k) => this.spawnModule(k, just(mctx), m));
 
         if (Array.isArray(tmpl.children))
             tmpl.children.forEach(c => this.exec(new Spawn(module, c)));
 
         return this;
-
-    }
-
-    /**
-     * tell a message to an actor in the system.
-     */
-    tell(to: Address, msg: Message): App {
-
-        return <App>this.exec(new Tell(to, '$', msg));
 
     }
 
@@ -203,7 +215,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
     start(): Future<App> {
 
         return this
-            .spawn(this.main.id, nothing(), this.main)
+            .spawnModule(this.main.id, nothing(), this.main)
             .initialize()
             .chain(() => this.connections())
             .chain(() => this.middlewares())
@@ -248,10 +260,10 @@ const defaultHooks = (t: Template) => (t.app && t.app.on) ?
     t.app.on : {}
 
 const defaultConnections = (t: Template): conn.Connections =>
-  <conn.Connections>  ( t.connections ?
-    map(t.connections, c => c.options ?
-        c.connector.apply(null, c.options || []) :
-        c.connector) : {});
+    <conn.Connections>(t.connections ?
+        map(t.connections, c => c.options ?
+            c.connector.apply(null, c.options || []) :
+            c.connector) : {});
 
 const defaultAvailableMiddleware = (t: Template): mware.Middlewares =>
     (t.app && t.app.middleware && t.app.middleware.available) ?
