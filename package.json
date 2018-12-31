@@ -19,6 +19,7 @@
     "@types/mocha": "^5.2.5",
     "@types/morgan": "^1.7.35",
     "@types/node": "^10.12.12",
+    "@types/superagent": "^3.8.5",
     "bluebird": "^3.5.3",
     "body-parser": "^1.18.3",
     "mocha": "^5.2.0",
