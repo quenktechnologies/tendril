@@ -29,16 +29,22 @@ export declare class App extends AbstractSystem<Context> implements System<Conte
     pool: Pool;
     allocate(t: PotooTemplate<Context, App>): Context;
     /**
-     * spawn a Module (not a generic actor) from a template.
+     * tell a message to an actor in the system.
+     */
+    tell(to: Address, msg: Message): App;
+    /**
+     * spawn a regular actor from a template.
+     *
+     * This actor must use the same Context type as the App.
+     */
+    spawn(tmpl: PotooTemplate<Context, App>): App;
+    /**
+     * spawnModule (not a generic actor) from a template.
      *
      * A module may or may not have a parent. In the case of the latter the
      * module should be the root module of tha App.
      */
-    spawn(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App;
-    /**
-     * tell a message to an actor in the system.
-     */
-    tell(to: Address, msg: Message): App;
+    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App;
     /**
      * initialize the App
      *
