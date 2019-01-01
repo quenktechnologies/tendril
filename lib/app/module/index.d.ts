@@ -1,7 +1,7 @@
 import { Immutable, Case } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../state/context';
 import { SupportedMethod } from '../op/route';
-import { Filter } from '../api';
+import { Filter } from '../api/filter';
 import { App } from '../';
 /**
  * Messages supported by modules.

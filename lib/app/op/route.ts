@@ -4,7 +4,8 @@ import * as codes from './';
 import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Context, getModule } from '../state/context';
-import { Filter, Context as RequestContext } from '../api';
+import { Filter } from '../api/filter';
+import {  Context as RequestContext } from '../api/context';
 import { Module } from '../module';
 import { App } from '../';
 

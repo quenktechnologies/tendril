@@ -1,7 +1,7 @@
 import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Context } from '../state/context';
-import { Filter } from '../api';
+import { Filter } from '../api/filter';
 import { App } from '../';
 /**
  * SupportedMethod

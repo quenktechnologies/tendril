@@ -5,7 +5,8 @@ import { Route, SupportedMethod } from '../op/route';
 import { Disable as DisableOp } from '../op/disable';
 import { Enable as EnableOp } from '../op/enable';
 import { Redirect as RedirectOp } from '../op/redirect';
-import { Filter, show } from '../api';
+import { Filter } from '../api/filter';
+import {  show } from '../api/action/show';
 import { App } from '../';
 
 /**
