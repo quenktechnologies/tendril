@@ -1,5 +1,5 @@
 import * as uuid from 'uuid';
-import { resolve} from 'path';
+import { resolve } from 'path';
 import { $do } from '@quenk/noni/lib/control/monad';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
@@ -78,7 +78,7 @@ export class Ask<N, A> extends Action<A> {
             const value = yield <Future<A>>new Run<Message>(s => {
 
                 let id = uuid();
-                let cb = (t: Message) => s.onSuccess(t);
+                let cb = (t: Message) => s.onSuccess(t.value);
 
                 ctx.module.tell(to,
                     new Request(resolve(`${ctx.module.self()}/${id}`), message));

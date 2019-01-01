@@ -19,4 +19,4 @@ export const redirect = (_: Request): Future<ActionM<undefined>> =>
         .chain(() => ok()));
 
 export const ping = (_: Request): Future<ActionM<undefined>> =>
-  pure(ask<Response<string>>('/pong', 'ping').chain(r => ok(r.value)));
+  pure(ask<Response<string>>('/pong', 'ping').chain(r => ok(r)));
