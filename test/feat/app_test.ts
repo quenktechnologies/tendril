@@ -10,6 +10,7 @@ const ROUTE_ACCOUNTS = `${URL}/accounts`;
 const ROUTE_ACCOUNTS_BALANCE = `${ROUTE_ACCOUNTS}/balance`;
 const ROUTE_REPORTS = `${ROUTE_ACCOUNTS}/reports`;
 const ROUTE_ADMIN = `${URL}/admin`;
+const ROUTE_ADMIN_PING = `${ROUTE_ADMIN}/ping`;
 const ROUTE_ANALYTICS = `${URL}/analytics`;
 
 describe('ledger', () => {
@@ -160,5 +161,10 @@ describe('ledger', () => {
     it('should stop child actors', () =>
         toPromise(app.stop())
             .then(() => must(process.env.CHILD_RUNNING).equal('no')));
+
+  it('should allow asking of actors', ()=>
+    request
+    .get(ROUTE_ADMIN_PING)
+    .then((r:any)=> must(r.text).equal('pong')));
 
 });

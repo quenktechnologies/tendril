@@ -13,9 +13,10 @@ export const template: Template = {
 
         routes: (m: Module) => {
 
-            m.install('delete', '/', [ handlers.disable]);
+            m.install('delete', '/', [handlers.disable]);
             m.install('post', '/', [handlers.enable]);
-            m.install('put', '/', [ handlers.redirect]);
+            m.install('put', '/', [handlers.redirect]);
+            m.install('get', '/ping', [handlers.ping]);
 
         }
 

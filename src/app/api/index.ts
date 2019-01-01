@@ -54,6 +54,7 @@ export class Context<A> {
         public filters: Filter<A>[]) { }
 
     next(): Future<ActionM<A>> {
+
         return (this.filters.length > 0) ?
             (<Filter<A>>this.filters.shift())(this.request) :
             raise(new Error(`${this.module.self()}: No more filters!`));

@@ -11,6 +11,7 @@ import { Template } from '../../../src/app/module/template';
 import { memdb } from '../memgodb';
 import { show } from './show';
 import {Child} from '../child';
+import {Pong} from '../pong';
 
 export const template: Template = {
 
@@ -113,6 +114,9 @@ export const template: Template = {
 
   },
 
-  children: [{id: 'child', create: (app:App) => new Child(app)}]
+  children: [
+    {id: 'child', create: (app:App) => new Child(app)},
+    {id: 'pong', create: (app:App) => new Pong(app) }
+  ]
 
 }
