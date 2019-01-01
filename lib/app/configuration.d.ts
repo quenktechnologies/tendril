@@ -1,3 +1,4 @@
+import * as system from '@quenk/potoo/lib/actor/system/configuration';
 import * as hooks from './hooks';
 import * as show from './show';
 import * as template from './module/template';
@@ -19,6 +20,7 @@ export declare type ShowProvider = (...options: any[]) => show.Show;
  * Configuration for the application.
  */
 export interface Configuration {
+    system?: system.Configuration;
     on?: hooks.Hooks;
     middleware?: {
         available?: AvailableMiddleware;
