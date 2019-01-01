@@ -1,12 +1,3 @@
-/**
- * * The api module provides the functions, classes and types used to build
- * a responses to client requests in an app.
- *
- * We use a the Future class from noni for asynchrounous work and 
- * a Free monad based DSL for determining what to send the client.
- */
-
-/** imports */
 import * as uuid from 'uuid';
 import { $do } from '@quenk/noni/lib/control/monad';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
@@ -15,9 +6,10 @@ import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Mutable, Pattern, Case } from '@quenk/potoo/lib/actor/resident';
-import { Context as AppContext } from '../state/context';
-import { App } from '../../app';
-import { Action, ActionM, Context } from './';
+import { Context as AppContext } from '../../state/context';
+import { App } from '../../../app';
+import { Context } from '../context';
+import { Action, ActionM } from './';
 
 class Callback<A> extends Mutable<AppContext, App> {
 
@@ -80,7 +72,7 @@ export class Ask<N, A> extends Action<A> {
 
         let { to, message, next } = this;
 
-      return $do<A, Future<A>>( <()=>Iterator<Future<A>>>function* () {
+        return $do<A, Future<A>>(<() => Iterator<Future<A>>>function* () {
 
             const value = yield <Future<A>>new Run<Message>(s => {
 

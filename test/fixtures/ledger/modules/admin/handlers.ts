@@ -1,8 +1,10 @@
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { Disable, Enable, Redirect } from '../../../../../src/app/module';
-import { ActionM, Request, tell } from '../../../../../src/app/api';
-import { ok } from '../../../../../src/app/api/http';
-import { Response, ask } from '../../../../../src/app/api/ask';
+import { ActionM } from '../../../../../src/app/api/action';
+import {  Request  } from '../../../../../src/app/api/request';
+import {   tell } from '../../../../../src/app/api/action/tell';
+import { ok } from '../../../../../src/app/api/action/http/response/ok';
+import { Response,  ask } from '../../../../../src/app/api/action/ask';
 
 export const disable = (_: Request): Future<ActionM<undefined>> =>
     pure(tell('/accounts', new Disable())

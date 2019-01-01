@@ -7,7 +7,8 @@
 import { Future, raise } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
-import { Action, ActionM, Context } from './';
+import { Context } from '../context';
+import { Action, ActionM  } from './';
 
 /**
  * Checkout action.

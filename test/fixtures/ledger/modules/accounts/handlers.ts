@@ -1,8 +1,10 @@
-import * as pool from '../../../../../src/app/api/pool';
+import * as pool from '../../../../../src/app/api/action/pool';
 import { Object } from '@quenk/noni/lib/data/json';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
-import { Request, ActionM, wait } from '../../../../../src/app/api';
-import { created } from '../../../../../src/app/api/http';
+import { Request} from '../../../../../src/app/api/request';
+import {  ActionM  } from '../../../../../src/app/api/action';
+import {  wait } from '../../../../../src/app/api/action/wait';
+import { created } from '../../../../../src/app/api/action/http/response/created';
 import { Memgo } from '../../../memgodb';
 
 export const create = (r: Request): Future<ActionM<undefined>> =>
