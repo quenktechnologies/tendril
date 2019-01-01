@@ -37,6 +37,28 @@ describe('app', () => {
 
         });
 
+        it('should not loop indefinitely on raised error', cb => {
+
+            let app: App = new App(template, {});
+
+            try {
+
+                app.spawn({ id: '$theme', create: s => new Act(s) });
+
+            } catch (_) {
+
+
+            }
+
+            setTimeout(() => {
+
+                must(true).be.true();
+                cb();
+
+            }, 1000)
+
+        });
+
     });
 
 });

@@ -6,6 +6,7 @@ import * as conn from './connection';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
 import { join } from 'path';
 import { merge, reduce, map, values } from '@quenk/noni/lib/data/record';
+import { Err } from '@quenk/noni/lib/control/error';
 import {
     Maybe,
     just,
@@ -81,7 +82,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
      *
      * This actor must use the same Context type as the App.
      */
-  spawn(tmpl: PotooTemplate<Context, App>): App {
+    spawn(tmpl: PotooTemplate<Context, App>): App {
 
         this.exec(new Spawn(this, tmpl));
         return this;
@@ -354,7 +355,19 @@ const newState = (app: App): State<Context> => ({
 
     contexts: {
 
-        $: newContext(nothing(), app, { id: '$', create: () => new App(app.main) })
+        $: newContext(nothing(), app, {
+            id: '$',
+            create: () => new App(app.main),
+            trap: (e: Err) => {
+
+                if (e instanceof Error) {
+                    throw e;
+                } else {
+                    throw new Error(e.message);
+                }
+
+            }
+        })
 
     },
     routes: {}
