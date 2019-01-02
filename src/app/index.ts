@@ -132,6 +132,21 @@ export class App extends AbstractSystem<Context> implements System<Context> {
     }
 
     /**
+     * installMiddleware at the specified mount point.
+     *
+     * If no module exists there, the attempt will be ignored.
+     */
+    installMiddleware(path: string, handler: express.RequestHandler): App {
+
+        return getModule(this.state, path)
+            .map(m => m.app.use(handler))
+            .map(() => this)
+            .orJust(() => this)
+            .get();
+
+    }
+
+    /**
      * initialize the App
      *
      * Invokes the init hooks of all modules.

@@ -1,3 +1,4 @@
+import * as express from 'express';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Future } from '@quenk/noni/lib/control/monad/future';
@@ -45,6 +46,12 @@ export declare class App extends AbstractSystem<Context> implements System<Conte
      * module should be the root module of tha App.
      */
     spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App;
+    /**
+     * installMiddleware at the specified mount point.
+     *
+     * If no module exists there, the attempt will be ignored.
+     */
+    installMiddleware(path: string, handler: express.RequestHandler): App;
     /**
      * initialize the App
      *
