@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import { resolve } from 'path';
-import { $do } from '@quenk/noni/lib/control/monad';
+import { doN } from '@quenk/noni/lib/control/monad';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
@@ -73,7 +73,7 @@ export class Ask<N, A> extends Action<A> {
 
         let { to, message, next } = this;
 
-        return $do<A, Future<A>>(<() => Iterator<Future<A>>>function* () {
+        return doN<A, Future<A>>(<() => Iterator<Future<A>>>function* () {
 
             const value = yield <Future<A>>new Run<Message>(s => {
 
