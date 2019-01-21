@@ -1,12 +1,13 @@
-import {  pure } from '@quenk/noni/lib/control/monad/future';
-import { Immutable, Case } from '@quenk/potoo/lib/actor/resident';
+import { pure } from '@quenk/noni/lib/control/monad/future';
+import {  Case } from '@quenk/potoo/lib/actor/resident/case';
+import { Immutable  } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../state/context';
 import { Route, SupportedMethod } from '../op/route';
 import { Disable as DisableOp } from '../op/disable';
 import { Enable as EnableOp } from '../op/enable';
 import { Redirect as RedirectOp } from '../op/redirect';
 import { Filter } from '../api/filter';
-import {  show } from '../api/action/show';
+import { show } from '../api/action/show';
 import { App } from '../';
 
 /**

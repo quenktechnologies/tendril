@@ -1,4 +1,5 @@
-import { Immutable, Case } from '@quenk/potoo/lib/actor/resident';
+import { Case } from '@quenk/potoo/lib/actor/resident/case';
+import { Immutable } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../state/context';
 import { SupportedMethod } from '../op/route';
 import { Filter } from '../api/filter';

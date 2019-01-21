@@ -4,9 +4,11 @@ import { doN } from '@quenk/noni/lib/control/monad';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
+import { Constructor } from '@quenk/noni/lib/data/type/constructor';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
-import { Mutable, Pattern, Case } from '@quenk/potoo/lib/actor/resident';
+import { Case } from '@quenk/potoo/lib/actor/resident/case';
+import { Mutable, } from '@quenk/potoo/lib/actor/resident';
 import { Context as AppContext } from '../../state/context';
 import { App } from '../../../app';
 import { Context } from '../context';
@@ -15,14 +17,14 @@ import { Action, ActionM } from './';
 class Callback<A> extends Mutable<AppContext, App> {
 
     constructor(
-        public pattern: Pattern,
+        public pattern: Constructor<A>,
         public f: (a: A) => void,
         public app: App) { super(app); }
 
     run() {
 
         this.select([
-            new Case(this.pattern, (a: A) => {
+          new Case(this.pattern, (a: A) => {
                 this.f(a);
                 this.exit();
             })
