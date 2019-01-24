@@ -10,6 +10,10 @@ import { Context } from '../context';
  */
 export declare type ActionM<A> = Free<Action<any>, A>;
 /**
+ * Result type.
+ */
+export declare type Result = ActionM<undefined>;
+/**
  * Action represents the result of a client request.
  *
  * It is implemented as a Functor DSL meant to be interpreted

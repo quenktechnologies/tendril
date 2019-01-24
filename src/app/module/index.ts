@@ -1,6 +1,5 @@
-import { pure } from '@quenk/noni/lib/control/monad/future';
-import {  Case } from '@quenk/potoo/lib/actor/resident/case';
-import { Immutable  } from '@quenk/potoo/lib/actor/resident';
+import { Case } from '@quenk/potoo/lib/actor/resident/case';
+import { Immutable } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../state/context';
 import { Route, SupportedMethod } from '../op/route';
 import { Disable as DisableOp } from '../op/disable';
@@ -76,7 +75,7 @@ export class Module extends Immutable<Messages<any>, Context, App> {
      */
     show(name: string, ctx?: object): Filter<undefined> {
 
-        return () => pure(show(name, ctx));
+        return () => show(name, ctx);
 
     }
 

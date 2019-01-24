@@ -1,4 +1,3 @@
-import { Future } from '@quenk/noni/lib/control/monad/future';
 import {ActionM} from './action';
 import {Request} from './request';
 
@@ -7,4 +6,4 @@ import {Request} from './request';
  * 
  * These can either transform the request or terminate.
  */
-export type Filter<A> = (r: Request) => Future<ActionM<A>>;
+export type Filter<A> = (r: Request) => ActionM<A>;
