@@ -3,7 +3,7 @@ import { Disable, Enable, Redirect } from '../../../../../src/app/module';
 import { ActionM } from '../../../../../src/app/api/action';
 import {  Request  } from '../../../../../src/app/api/request';
 import {   tell } from '../../../../../src/app/api/action/tell';
-import { ok } from '../../../../../src/app/api/action/http/response/ok';
+import { ok } from '../../../../../src/app/api/action/response/ok';
 import { Response,  ask } from '../../../../../src/app/api/action/ask';
 
 export const disable = (_: Request): Future<ActionM<undefined>> =>

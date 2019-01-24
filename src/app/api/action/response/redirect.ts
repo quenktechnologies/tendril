@@ -1,7 +1,7 @@
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure, attempt } from '@quenk/noni/lib/control/monad/future';
-import {Action, ActionM} from '../..';
-import {Context} from '../../../context';
+import {Action, ActionM} from '../';
+import {Context} from '../../context';
 
 /**
  * Redirect action.

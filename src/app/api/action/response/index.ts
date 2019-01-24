@@ -3,12 +3,12 @@
  */
 
 /** imports */
-import * as status from '../status';
+import * as status from './status';
 import * as express from 'express';
 import { Future, attempt } from '@quenk/noni/lib/control/monad/future';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
-import { Context } from '../../../context';
-import { Action } from '../../';
+import { Context } from '../../context';
+import { Action } from '../';
 
 /**
  * Response terminates the http request with an actual HTTP response.

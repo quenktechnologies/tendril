@@ -1,7 +1,7 @@
-import * as status from '../status';
+import * as status from './status';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { fromNullable } from '@quenk/noni/lib/data/maybe';
-import { ActionM } from '../../';
+import { ActionM } from '../';
 import { Response } from './';
 
 /**
