@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --opts mocha.opts 'test/**/*_test.ts'"
+    "test": "./node_modules/.bin/mocha --opts mocha.opts $(find test -name *_test.ts)"
   },
   "files": [
     "lib"
@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "@quenk/must": "^1.0.4",
-    "@quenk/noni": "^1.13.2",
-    "@quenk/potoo": "^1.16.2",
+    "@quenk/noni": "^1.16.0",
+    "@quenk/potoo": "^2.1.2",
     "express": "^4.16.4",
     "uuid": "^3.3.2"
   }

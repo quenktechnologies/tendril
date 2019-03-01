@@ -15,7 +15,7 @@ const ROUTE_ANALYTICS = `${URL}/analytics`;
 
 describe('ledger', () => {
 
-    let app: App = new App(template, {});
+    let app: App = new App(template, { log: { level: Infinity } });
 
     beforeEach(() => process.env.APP_INIT = '');
 
@@ -162,9 +162,8 @@ describe('ledger', () => {
         toPromise(app.stop())
             .then(() => must(process.env.CHILD_RUNNING).equal('no')));
 
-  it('should allow asking of actors', ()=>
-    request
-    .get(ROUTE_ADMIN_PING)
-    .then((r:any)=> must(r.text).equal('pong')));
-
+    it('should allow asking of actors', () =>
+        request
+            .get(ROUTE_ADMIN_PING)
+            .then((r: any) => must(r.text).equal('pong')));
 });

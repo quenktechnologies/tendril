@@ -23,17 +23,18 @@ import {
     parallel,
     attempt
 } from '@quenk/noni/lib/control/monad/future';
-import { State, getInstance, put } from '@quenk/potoo/lib/actor/system/state';
+import { State, put } from '@quenk/potoo/lib/actor/system/state';
 import { Message } from '@quenk/potoo/lib/actor/message';
-import { Tell } from '@quenk/potoo/lib/actor/system/op/tell';
-import { Spawn } from '@quenk/potoo/lib/actor/system/op/spawn';
-import { Kill } from '@quenk/potoo/lib/actor/system/op/kill';
-import { AbstractSystem } from '@quenk/potoo/lib/actor/system/abstract';
+import { TellScript } from '@quenk/potoo/lib/actor/resident/scripts';
+import { SpawnScript } from '@quenk/potoo/lib/actor/system/framework/scripts';
+import { AbstractSystem } from '@quenk/potoo/lib/actor/system/framework';
+import { StopScript } from '@quenk/potoo/lib/actor/system/vm/runtime/scripts';
+import { This } from '@quenk/potoo/lib/actor/system/vm/runtime/this';
+import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { System } from '@quenk/potoo/lib/actor/system';
 import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Server, Configuration } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
@@ -53,18 +54,16 @@ export class App extends AbstractSystem<Context> implements System<Context> {
 
     state: State<Context> = newState(this);
 
-    stack: Op<Context, App>[] = [];
-
-    running: boolean = false;
-
     server: Server = new Server(defaultServerConf(this.main.server));
 
     pool: Pool = new Pool({});
 
-    allocate(t: PotooTemplate<Context, App>): Context {
+    allocate(
+        a: Actor<Context>,
+        r: Runtime<Context, System<Context>>,
+        t: PotooTemplate<Context, App>): Context {
 
-        let actor = t.create(this);
-        return actor.init(newContext(nothing(), actor, t));
+        return newContext(nothing(), a, r, t);
 
     }
 
@@ -73,7 +72,8 @@ export class App extends AbstractSystem<Context> implements System<Context> {
      */
     tell(to: Address, msg: Message): App {
 
-        return <App>this.exec(new Tell(to, '$', msg));
+        (new This('$', this)).exec(new TellScript(to, msg));
+        return this;
 
     }
 
@@ -84,7 +84,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
      */
     spawn(tmpl: PotooTemplate<Context, App>): App {
 
-        this.exec(new Spawn(this, tmpl));
+        (new This('$', this)).exec(new SpawnScript('', tmpl));
         return this;
 
     }
@@ -100,6 +100,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
         let module = tmpl.create(this);
         let app = express();
         let address = defaultAddress(path, parent);
+        let runtime = new This(address, <any>this);
 
         let mctx: ModuleContext = {
             path,
@@ -119,13 +120,14 @@ export class App extends AbstractSystem<Context> implements System<Context> {
             redirect: nothing()
         };
 
-        put(this.state, address, module.init(newContext(just(mctx), module, tmpl)));
+        put(this.state, address,
+            module.init(newContext(just(mctx), module, <any>runtime, tmpl)));
 
         if (tmpl.app && tmpl.app.modules)
             map(tmpl.app.modules, (m, k) => this.spawnModule(k, just(mctx), m));
 
         if (Array.isArray(tmpl.children))
-            tmpl.children.forEach(c => this.exec(new Spawn(module, c)));
+            tmpl.children.forEach(c => runtime.exec(new SpawnScript(address, c)));
 
         return this;
 
@@ -246,14 +248,15 @@ export class App extends AbstractSystem<Context> implements System<Context> {
             .server
             .stop()
             .chain(() => this.pool.close())
-            .map(() =>
-                getInstance(this.state, this.main.id)
-                    .map(actor => this.exec(new Kill(actor, this.main.id))))
             .map(() => {
 
-                this.stack = [];
-                this.state = { contexts: {}, routes: {} };
-                this.running = false;
+                let t = new This('$', this);
+                t.exec(new StopScript(this.main.id))
+
+            })
+            .map(() => {
+
+                this.state = newState(this);
                 this.pool = new Pool({});
 
             });
@@ -370,7 +373,7 @@ const newState = (app: App): State<Context> => ({
 
     contexts: {
 
-        $: newContext(nothing(), app, {
+        $: newContext(nothing(), app, new This('$', <any>app), {
             id: '$',
             create: () => new App(app.main),
             trap: (e: Err) => {
@@ -385,18 +388,20 @@ const newState = (app: App): State<Context> => ({
         })
 
     },
-    routes: {}
+    routers: {}
 
 });
 
 const newContext = (
     module: Maybe<ModuleContext>,
     actor: Actor<Context>,
+    runtime: Runtime<Context, System<Context>>,
     template: PotooTemplate<Context, App>): Context => ({
 
         module,
         mailbox: nothing(),
         actor,
+        runtime,
         behaviour: [],
         flags: { immutable: true, buffered: false },
         template

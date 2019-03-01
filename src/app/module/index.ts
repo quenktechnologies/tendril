@@ -1,10 +1,10 @@
+import * as express from 'express';
+import { just, nothing } from '@quenk/noni/lib/data/maybe';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
-import { Context } from '../state/context';
-import { Route, SupportedMethod } from '../op/route';
-import { Disable as DisableOp } from '../op/disable';
-import { Enable as EnableOp } from '../op/enable';
-import { Redirect as RedirectOp } from '../op/redirect';
+import { Method } from '../api/request';
+import { Context, getModule } from '../state/context';
+import { Context as RequestContext } from '../api/context';
 import { Filter } from '../api/filter';
 import { show } from '../api/action/show';
 import { App } from '../';
@@ -57,16 +57,60 @@ export class Module extends Immutable<Messages<any>, Context, App> {
 
     constructor(public system: App) { super(system); }
 
-    receive: Case<Messages<void>>[] = behave(this);
+    receive: Case<Messages<void>>[] = <Case<Messages<void>>[]>[
+
+        new Case(Disable, () => this.disable()),
+
+        new Case(Enable, () => this.enable()),
+
+        new Case(Redirect, (r: Redirect) => this.redirect(r.location, r.status))
+
+    ];
 
     /**
      * install a route into the module's routing table.
      *
      * This is done as sys op to provide transparency.
      */
-    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]): void {
+    install<A>(method: Method, path: string, filters: Filter<A>[]): void {
 
-        this.system.exec(new Route(this.self(), method, path, filters));
+        let maybeModule = getModule(this.system.state, this.self());
+
+        if (maybeModule.isJust()) {
+
+            let m = maybeModule.get();
+
+            m.app[method](path, (req: express.Request, res: express.Response) =>
+                new RequestContext(this, req, res, filters.slice()).run());
+
+        }
+
+    }
+
+    disable() {
+
+        getModule(this.system.state, this.self())
+            .map(m => { m.disabled = true; })
+            .orJust(() => console.warn(`${this.self()}: Cannot be disabled!`))
+            .get();
+
+    }
+
+    enable() {
+
+        getModule(this.system.state, this.self())
+            .map(m => { m.disabled = false; m.redirect = nothing() })
+            .orJust(() => console.warn(`${this.self()}: Cannot be enabled!`))
+            .get();
+
+    }
+
+    redirect(location: string, status: number) {
+
+        return getModule(this.system.state, this.self())
+            .map(m => { m.redirect = just({ location, status }) })
+            .orJust(() => console.warn(`${this.self()}: Cannot be enabled!`))
+            .get();
 
     }
 
@@ -82,22 +126,3 @@ export class Module extends Immutable<Messages<any>, Context, App> {
     run() { }
 
 }
-
-const behave = (m: Module): Case<Messages<void>>[] => (<Case<Messages<void>>[]>[
-
-    new Case(Disable, disable(m)),
-
-    new Case(Enable, enable(m)),
-
-    new Case(Redirect, redirect(m))
-
-]);
-
-const disable = (m: Module) => (_: Disable) =>
-    m.system.exec(new DisableOp(m));
-
-const enable = (m: Module) => (_: Enable) =>
-    m.system.exec(new EnableOp(m));
-
-const redirect = (m: Module) => ({ status, location }: Redirect) =>
-    m.system.exec(new RedirectOp(m, status, location));
