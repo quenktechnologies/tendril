@@ -3,6 +3,7 @@ import { ActionM } from '../../../../../src/app/api/action';
 import { Request } from '../../../../../src/app/api/request';
 import { tell } from '../../../../../src/app/api/action/tell';
 import { ok } from '../../../../../src/app/api/action/response/ok';
+import { header } from '../../../../../src/app/api/action/response';
 import { Response, ask } from '../../../../../src/app/api/action/ask';
 
 export const disable = (_: Request): ActionM<undefined> =>
@@ -19,3 +20,11 @@ export const redirect = (_: Request): ActionM<undefined> =>
 
 export const ping = (_: Request): ActionM<undefined> =>
     (ask<Response<string>>('/pong', 'ping').chain(r => ok(r)));
+
+export const xheaders = (_: Request): ActionM<undefined> =>
+    header({
+        'x-powered-by': 'Thanos',
+        'x-men': 'wolverine;storm;roll',
+        'x-mega': 'zero'
+    })
+        .chain(() => ok());

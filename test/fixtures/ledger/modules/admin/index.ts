@@ -16,7 +16,8 @@ export const template: Template = {
             m.install('delete', '/', [handlers.disable]);
             m.install('post', '/', [handlers.enable]);
             m.install('put', '/', [handlers.redirect]);
-            m.install('get', '/ping', [handlers.ping]);
+          m.install('get', '/ping', [handlers.ping]);
+          m.install('get', '/x-headers', [handlers.xheaders]);
 
         }
 

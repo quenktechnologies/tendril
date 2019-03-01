@@ -11,11 +11,12 @@ const ROUTE_ACCOUNTS_BALANCE = `${ROUTE_ACCOUNTS}/balance`;
 const ROUTE_REPORTS = `${ROUTE_ACCOUNTS}/reports`;
 const ROUTE_ADMIN = `${URL}/admin`;
 const ROUTE_ADMIN_PING = `${ROUTE_ADMIN}/ping`;
+const ROUTE_ADMIN_XHEADERS = `${ROUTE_ADMIN}/x-headers`;
 const ROUTE_ANALYTICS = `${URL}/analytics`;
 
 describe('ledger', () => {
 
-    let app: App = new App(template, { log: { level: Infinity } });
+    let app: App = new App(template, {  });
 
     beforeEach(() => process.env.APP_INIT = '');
 
@@ -166,4 +167,16 @@ describe('ledger', () => {
         request
             .get(ROUTE_ADMIN_PING)
             .then((r: any) => must(r.text).equal('pong')));
+
+    it('should send custom headers', () =>
+        request
+            .get(ROUTE_ADMIN_XHEADERS)
+            .then((r: any) => {
+
+                must(r.headers['x-powered-by']).equal('Thanos');
+                must(r.headers['x-men']).equal('wolverine;storm;roll');
+                must(r.headers['x-mega']).equal('zero');
+
+            }))
+
 });
