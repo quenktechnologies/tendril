@@ -1,7 +1,7 @@
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
+import { Method } from '../api/request';
 import { Context } from '../state/context';
-import { SupportedMethod } from '../op/route';
 import { Filter } from '../api/filter';
 import { App } from '../';
 /**
@@ -50,7 +50,10 @@ export declare class Module extends Immutable<Messages<any>, Context, App> {
      *
      * This is done as sys op to provide transparency.
      */
-    install<A>(method: SupportedMethod, path: string, filters: Filter<A>[]): void;
+    install<A>(method: Method, path: string, filters: Filter<A>[]): void;
+    disable(): void;
+    enable(): void;
+    redirect(location: string, status: number): void;
     /**
      * show constructrs a Filter for displaying a view.
      */

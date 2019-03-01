@@ -4,11 +4,12 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { State } from '@quenk/potoo/lib/actor/system/state';
 import { Message } from '@quenk/potoo/lib/actor/message';
-import { AbstractSystem } from '@quenk/potoo/lib/actor/system/abstract';
+import { AbstractSystem } from '@quenk/potoo/lib/actor/system/framework';
+import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { System } from '@quenk/potoo/lib/actor/system';
+import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { Op } from '@quenk/potoo/lib/actor/system/op';
 import { Server } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
@@ -24,11 +25,9 @@ export declare class App extends AbstractSystem<Context> implements System<Conte
     configuration: config.Configuration;
     constructor(main: Template, configuration?: config.Configuration);
     state: State<Context>;
-    stack: Op<Context, App>[];
-    running: boolean;
     server: Server;
     pool: Pool;
-    allocate(t: PotooTemplate<Context, App>): Context;
+    allocate(a: Actor<Context>, r: Runtime<Context, System<Context>>, t: PotooTemplate<Context, App>): Context;
     /**
      * tell a message to an actor in the system.
      */
