@@ -2,7 +2,7 @@ import { Disable, Enable, Redirect } from '../../../../../src/app/module';
 import { ActionM } from '../../../../../src/app/api/action';
 import { Request } from '../../../../../src/app/api/request';
 import { tell } from '../../../../../src/app/api/action/tell';
-import { ok } from '../../../../../src/app/api/action/response/ok';
+import { ok } from '../../../../../src/app/api/action/response';
 import { header } from '../../../../../src/app/api/action/response';
 import { Response, ask } from '../../../../../src/app/api/action/ask';
 

@@ -2,7 +2,7 @@ import { ActionM } from '../../../../../../../src/app/api/action';
 import { Request } from '../../../../../../../src/app/api/request';
 import { next } from '../../../../../../../src/app/api/action/next';
 import { show } from '../../../../../../../src/app/api/action/show';
-import { forbidden } from '../../../../../../../src/app/api/action/response/forbidden';
+import { forbidden } from '../../../../../../../src/app/api/action/response';
 
 const reports = ['expense', 'income', 'assets'];
 
