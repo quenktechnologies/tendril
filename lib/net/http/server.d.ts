@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import * as http from 'http';
 import * as net from 'net';
 import { Maybe } from '@quenk/noni/lib/data/maybe';

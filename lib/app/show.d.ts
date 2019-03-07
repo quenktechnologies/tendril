@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Future } from '@quenk/noni/lib/control/monad/future';
 /**
  * Show is a function the application can use to produce

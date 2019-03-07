@@ -4,6 +4,7 @@
 /** imports */
 import * as status from './status';
 import { Future } from '@quenk/noni/lib/control/monad/future';
+import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Context } from '../../context';
 import { Action } from '../';
@@ -38,3 +39,135 @@ export declare class Header<A> extends Action<A> {
  * header queues up on or more headers to send to the client.
  */
 export declare const header: (list: Headers) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Accepted response.
+ */
+export declare class Accepted<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): Accepted<B, AA>;
+}
+/**
+ * accepted sends the "ACCEPTED" status to the client with optional body.
+ */
+export declare const accepted: <A>(body: A) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * BadRequest response.
+ */
+export declare class BadRequest<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): BadRequest<B, AA>;
+}
+/**
+ * badRequest sends the "BAD REQUEST" status to the client with optional body.
+ */
+export declare const badRequest: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Conflict response.
+ */
+export declare class Conflict<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): Conflict<B, AA>;
+}
+/**
+ * conflict sends the "CONFLICT" status to the client with optional body.
+ */
+export declare const conflict: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Created response.
+ */
+export declare class Created<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): Created<B, AA>;
+}
+/**
+ * created sends the "CREATED" status to the client with optional body.
+ */
+export declare const created: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * InternalServerError response.
+ */
+export declare class InternalServerError<A> extends Response<Err, A> {
+    body: Maybe<Err>;
+    next: A;
+    constructor(body: Maybe<Err>, next: A);
+    status: number;
+    map<B>(f: (a: A) => B): InternalServerError<B>;
+    exec({ response }: Context<A>): Future<A>;
+}
+/**
+ * error sends the "INTERNAL SERVER ERROR" status and can optionally log
+ * the error to console.
+ */
+export declare const error: (err?: Err | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Forbiddden response.
+ */
+export declare class Forbidden<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): Forbidden<B, AA>;
+}
+/**
+ * forbidden sends the "FORBIDDEN" status to the client with optional body.
+ */
+export declare const forbidden: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * NoContent response.
+ */
+export declare class NoContent<A> extends Response<void, A> {
+    next: A;
+    constructor(next: A);
+    status: number;
+    map<B>(f: (a: A) => B): NoContent<B>;
+}
+/**
+ * noContent sends the "NO CONTENT" status to the client.
+ */
+export declare const noContent: () => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * NotFound response.
+ */
+export declare class NotFound<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): NotFound<B, AA>;
+}
+/**
+ * notFound sends the "NOT FOUND" status to the client with optional body.
+ */
+export declare const notFound: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Ok action.
+ */
+export declare class Ok<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): Ok<B, AA>;
+}
+/**
+ * ok sends the "OK" status to the client with optional body.
+ */
+export declare const ok: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Redirect action.
+ */
+export declare class Redirect<A> extends Action<A> {
+    url: string;
+    code: number;
+    next: A;
+    constructor(url: string, code: number, next: A);
+    map<B>(f: (a: A) => B): Redirect<B>;
+    exec({ response }: Context<A>): Future<A>;
+}
+/**
+ * redirect the client to a new resource.
+ */
+export declare const redirect: (url: string, code: number) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Unauthorized response.
+ */
+export declare class Unauthorized<B, A> extends Response<B, A> {
+    status: number;
+    map<AA>(f: (a: A) => AA): Unauthorized<B, AA>;
+}
+/**
+ * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
+ */
+export declare const unauthorized: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
