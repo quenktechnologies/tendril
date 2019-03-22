@@ -36,7 +36,7 @@ import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Server, Configuration } from '../net/http/server';
-import { Pool } from './connection';
+import { Pool,getInstance } from './connection';
 import { Template } from './module/template';
 import { Context, Module as ModuleContext, getModule } from './state/context';
 
@@ -56,7 +56,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
 
     server: Server = new Server(defaultServerConf(this.main.server));
 
-    pool: Pool = new Pool({});
+  pool: Pool = getInstance();
 
     allocate(
         a: Actor<Context>,

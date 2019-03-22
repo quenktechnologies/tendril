@@ -84,3 +84,7 @@ export declare class Pool {
      */
     close(): Future<void>;
 }
+/**
+ * getInstance provides the singleton instance of the connection pool.
+ */
+export declare const getInstance: () => Pool;

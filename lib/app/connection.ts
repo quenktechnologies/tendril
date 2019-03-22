@@ -122,3 +122,11 @@ export class Pool {
     }
 
 }
+
+// store connections in one place.
+const pool = new Pool({});
+
+/**
+ * getInstance provides the singleton instance of the connection pool.
+ */
+export const getInstance = () : Pool => pool;
