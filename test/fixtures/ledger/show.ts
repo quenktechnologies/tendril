@@ -1,19 +1,23 @@
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { Content } from '../../../src/app/show';
 
-const views: { [key: string]: string } = {
+export interface Context { [key: string]: string }
 
-    index: '<b>Index</b>',
+const views: { [key: string]: (o: any) => string } = {
 
-    accounts: 'Chart of Accounts',
+    index: () => '<b>Index</b>',
 
-    balance: '$0.00',
+    accounts: () => 'Chart of Accounts',
 
-    reports: 'A list of reports',
+    balance: () => '$0.00',
 
-    income: 'Income Report'
+    reports: () => 'A list of reports',
+
+  custom: (o: any) => `${o.content}`,
+
+    income: () => 'Income Report'
 
 }
 
-export const show = (view: string): Future<Content> =>
-    pure(<Content>{ type: 'text/plain', content: views[view] })
+export const show = (view: string, ctx: Context = {}): Future<Content> =>
+    pure(<Content>{ type: 'text/plain', content: views[view](ctx) })

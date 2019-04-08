@@ -9,6 +9,7 @@ const FILE_STYLE_CSS = `${URL}/style.css`;
 const ROUTE_ACCOUNTS = `${URL}/accounts`;
 const ROUTE_ACCOUNTS_BALANCE = `${ROUTE_ACCOUNTS}/balance`;
 const ROUTE_REPORTS = `${ROUTE_ACCOUNTS}/reports`;
+const ROUTE_REPORTS_CUSTOM = `${ROUTE_REPORTS}/custom`;
 const ROUTE_ADMIN = `${URL}/admin`;
 const ROUTE_ADMIN_PING = `${ROUTE_ADMIN}/ping`;
 const ROUTE_ADMIN_XHEADERS = `${ROUTE_ADMIN}/x-headers`;
@@ -16,7 +17,7 @@ const ROUTE_ANALYTICS = `${URL}/analytics`;
 
 describe('ledger', () => {
 
-    let app: App = new App(template, {  });
+    let app: App = new App(template, {});
 
     beforeEach(() => process.env.APP_INIT = '');
 
@@ -178,5 +179,10 @@ describe('ledger', () => {
                 must(r.headers['x-mega']).equal('zero');
 
             }))
+
+    it('should provide context to views', () =>
+        request
+            .get(ROUTE_REPORTS_CUSTOM)
+            .then((r: any) => must(r.text).equal('Custom')));
 
 });

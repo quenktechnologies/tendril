@@ -4,7 +4,7 @@ import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
 import { getModule } from '../../state/context';
 import { Context } from '../context';
-import { Action,ActionM } from './';
+import { Action, ActionM } from './';
 /**
  * Show action.
  */
@@ -26,7 +26,7 @@ export class Show<A, C> extends Action<A> {
         return getModule(module.system.state, module.self())
             .chain(m => m.show)
             .map(f =>
-                f(this.view, this.context)
+              f(this.view, <any>this.context.orJust(()=>({})).get())
                     .chain(c => {
 
                         response.set(headers.CONTENT_TYPE, c.type);

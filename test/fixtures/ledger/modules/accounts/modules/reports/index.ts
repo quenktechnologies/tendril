@@ -16,6 +16,10 @@ export const template: Template = {
 
             m.install('get', '/', [() => (show('reports'))]);
 
+            m.install('get', '/custom', [
+              () => { console.error('fuputa '); return show('custom', { content: 'Custom' }); }
+            ]);
+
             m.install('get', '/:report', [
                 filters.modify,
                 filters.isReport,
