@@ -5,12 +5,14 @@
 /** imports */
 import * as status from './status';
 import * as express from 'express';
-import { Future, attempt, pure } from '@quenk/noni/lib/control/monad/future';
+import * as headers from '../../../../net/http/headers';
+import { Future, attempt, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
 import { Context } from '../../context';
 import { Action, ActionM } from '../';
+import { getModule } from '../../../state/context';
 
 /**
  * Headers map.
@@ -302,7 +304,7 @@ export class Redirect<A> extends Action<A> {
 
     }
 
-  exec({ response }: Context<A>): Future<A> {
+    exec({ response }: Context<A>): Future<A> {
 
         return attempt(() => response.redirect(this.url, this.code))
             .chain(() => pure(this.next));
@@ -337,3 +339,51 @@ export class Unauthorized<B, A> extends Response<B, A> {
  */
 export const unauthorized = <A>(body?: A): ActionM<undefined> =>
     liftF(new Unauthorized(fromNullable(body), undefined));
+
+/**
+ * Show action.
+ */
+export class Show<A, C> extends Action<A> {
+
+    constructor(
+        public view: string,
+        public context: Maybe<C>,
+        public status: status.Status,
+        public next: A) { super(next); }
+
+    map<B>(f: (a: A) => B): Show<B, C> {
+
+        return new Show(this.view, this.context, this.status, f(this.next));
+
+    }
+
+    exec({ response, module }: Context<A>): Future<A> {
+
+        return getModule(module.system.state, module.self())
+            .chain(m => m.show)
+            .map(f =>
+                f(this.view, <any>this.context.orJust(() => ({})).get())
+                    .chain(c => {
+
+                        response.set(headers.CONTENT_TYPE, c.type);
+                        response.status(this.status);
+                        response.write(c.content);
+                        response.end();
+
+                        return pure(this.next);
+
+                    }))
+            .orJust(() => raise<A>(new Error(`${module.self()}: ` +
+                `No view engine configured!`)))
+            .get();
+
+    }
+
+}
+
+/**
+ * show the client some content.
+ */
+export const show = <C>
+    (view: string, context?: C, status = 200): ActionM<undefined> =>
+    liftF(new Show(view, fromNullable(context), status, undefined));

@@ -6,7 +6,7 @@ import { Method } from '../api/request';
 import { Context, getModule } from '../state/context';
 import { Context as RequestContext } from '../api/context';
 import { Filter } from '../api/filter';
-import { show } from '../api/action/show';
+import { show } from '../api/action/response';
 import { App } from '../';
 
 /**

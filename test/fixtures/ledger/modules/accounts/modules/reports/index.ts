@@ -2,7 +2,7 @@ import * as filters from './filters';
 import { Template } from '../../../../../../../src/app/module/template';
 import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
-import { show } from '../../../../../../../src/app/api/action/show';
+import { show } from '../../../../../../../src/app/api/action/response';
 
 export const template: Template = {
 

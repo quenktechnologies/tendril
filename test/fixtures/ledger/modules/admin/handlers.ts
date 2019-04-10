@@ -1,10 +1,10 @@
 import { Disable, Enable, Redirect } from '../../../../../src/app/module';
 import { ActionM } from '../../../../../src/app/api/action';
 import { Request } from '../../../../../src/app/api/request';
-import { tell } from '../../../../../src/app/api/action/tell';
 import { ok } from '../../../../../src/app/api/action/response';
 import { header } from '../../../../../src/app/api/action/response';
-import { Response, ask } from '../../../../../src/app/api/action/ask';
+import { Response, ask,tell } 
+from '../../../../../src/app/api/action/control/actor';
 
 export const disable = (_: Request): ActionM<undefined> =>
     (tell('/accounts', new Disable())

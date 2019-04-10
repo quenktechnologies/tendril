@@ -3,8 +3,7 @@ import { Object } from '@quenk/noni/lib/data/json';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Request } from '../../../../../src/app/api/request';
 import { ActionM } from '../../../../../src/app/api/action';
-import { await } from '../../../../../src/app/api/action/await';
-import { value } from '../../../../../src/app/api/action/control';
+import { await, value } from '../../../../../src/app/api/action/control';
 import { created } from '../../../../../src/app/api/action/response';
 import { Memgo } from '../../../memgodb';
 
