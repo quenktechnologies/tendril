@@ -171,3 +171,19 @@ export declare class Unauthorized<B, A> extends Response<B, A> {
  * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
  */
 export declare const unauthorized: <A>(body?: A | undefined) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+/**
+ * Show action.
+ */
+export declare class Show<A, C> extends Action<A> {
+    view: string;
+    context: Maybe<C>;
+    status: status.Status;
+    next: A;
+    constructor(view: string, context: Maybe<C>, status: status.Status, next: A);
+    map<B>(f: (a: A) => B): Show<B, C>;
+    exec({ response, module }: Context<A>): Future<A>;
+}
+/**
+ * show the client some content.
+ */
+export declare const show: <C>(view: string, context?: C | undefined, status?: number) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
