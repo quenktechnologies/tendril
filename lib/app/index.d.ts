@@ -20,14 +20,15 @@ import { Context, Module as ModuleContext } from './state/context';
  * This class functions as an actor system and your
  * application.
  */
-export declare class App extends AbstractSystem<Context> implements System<Context> {
+export declare class App extends AbstractSystem implements System {
     main: Template;
     configuration: config.Configuration;
     constructor(main: Template, configuration?: config.Configuration);
     state: State<Context>;
     server: Server;
     pool: Pool;
-    allocate(a: Actor<Context>, r: Runtime<Context, System<Context>>, t: PotooTemplate<Context, App>): Context;
+    init(c: Context): Context;
+    allocate(a: Actor<Context>, r: Runtime, t: PotooTemplate<App>): Context;
     /**
      * tell a message to an actor in the system.
      */
@@ -37,7 +38,7 @@ export declare class App extends AbstractSystem<Context> implements System<Conte
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<Context, App>): App;
+    spawn(tmpl: PotooTemplate<App>): App;
     /**
      * spawnModule (not a generic actor) from a template.
      *

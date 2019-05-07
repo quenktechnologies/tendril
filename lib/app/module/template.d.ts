@@ -2,7 +2,6 @@ import * as T from '@quenk/potoo/lib/actor/template';
 import * as server from '../../net/http/server';
 import * as app from '../configuration';
 import * as connection from '../connection';
-import { Context } from '../state/context';
 import { Module } from '../module';
 import { App } from '../';
 /**
@@ -12,7 +11,7 @@ export declare type Connector = (...options: any[]) => connection.Connection;
 /**
  * Template for spawning a Module.
  */
-export interface Template extends T.Template<Context, App> {
+export interface Template extends T.Template<App> {
     /**
      * disabled indicates whether the module should be disabled or not.
      */

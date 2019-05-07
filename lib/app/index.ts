@@ -36,7 +36,7 @@ import { Actor } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Server, Configuration } from '../net/http/server';
-import { Pool,getInstance } from './connection';
+import { Pool, getInstance } from './connection';
 import { Template } from './module/template';
 import { Context, Module as ModuleContext, getModule } from './state/context';
 
@@ -46,7 +46,7 @@ import { Context, Module as ModuleContext, getModule } from './state/context';
  * This class functions as an actor system and your
  * application.
  */
-export class App extends AbstractSystem<Context> implements System<Context> {
+export class App extends AbstractSystem implements System {
 
     constructor(
         public main: Template,
@@ -56,12 +56,18 @@ export class App extends AbstractSystem<Context> implements System<Context> {
 
     server: Server = new Server(defaultServerConf(this.main.server));
 
-  pool: Pool = getInstance();
+    pool: Pool = getInstance();
+
+    init(c: Context): Context {
+
+        return c;
+
+    }
 
     allocate(
         a: Actor<Context>,
-        r: Runtime<Context, System<Context>>,
-        t: PotooTemplate<Context, App>): Context {
+        r: Runtime,
+        t: PotooTemplate<App>): Context {
 
         return newContext(nothing(), a, r, t);
 
@@ -82,9 +88,9 @@ export class App extends AbstractSystem<Context> implements System<Context> {
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<Context, App>): App {
+    spawn(tmpl: PotooTemplate<App>): App {
 
-        (new This('$', this)).exec(new SpawnScript('', tmpl));
+        (new This('$', this)).exec(new SpawnScript('', <PotooTemplate<System>>tmpl));
         return this;
 
     }
@@ -100,7 +106,7 @@ export class App extends AbstractSystem<Context> implements System<Context> {
         let module = tmpl.create(this);
         let app = express();
         let address = defaultAddress(path, parent);
-        let runtime = new This(address, <any>this);
+        let runtime = new This(address, this);
 
         let mctx: ModuleContext = {
             path,
@@ -121,13 +127,14 @@ export class App extends AbstractSystem<Context> implements System<Context> {
         };
 
         put(this.state, address,
-            module.init(newContext(just(mctx), module, <any>runtime, tmpl)));
+            module.init(newContext(just(mctx), module, runtime, tmpl)));
 
         if (tmpl.app && tmpl.app.modules)
             map(tmpl.app.modules, (m, k) => this.spawnModule(k, just(mctx), m));
 
         if (Array.isArray(tmpl.children))
-            tmpl.children.forEach(c => runtime.exec(new SpawnScript(address, c)));
+            tmpl.children.forEach(c =>
+                runtime.exec(new SpawnScript(address, <PotooTemplate<System>>c)));
 
         return this;
 
@@ -373,7 +380,7 @@ const newState = (app: App): State<Context> => ({
 
     contexts: {
 
-        $: newContext(nothing(), app, new This('$', <any>app), {
+        $: newContext(nothing(), app, new This('$', app), {
             id: '$',
             create: () => new App(app.main),
             trap: (e: Err) => {
@@ -388,15 +395,17 @@ const newState = (app: App): State<Context> => ({
         })
 
     },
-    routers: {}
+    routers: {},
+
+    groups: {}
 
 });
 
 const newContext = (
     module: Maybe<ModuleContext>,
     actor: Actor<Context>,
-    runtime: Runtime<Context, System<Context>>,
-    template: PotooTemplate<Context, App>): Context => ({
+    runtime: Runtime,
+    template: PotooTemplate<App>): Context => ({
 
         module,
         mailbox: nothing(),
@@ -404,6 +413,6 @@ const newContext = (
         runtime,
         behaviour: [],
         flags: { immutable: true, buffered: false },
-        template
+        template: <PotooTemplate<System>>template
 
     });

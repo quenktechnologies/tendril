@@ -57,14 +57,14 @@ export class Collection {
 
     find(query: Object): Future<Maybe<Object[]>> {
 
-        return pure(fromArray(this.data.filter(c => reduce(query, false,
+        return pure(fromArray(this.data.filter(c => reduce(query, <boolean>false,
             (pre, curr, key) => pre ? (c[key] === curr) : pre))));
 
     }
 
     findOne(query: Object): Future<Maybe<Object>> {
 
-        return pure(fromArray(this.data.filter(c => reduce(query, false,
+        return pure(fromArray(this.data.filter(c => reduce(query, <boolean>false,
             (pre, curr, key) => pre ? (c[key] === curr) : pre)))
             .map(a => a[0]));
 
