@@ -1,10 +1,12 @@
+import { raise } from '@quenk/noni/lib/control/monad/future';
 import { Disable, Enable, Redirect } from '../../../../../src/app/module';
+import { await } from '../../../../../src/app/api/action/control';
 import { ActionM } from '../../../../../src/app/api/action';
 import { Request } from '../../../../../src/app/api/request';
 import { ok } from '../../../../../src/app/api/action/response';
 import { header } from '../../../../../src/app/api/action/response';
-import { Response, ask,tell } 
-from '../../../../../src/app/api/action/control/actor';
+import { Response, ask, tell }
+    from '../../../../../src/app/api/action/control/actor';
 
 export const disable = (_: Request): ActionM<undefined> =>
     (tell('/accounts', new Disable())
@@ -28,3 +30,6 @@ export const xheaders = (_: Request): ActionM<undefined> =>
         'x-mega': 'zero'
     })
         .chain(() => ok());
+
+export const crash = (_: Request): ActionM<undefined> =>
+    await(() => raise(Error('crashed!')));

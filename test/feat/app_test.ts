@@ -1,5 +1,5 @@
 import * as request from 'superagent';
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { toPromise } from '@quenk/noni/lib/control/monad/future';
 import { App } from '../../src/app';
 import { template } from '../fixtures/ledger';
@@ -12,177 +12,203 @@ const ROUTE_REPORTS = `${ROUTE_ACCOUNTS}/reports`;
 const ROUTE_REPORTS_CUSTOM = `${ROUTE_REPORTS}/custom`;
 const ROUTE_ADMIN = `${URL}/admin`;
 const ROUTE_ADMIN_PING = `${ROUTE_ADMIN}/ping`;
+const ROUTE_ADMIN_CRASH = `${ROUTE_ADMIN}/crash`;
 const ROUTE_ADMIN_XHEADERS = `${ROUTE_ADMIN}/x-headers`;
 const ROUTE_ANALYTICS = `${URL}/analytics`;
 
-describe('ledger', () => {
+describe('tendril', () => {
 
-    let app: App = new App(template, {});
+    describe('ledger', () => {
 
-    beforeEach(() => process.env.APP_INIT = '');
+        let app: App = new App(template, {});
 
-    beforeEach(() => process.env.APP_CONNECTED = '');
+        beforeEach(() => process.env.APP_INIT = '');
 
-    beforeEach(() => process.env.APP_START = '');
+        beforeEach(() => process.env.APP_CONNECTED = '');
 
-    beforeEach(() => toPromise(app.start()));
+        beforeEach(() => process.env.APP_START = '');
 
-    afterEach(() => toPromise(app.stop()));
+        beforeEach(() => toPromise(app.start()));
 
-    it('should invoke init hook',
-        () => must(process.env.APP_INIT).equal('true'));
+        afterEach(() => toPromise(app.stop()));
 
-    it('should invoke connected hook',
-        () => must(process.env.APP_CONNECTED).equal('true'));
+        it('should invoke init hook',
+            () => assert(process.env.APP_INIT).equal('true'));
 
-    it('should invoke connected hook',
-        () => must(process.env.APP_START).equal('true'));
+        it('should invoke connected hook',
+            () => assert(process.env.APP_CONNECTED).equal('true'));
 
-    it('should have connections',
-        () => must(app.pool.store['main']).not.be.undefined());
+        it('should invoke connected hook',
+            () => assert(process.env.APP_START).equal('true'));
 
-    it('should show views', () =>
-        request
-            .get(URL)
-            .then((r: any) =>
-                must(r.text).equal('<b>Index</b>')));
+        it('should have connections',
+            () => assert(app.pool.store['main']).not.be.undefined());
 
-    it('should show parent views if none configured for child', () =>
-        request
-            .get(ROUTE_ACCOUNTS_BALANCE)
-            .then((r: any) =>
-                must(r.text).equal('$0.00')));
+        it('should show views', () =>
+            request
+                .get(URL)
+                .then((r: any) =>
+                    assert(r.text).equal('<b>Index</b>')));
 
-    it('should bubble views up', () =>
-        request
-            .get(ROUTE_REPORTS)
-            .then((r: any) =>
-                must(r.text).equal('A list of reports')));
+        it('should show parent views if none configured for child', () =>
+            request
+                .get(ROUTE_ACCOUNTS_BALANCE)
+                .then((r: any) =>
+                    assert(r.text).equal('$0.00')));
 
-    it('should apply middleware', () =>
-        request
-            .get(FILE_STYLE_CSS)
-            .then((r: any) =>
-                must(r.text).equal('body{background:black;color:white;}\n')));
+        it('should bubble views up', () =>
+            request
+                .get(ROUTE_REPORTS)
+                .then((r: any) =>
+                    assert(r.text).equal('A list of reports')));
 
-    it('should configure post routes', () =>
-        request
-            .post(ROUTE_ACCOUNTS)
-            .send({ name: 'sundry', class: 'expense' })
-            .then((r: any) =>
-                must(r.body.id).not.equal(undefined)));
+        it('should apply middleware', () =>
+            request
+                .get(FILE_STYLE_CSS)
+                .then((r: any) =>
+                    assert(r.text).equal('body{background:black;color:white;}\n')));
 
-    it('should run filters', () => {
+        it('should configure post routes', () =>
+            request
+                .post(ROUTE_ACCOUNTS)
+                .send({ name: 'sundry', class: 'expense' })
+                .then((r: any) =>
+                    assert(r.body.id).not.equal(undefined)));
 
-        let fourohfoured = false;
+        it('should run filters', () => {
 
-        return request
-            .get(`${ROUTE_REPORTS}/xincome`)
-            .then((r: any) => must(r.text).equal('Income Report'))
-            .then(() => request.get(`${ROUTE_REPORTS}/xexpense`))
-            .then((r: any) => must(r.text).equal('A list of reports'))
-            .then(() => request.get(`${ROUTE_REPORTS}/liabilities`))
-            .catch((e: Error) => {
+            let fourohfoured = false;
 
-                if (e.message !== 'Forbidden') throw e;
+            return request
+                .get(`${ROUTE_REPORTS}/xincome`)
+                .then((r: any) => assert(r.text).equal('Income Report'))
+                .then(() => request.get(`${ROUTE_REPORTS}/xexpense`))
+                .then((r: any) => assert(r.text).equal('A list of reports'))
+                .then(() => request.get(`${ROUTE_REPORTS}/liabilities`))
+                .catch((e: Error) => {
 
-                fourohfoured = true;
-                return fourohfoured;
+                    if (e.message !== 'Forbidden') throw e;
 
-            })
+                    fourohfoured = true;
+                    return fourohfoured;
+
+                })
+
+        });
+
+        it('should allow modules to be recursively disabled', () =>
+            request
+                .get(ROUTE_ACCOUNTS)
+                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('$0.00'))
+                .then(() => request.delete(ROUTE_ADMIN))
+                .then(() => request.get(ROUTE_ACCOUNTS)
+                    .catch((e: Error) => assert(e.message).equal('Not Found')))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
+                    .catch((e: Error) => assert(e.message).equal('Not Found'))));
+
+        it('should allow modules to enable each other recursively', () =>
+            request
+                .get(ROUTE_ACCOUNTS)
+                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('$0.00'))
+                .then(() => request.delete(ROUTE_ADMIN))
+                .then(() => request.get(ROUTE_ACCOUNTS)
+                    .catch((e: Error) => assert(e.message).equal('Not Found')))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
+                    .catch((e: Error) => assert(e.message).equal('Not Found')))
+                .then(() => request.post(ROUTE_ADMIN))
+                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('$0.00')));
+
+        it('should allow modules to redirect each other recursively', () =>
+            request
+                .get(ROUTE_ACCOUNTS)
+                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
+                .then(() => request.put(ROUTE_ADMIN))
+                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then((r: any) => assert(r.text).equal('<b>Index</b>'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('<b>Index</b>')));
+
+        it('should stop redirecting enabled modules', () =>
+            request
+                .get(ROUTE_ACCOUNTS)
+                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('$0.00'))
+                .then(() => request.put(ROUTE_ADMIN))
+                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then((r: any) => assert(r.text).equal('<b>Index</b>'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('<b>Index</b>'))
+                .then(() => request.post(ROUTE_ADMIN))
+                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then((r: any) => assert(r.text).equal('$0.00')))
+
+        it('should acknowledge some modules start disabled', () =>
+            request
+                .get(ROUTE_ANALYTICS)
+                .catch((e: Error) => assert(e.message).equal('Not Found')));
+
+        it('should spawn child actors', () => {
+
+            assert(process.env.CHILD_RUNNING).equal('yes');
+
+        });
+
+        it('should stop child actors', () =>
+            toPromise(app.stop())
+                .then(() => assert(process.env.CHILD_RUNNING).equal('no')));
+
+        it('should allow asking of actors', () =>
+            request
+                .get(ROUTE_ADMIN_PING)
+                .then((r: any) => assert(r.text).equal('pong')));
+
+        it('should send custom headers', () =>
+            request
+                .get(ROUTE_ADMIN_XHEADERS)
+                .then((r: any) => {
+
+                    assert(r.headers['x-powered-by']).equal('Thanos');
+                    assert(r.headers['x-men']).equal('wolverine;storm;roll');
+                    assert(r.headers['x-mega']).equal('zero');
+
+                }))
+
+        it('should provide context to views', () =>
+            request
+                .get(ROUTE_REPORTS_CUSTOM)
+                .then((r: any) => assert(r.text).equal('Custom')));
 
     });
 
-    it('should allow modules to be recursively disabled', () =>
-        request
-            .get(ROUTE_ACCOUNTS)
-            .then((r: any) => must(r.text).equal('Chart of Accounts'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('$0.00'))
-            .then(() => request.delete(ROUTE_ADMIN))
-            .then(() => request.get(ROUTE_ACCOUNTS)
-                .catch((e: Error) => must(e.message).equal('Not Found')))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
-                .catch((e: Error) => must(e.message).equal('Not Found'))));
+    describe('error escalation', () => {
 
-    it('should allow modules to enable each other recursively', () =>
-        request
-            .get(ROUTE_ACCOUNTS)
-            .then((r: any) => must(r.text).equal('Chart of Accounts'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('$0.00'))
-            .then(() => request.delete(ROUTE_ADMIN))
-            .then(() => request.get(ROUTE_ACCOUNTS)
-                .catch((e: Error) => must(e.message).equal('Not Found')))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
-                .catch((e: Error) => must(e.message).equal('Not Found')))
-            .then(() => request.post(ROUTE_ADMIN))
-            .then(() => request.get(ROUTE_ACCOUNTS))
-            .then((r: any) => must(r.text).equal('Chart of Accounts'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('$0.00')));
+        let app: App = new App(template, {});
 
-    it('should allow modules to redirect each other recursively', () =>
-        request
-            .get(ROUTE_ACCOUNTS)
-            .then((r: any) => must(r.text).equal('Chart of Accounts'))
-            .then(() => request.put(ROUTE_ADMIN))
-            .then(() => request.get(ROUTE_ACCOUNTS))
-            .then((r: any) => must(r.text).equal('<b>Index</b>'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('<b>Index</b>')));
+        beforeEach(() => toPromise(app.start()));
 
-    it('should stop redirecting enabled modules', () =>
-        request
-            .get(ROUTE_ACCOUNTS)
-            .then((r: any) => must(r.text).equal('Chart of Accounts'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('$0.00'))
-            .then(() => request.put(ROUTE_ADMIN))
-            .then(() => request.get(ROUTE_ACCOUNTS))
-            .then((r: any) => must(r.text).equal('<b>Index</b>'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('<b>Index</b>'))
-            .then(() => request.post(ROUTE_ADMIN))
-            .then(() => request.get(ROUTE_ACCOUNTS))
-            .then((r: any) => must(r.text).equal('Chart of Accounts'))
-            .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
-            .then((r: any) => must(r.text).equal('$0.00')))
+        afterEach(() => toPromise(app.stop()));
 
-    it('should acknowledge some modules start disabled', () =>
-        request
-            .get(ROUTE_ANALYTICS)
-            .catch((e: Error) => must(e.message).equal('Not Found')));
+        it('should respond with 500', () =>
+            request
+                .get(ROUTE_ADMIN_CRASH)
+                .then(() => assert(false).true())
+                .catch((e) => {
 
-    it('should spawn child actors', () => {
+                    assert(e.response).object();
+                    assert(e.response.status).equal(500);
 
-        must(process.env.CHILD_RUNNING).equal('yes');
+                }));
 
     });
-
-    it('should stop child actors', () =>
-        toPromise(app.stop())
-            .then(() => must(process.env.CHILD_RUNNING).equal('no')));
-
-    it('should allow asking of actors', () =>
-        request
-            .get(ROUTE_ADMIN_PING)
-            .then((r: any) => must(r.text).equal('pong')));
-
-    it('should send custom headers', () =>
-        request
-            .get(ROUTE_ADMIN_XHEADERS)
-            .then((r: any) => {
-
-                must(r.headers['x-powered-by']).equal('Thanos');
-                must(r.headers['x-men']).equal('wolverine;storm;roll');
-                must(r.headers['x-mega']).equal('zero');
-
-            }))
-
-    it('should provide context to views', () =>
-        request
-            .get(ROUTE_REPORTS_CUSTOM)
-            .then((r: any) => must(r.text).equal('Custom')));
 
 });

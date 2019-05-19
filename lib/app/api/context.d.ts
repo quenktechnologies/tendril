@@ -6,7 +6,7 @@ import { Filter } from './filter';
 /**
  * Context represents the context of the http request.
  *
- * It provides an api that assits with filtering the request and response.
+ * It provides an api that assists with filtering the request and response.
  */
 export declare class Context<A> {
     module: Module;

@@ -1,14 +1,15 @@
 import * as express from 'express';
+import { Err } from '@quenk/noni/lib/control/error';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
 import { Module } from '../module';
-import { ActionM,  } from './action';
-import {  Filter } from './filter';
+import { ActionM, } from './action';
+import { Filter } from './filter';
 
 /**
  * Context represents the context of the http request.
  * 
- * It provides an api that assits with filtering the request and response.
+ * It provides an api that assists with filtering the request and response.
  */
 export class Context<A> {
 
@@ -31,11 +32,15 @@ export class Context<A> {
      */
     run(): void {
 
-        //@todo escalate errors
         this
             .next()
             .chain(n => n.foldM(() => pure<any>(noop()), n => n.exec(this)))
-            .fork(console.error, console.log);
+            .fork((e: Err) => {
+
+                this.response.sendStatus(500);
+                this.module.raise(e);
+
+            }, console.log);
 
     }
 
