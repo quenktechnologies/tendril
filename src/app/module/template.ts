@@ -13,7 +13,7 @@ export type Connector = (...options: any[]) => connection.Connection;
 /**
  * Template for spawning a Module.
  */
-export interface Template extends T.Template<App> {
+export interface Template<S extends App> extends T.Template<S> {
 
     /**
      * disabled indicates whether the module should be disabled or not.
@@ -25,7 +25,7 @@ export interface Template extends T.Template<App> {
      *
      * Overrides the base function to specifically provide a module.
      */
-    create: (s: App) => Module,
+    create: (s: S) => Module,
 
     /**
      * server configuration settings.
@@ -40,7 +40,7 @@ export interface Template extends T.Template<App> {
     /**
      * app configuration settings.
      */
-    app?: app.Configuration,
+    app?: app.Configuration<S>,
 
 }
 
@@ -61,5 +61,23 @@ export interface Connection {
     connector: Connector,
 
     options?: any[]
+
+}
+
+/**
+ * Spawnables map.
+ */
+export interface Spawnables {
+
+    [key: string]: Spawnable
+
+}
+
+/**
+ * Spawnable is a declartive alternative for specifying child actors.
+ */
+export interface Spawnable {
+
+    //  module: Constructor<Actor<C>>,
 
 }

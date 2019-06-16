@@ -49,7 +49,7 @@ import { Context, Module as ModuleContext, getModule } from './state/context';
 export class App extends AbstractSystem implements System {
 
     constructor(
-        public main: Template,
+        public main: Template<App>,
         public configuration: config.Configuration = {}) { super(configuration); }
 
     state: State<Context> = newState(this);
@@ -101,7 +101,10 @@ export class App extends AbstractSystem implements System {
      * A module may or may not have a parent. In the case of the latter the
      * module should be the root module of tha App.
      */
-    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
+    spawnModule(
+        path: string,
+        parent: Maybe<ModuleContext>,
+        tmpl: Template<App>): App {
 
         let module = tmpl.create(this);
         let app = express();
@@ -282,28 +285,28 @@ const defaultAddress = (path: string, parent: Maybe<ModuleContext>) =>
         .orJust(() => path)
         .get();
 
-const defaultHooks = (t: Template) => (t.app && t.app.on) ?
+const defaultHooks = (t: Template<App>) => (t.app && t.app.on) ?
     t.app.on : {}
 
-const defaultConnections = (t: Template): conn.Connections =>
+const defaultConnections = (t: Template<App>): conn.Connections =>
     <conn.Connections>(t.connections ?
         map(t.connections, c => c.options ?
             c.connector.apply(null, c.options || []) :
             c.connector) : {});
 
-const defaultAvailableMiddleware = (t: Template): mware.Middlewares =>
+const defaultAvailableMiddleware = (t: Template<App>): mware.Middlewares =>
     (t.app && t.app.middleware && t.app.middleware.available) ?
         map(t.app.middleware.available, m =>
             m.provider.apply(null, m.options || [])) : {}
 
-const defaultEnabledMiddleware = (t: Template) =>
+const defaultEnabledMiddleware = (t: Template<App>) =>
     (t.app && t.app.middleware && t.app.middleware.enabled) ?
         t.app.middleware.enabled : [];
 
-const defaultRoutes = (t: Template) =>
+const defaultRoutes = (t: Template<App>) =>
     (t.app && t.app.routes) ? t.app.routes : noop;
 
-const defaultShow = (t: Template, parent: Maybe<ModuleContext>): Maybe<show.Show> =>
+const defaultShow = (t: Template<App>, parent: Maybe<ModuleContext>): Maybe<show.Show> =>
     (t.app && t.app.views) ?
         just(t.app.views.provider.apply(null, t.app.views.options || [])) :
         parent.chain(m => m.show);
