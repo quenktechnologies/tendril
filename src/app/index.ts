@@ -37,7 +37,7 @@ import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Server, Configuration } from '../net/http/server';
 import { Pool, getInstance } from './connection';
-import { Template } from './module/template';
+import { Template, Spawnable } from './module/template';
 import { Context, Module as ModuleContext, getModule } from './state/context';
 
 /**
@@ -90,7 +90,9 @@ export class App extends AbstractSystem implements System {
      */
     spawn(tmpl: PotooTemplate<App>): App {
 
-        (new This('$', this)).exec(new SpawnScript('', <PotooTemplate<System>>tmpl));
+        (new This('$', this)).exec(new SpawnScript('',
+            <PotooTemplate<System>>tmpl));
+
         return this;
 
     }
@@ -138,6 +140,10 @@ export class App extends AbstractSystem implements System {
         if (Array.isArray(tmpl.children))
             tmpl.children.forEach(c =>
                 runtime.exec(new SpawnScript(address, <PotooTemplate<System>>c)));
+
+        if (tmpl.spawn != null)
+            map(tmpl.spawn, (c, id) => runtime.exec(new SpawnScript(address,
+                <PotooTemplate<System>>mergeSpawnable(id, c))));
 
         return this;
 
@@ -318,6 +324,16 @@ const initContext = (a: App) => (c: Context): Future<void> =>
         .map((i: hooks.Init) => i(a))
         .orJust(() => pure(noop()))
         .get();
+
+const mergeSpawnable = (id: string, c: Spawnable): PotooTemplate<App> =>
+    merge({
+
+        id,
+
+        create: (s: App) =>
+            new c.constructor(...c.arguments.map(a => (a === '$') ? s : a))
+
+    }, c)
 
 const dispatchConnected = (a: App) => (c: Context): Future<void> =>
     c

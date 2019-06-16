@@ -4,7 +4,7 @@ import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
 import { show } from '../../../../../../../src/app/api/action/response';
 
-export const template: Template = {
+export const template: Template<App> = {
 
     id: 'reports',
 
@@ -17,7 +17,7 @@ export const template: Template = {
             m.install('get', '/', [() => (show('reports'))]);
 
             m.install('get', '/custom', [
-              () => { console.error('fuputa '); return show('custom', { content: 'Custom' }); }
+                () => { console.error('fuputa '); return show('custom', { content: 'Custom' }); }
             ]);
 
             m.install('get', '/:report', [

@@ -3,7 +3,7 @@ import { Module } from '../../../../../src/app/module';
 import { show } from '../../../../../src/app/api/action/response';
 import { App } from '../../../../../src/app';
 
-export const template: Template = {
+export const template: Template<App> = {
 
     id: 'analytics',
 
@@ -15,7 +15,7 @@ export const template: Template = {
 
         routes: (m: Module) => {
 
-            m.install('get', '/', [ () => (show('analytics'))]);
+            m.install('get', '/', [() => (show('analytics'))]);
 
         }
 
