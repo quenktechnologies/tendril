@@ -41,18 +41,21 @@ import { Template, Spawnable } from './module/template';
 import { Context, Module as ModuleContext, getModule } from './state/context';
 
 /**
- * App is the main class of the framework.
+ * App is the main entry point to the framework.
  *
- * This class functions as an actor system and your
- * application.
+ * An App serves as an actor system for all the modules of the application.
+ * It configures routing of requests for each module and makes whatever services
+ * the user desires available via child actors.
  */
 export class App extends AbstractSystem implements System {
 
     constructor(
-        public main: Template<App>,
+        public provider: (s: App) => Template<App>,
         public configuration: config.Configuration = {}) { super(configuration); }
 
     state: State<Context> = newState(this);
+
+    main: Template<App> = this.provider(this);
 
     server: Server = new Server(defaultServerConf(this.main.server));
 
@@ -401,7 +404,7 @@ const newState = (app: App): State<Context> => ({
 
         $: newContext(nothing(), app, new This('$', app), {
             id: '$',
-            create: () => new App(app.main),
+            create: () => new App(() => app.main),
             trap: (e: Err) => {
 
                 if (e instanceof Error) {

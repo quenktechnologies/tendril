@@ -72,7 +72,6 @@ export const template: Template<App> = {
 
                 },
 
-
                 json: {
 
                     provider: bodyParser.json
