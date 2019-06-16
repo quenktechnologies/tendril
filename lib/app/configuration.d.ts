@@ -4,6 +4,7 @@ import * as show from './show';
 import * as template from './module/template';
 import * as mid from './middleware';
 import * as mod from './module';
+import { App } from './';
 /**
  * Routes function is used to install application routes.
  */
@@ -19,7 +20,7 @@ export declare type ShowProvider = (...options: any[]) => show.Show;
 /**
  * Configuration for the application.
  */
-export interface Configuration {
+export interface Configuration<S extends App> {
     system?: system.Configuration;
     on?: hooks.Hooks;
     middleware?: {
@@ -28,7 +29,7 @@ export interface Configuration {
     };
     routes?: Routes;
     views?: Show;
-    modules?: Modules;
+    modules?: Modules<S>;
 }
 /**
  * AvaliableMiddleware section
@@ -53,6 +54,6 @@ export interface Show {
 /**
  * Modules section
  */
-export interface Modules {
-    [key: string]: template.Template;
+export interface Modules<S extends App> {
+    [key: string]: template.Template<S>;
 }

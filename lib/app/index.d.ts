@@ -21,9 +21,9 @@ import { Context, Module as ModuleContext } from './state/context';
  * application.
  */
 export declare class App extends AbstractSystem implements System {
-    main: Template;
+    main: Template<App>;
     configuration: config.Configuration;
-    constructor(main: Template, configuration?: config.Configuration);
+    constructor(main: Template<App>, configuration?: config.Configuration);
     state: State<Context>;
     server: Server;
     pool: Pool;
@@ -45,7 +45,7 @@ export declare class App extends AbstractSystem implements System {
      * A module may or may not have a parent. In the case of the latter the
      * module should be the root module of tha App.
      */
-    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App;
+    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template<App>): App;
     /**
      * installMiddleware at the specified mount point.
      *

@@ -37,7 +37,7 @@ import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Server, Configuration } from '../net/http/server';
 import { Pool, getInstance } from './connection';
-import { Template } from './module/template';
+import { Template, Spawnable } from './module/template';
 import { Context, Module as ModuleContext, getModule } from './state/context';
 
 /**
@@ -49,7 +49,7 @@ import { Context, Module as ModuleContext, getModule } from './state/context';
 export class App extends AbstractSystem implements System {
 
     constructor(
-        public main: Template,
+        public main: Template<App>,
         public configuration: config.Configuration = {}) { super(configuration); }
 
     state: State<Context> = newState(this);
@@ -90,7 +90,9 @@ export class App extends AbstractSystem implements System {
      */
     spawn(tmpl: PotooTemplate<App>): App {
 
-        (new This('$', this)).exec(new SpawnScript('', <PotooTemplate<System>>tmpl));
+        (new This('$', this)).exec(new SpawnScript('',
+            <PotooTemplate<System>>tmpl));
+
         return this;
 
     }
@@ -101,7 +103,10 @@ export class App extends AbstractSystem implements System {
      * A module may or may not have a parent. In the case of the latter the
      * module should be the root module of tha App.
      */
-    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App {
+    spawnModule(
+        path: string,
+        parent: Maybe<ModuleContext>,
+        tmpl: Template<App>): App {
 
         let module = tmpl.create(this);
         let app = express();
@@ -135,6 +140,10 @@ export class App extends AbstractSystem implements System {
         if (Array.isArray(tmpl.children))
             tmpl.children.forEach(c =>
                 runtime.exec(new SpawnScript(address, <PotooTemplate<System>>c)));
+
+        if (tmpl.spawn != null)
+            map(tmpl.spawn, (c, id) => runtime.exec(new SpawnScript(address,
+                <PotooTemplate<System>>mergeSpawnable(id, c))));
 
         return this;
 
@@ -282,28 +291,28 @@ const defaultAddress = (path: string, parent: Maybe<ModuleContext>) =>
         .orJust(() => path)
         .get();
 
-const defaultHooks = (t: Template) => (t.app && t.app.on) ?
+const defaultHooks = (t: Template<App>) => (t.app && t.app.on) ?
     t.app.on : {}
 
-const defaultConnections = (t: Template): conn.Connections =>
+const defaultConnections = (t: Template<App>): conn.Connections =>
     <conn.Connections>(t.connections ?
         map(t.connections, c => c.options ?
             c.connector.apply(null, c.options || []) :
             c.connector) : {});
 
-const defaultAvailableMiddleware = (t: Template): mware.Middlewares =>
+const defaultAvailableMiddleware = (t: Template<App>): mware.Middlewares =>
     (t.app && t.app.middleware && t.app.middleware.available) ?
         map(t.app.middleware.available, m =>
             m.provider.apply(null, m.options || [])) : {}
 
-const defaultEnabledMiddleware = (t: Template) =>
+const defaultEnabledMiddleware = (t: Template<App>) =>
     (t.app && t.app.middleware && t.app.middleware.enabled) ?
         t.app.middleware.enabled : [];
 
-const defaultRoutes = (t: Template) =>
+const defaultRoutes = (t: Template<App>) =>
     (t.app && t.app.routes) ? t.app.routes : noop;
 
-const defaultShow = (t: Template, parent: Maybe<ModuleContext>): Maybe<show.Show> =>
+const defaultShow = (t: Template<App>, parent: Maybe<ModuleContext>): Maybe<show.Show> =>
     (t.app && t.app.views) ?
         just(t.app.views.provider.apply(null, t.app.views.options || [])) :
         parent.chain(m => m.show);
@@ -315,6 +324,16 @@ const initContext = (a: App) => (c: Context): Future<void> =>
         .map((i: hooks.Init) => i(a))
         .orJust(() => pure(noop()))
         .get();
+
+const mergeSpawnable = (id: string, c: Spawnable): PotooTemplate<App> =>
+    merge({
+
+        id,
+
+        create: (s: App) =>
+            new c.constructor(...c.arguments.map(a => (a === '$') ? s : a))
+
+    }, c)
 
 const dispatchConnected = (a: App) => (c: Context): Future<void> =>
     c
