@@ -15,16 +15,16 @@ export const template = (): Template<App> => ({
 
     app: {
 
-        routes: (m: Module) => {
+        routes: (_: Module) => [
 
-            m.install('delete', '/', [handlers.disable]);
-            m.install('post', '/', [handlers.enable]);
-            m.install('put', '/', [handlers.redirect]);
-            m.install('get', '/ping', [handlers.ping]);
-            m.install('get', '/x-headers', [handlers.xheaders]);
-            m.install('get', '/crash', [handlers.crash]);
+            { method: 'delete', path: '/', filters: [handlers.disable] },
+            { method: 'post', path: '/', filters: [handlers.enable] },
+            { method: 'put', path: '/', filters: [handlers.redirect] },
+            { method: 'get', path: '/ping', filters: [handlers.ping] },
+            { method: 'get', path: '/x-headers', filters: [handlers.xheaders] },
+            { method: 'get', path: '/crash', filters: [handlers.crash] }
 
-        }
+        ]
 
     }
 

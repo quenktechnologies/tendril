@@ -198,6 +198,22 @@ describe('tendril', () => {
                 .get(ROUTE_REPORTS_CUSTOM)
                 .then((r: any) => assert(r.text).equal('Custom')));
 
+        it('should execute module filters', () => {
+
+            process.env.MODULE_FILTERS_WORK = '';
+
+            return request
+                .get(ROUTE_ADMIN_PING)
+                .then(() => assert(process.env.MODULE_FILTERS_WORK).not.equal('yes'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => {
+
+                    assert(process.env.MODULE_FILTERS_WORK).equal('yes');
+
+                })
+
+        });
+
     });
 
     describe('error escalation', () => {

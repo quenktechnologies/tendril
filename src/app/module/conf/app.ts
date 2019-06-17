@@ -1,4 +1,5 @@
 import * as system from '@quenk/potoo/lib/actor/system/configuration';
+import * as filters from '../../api/filter';
 import * as hooks from './hooks';
 import * as show from './show';
 import * as mid from './middleware';
@@ -28,5 +29,7 @@ export interface AppConf<S extends App> {
     views?: show.ShowConf,
 
     modules?: mod.ModulesConf<S>
+
+    filters?: filters.Filter<void>[]
 
 }

@@ -13,11 +13,15 @@ export const template = (): Template<App> => ({
 
     app: {
 
-        routes: (m: Module) => {
+        routes: (_: Module) => [{
 
-            m.install('get', '/', [() => (show('analytics'))]);
+            method: 'get',
 
-        }
+            path: '/',
+
+            filters: [() => (show('analytics'))]
+
+        }]
 
     }
 

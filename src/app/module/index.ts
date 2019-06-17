@@ -1,8 +1,8 @@
 import * as express from 'express';
+import { Type } from '@quenk/noni/lib/data/type';
 import { just, nothing } from '@quenk/noni/lib/data/maybe';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
-import { Method } from '../api/request';
 import { Context, getModule } from '../actor/context';
 import { Context as RequestContext } from '../api/context';
 import { Filter } from '../api/filter';
@@ -18,6 +18,28 @@ export type Messages<M>
     | Redirect
     | M
     ;
+
+/**
+ * RouteConf describes a route to be installed in the application.
+ */
+export interface RouteConf<A> {
+
+    /**
+     * method of the route.
+     */
+    method: string,
+
+    /**
+     * path of the route.
+     */
+    path: string,
+
+    /**
+     * filters applied when the route is executed.
+     */
+    filters: Filter<A>[]
+
+}
 
 /**
  * Disable a Module.
@@ -68,11 +90,9 @@ export class Module extends Immutable<Messages<any>, Context, App> {
     ];
 
     /**
-     * install a route into the module's routing table.
-     *
-     * This is done as sys op to provide transparency.
+     * install routes into the routing table for this module.
      */
-    install<A>(method: Method, path: string, filters: Filter<A>[]): void {
+    install<A>(routes: RouteConf<A>[]): void {
 
         let maybeModule = getModule(this.system.state, this.self());
 
@@ -80,8 +100,16 @@ export class Module extends Immutable<Messages<any>, Context, App> {
 
             let m = maybeModule.get();
 
-            m.app[method](path, (req: express.Request, res: express.Response) =>
-                new RequestContext(this, req, res, filters.slice()).run());
+            routes.forEach(({ path, method, filters }) => {
+
+                (<Type>m.app)[method](path,
+                    (req: express.Request,
+                        res: express.Response,
+                        next: express.NextFunction) =>
+                        new RequestContext(this, req, res, next,
+                            filters.slice()).run())
+
+            });
 
         }
 

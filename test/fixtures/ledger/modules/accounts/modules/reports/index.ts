@@ -12,21 +12,27 @@ export const template = (): Template<App> => ({
 
     app: {
 
-        routes: (m: Module) => {
+        routes: (_: Module) => [
 
-            m.install('get', '/', [() => (show('reports'))]);
+            { method: 'get', path: '/', filters: [() => (show('reports'))] },
 
-            m.install('get', '/custom', [
-                () => { console.error('fuputa '); return show('custom', { content: 'Custom' }); }
-            ]);
+            {
+                method: 'get',
+                path: '/custom',
+                filters: [
+                    () => show('custom', { content: 'Custom' })
 
-            m.install('get', '/:report', [
-                filters.modify,
-                filters.isReport,
-                filters.quickShow,
-                () => (show('reports'))]);
+                ]
+            },
+            {
+                method: 'get', path: '/:report', filters: [
+                    filters.modify,
+                    filters.isReport,
+                    filters.quickShow,
+                    () => (show('reports'))
 
-        }
+                ]
+            }]
 
     }
 

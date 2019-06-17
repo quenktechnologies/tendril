@@ -6,7 +6,6 @@ import * as conn from './conf/connection';
 import * as spawn from './conf/spawn';
 import { Maybe, just, } from '@quenk/noni/lib/data/maybe';
 import { merge, map, reduce } from '@quenk/noni/lib/data/record';
-import { noop } from '@quenk/noni/lib/data/function';
 import { ModuleData } from '../actor/context';
 import { Middlewares } from '../middleware';
 import { Connections } from '../connection';
@@ -74,7 +73,7 @@ export const getEnabledMiddleware = (t: Template<App>) =>
  * getRoutes provides the route function from a Template.
  */
 export const getRoutes = (t: Template<App>) =>
-    (t.app && t.app.routes) ? t.app.routes : noop;
+    (t.app && t.app.routes) ? t.app.routes : () => [];
 
 /**
  * getShowFun provides the "show" function of a Template.

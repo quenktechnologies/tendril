@@ -90,11 +90,11 @@ export const template = (): Template<App> => ({
 
         },
 
-        routes: (m: Module) => {
+        routes: (m: Module) => [
 
-            m.install('get', '/', [m.show('index')]);
+            { method: 'get', path: '/', filters: [m.show('index')] }
 
-        },
+        ],
 
         views: {
 

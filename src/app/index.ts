@@ -3,6 +3,7 @@ import * as hooks from './module/conf/hooks';
 import * as conn from './connection';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
 import { join } from 'path';
+import { Type } from '@quenk/noni/lib/data/type';
 import { merge, reduce, map, values } from '@quenk/noni/lib/data/record';
 import { Err } from '@quenk/noni/lib/control/error';
 import {
@@ -48,6 +49,7 @@ import {
     getHooks
 } from './module/template';
 import { Middleware } from './middleware';
+import { Filter } from './api/filter';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
@@ -233,15 +235,39 @@ export class App extends AbstractSystem implements System {
      */
     routing(): Future<App> {
 
-        return attempt(() => map(this.state.contexts, c =>
-            c
-                .module
-                .map(m => {
+        return attempt(() => map(this.state.contexts, c => {
 
-                    m.routes(m.module);
-                    m.parent.map(p => p.app.use(join('/', m.path), m.app));
+            if (c.module.isJust()) {
 
-                })))
+                let m = c.module.get();
+                let t: Template<App> = <Template<App>><Type>c.template;
+                let routes = m.routes(m.module);
+
+                if (t.app && t.app.filters) {
+
+                    let filters = t.app.filters;
+
+                    m.module.install(routes.map(r => ({
+
+                        method: r.method,
+
+                        path: r.path,
+
+                        filters: <Filter<undefined>[]>[...filters, ...r.filters]
+
+                    })));
+
+                } else {
+
+                    m.module.install(routes);
+
+                }
+
+                m.parent.map(p => p.app.use(join('/', m.path), m.app));
+
+            }
+
+        }))
             .map(cons(<App>this));
 
     }
