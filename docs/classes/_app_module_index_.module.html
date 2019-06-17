@@ -928,6 +928,12 @@ img { max-width: 100%; }
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a href="_app_module_index_.module.html#accept" class="tsd-kind-icon">accept</a>
 				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class">
+					<a href="_app_module_index_.module.html#disable" class="tsd-kind-icon">disable</a>
+				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class">
+					<a href="_app_module_index_.module.html#enable" class="tsd-kind-icon">enable</a>
+				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a href="_app_module_index_.module.html#exit" class="tsd-kind-icon">exit</a>
 				</li>
@@ -941,7 +947,13 @@ img { max-width: 100%; }
 					<a href="_app_module_index_.module.html#kill" class="tsd-kind-icon">kill</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<a href="_app_module_index_.module.html#ref" class="tsd-kind-icon">ref</a>
+					<a href="_app_module_index_.module.html#notify" class="tsd-kind-icon">notify</a>
+				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a href="_app_module_index_.module.html#raise" class="tsd-kind-icon">raise</a>
+				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class">
+					<a href="_app_module_index_.module.html#redirect" class="tsd-kind-icon">redirect</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 					<a href="_app_module_index_.module.html#run" class="tsd-kind-icon">run</a>
@@ -959,6 +971,9 @@ img { max-width: 100%; }
 					<a href="_app_module_index_.module.html#spawn" class="tsd-kind-icon">spawn</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a href="_app_module_index_.module.html#spawngroup" class="tsd-kind-icon">spawn<wbr>Group</a>
+				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a href="_app_module_index_.module.html#stop" class="tsd-kind-icon">stop</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
@@ -968,6 +983,9 @@ img { max-width: 100%; }
 		</li>
 		<li class=" tsd-kind-class tsd-parent-kind-external-module">
 			<a href="_app_module_index_.redirect.html" class="tsd-kind-icon">Redirect</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-external-module tsd-has-type-parameter">
+			<a href="../interfaces/_app_module_index_.routeconf.html" class="tsd-kind-icon">Route<wbr>Conf</a>
 		</li>
 		<li class=" tsd-kind-type-alias tsd-parent-kind-external-module tsd-has-type-parameter">
 			<a href="../modules/_app_module_index_.html#messages" class="tsd-kind-icon">Messages</a>
@@ -994,7 +1012,7 @@ img { max-width: 100%; }
 			<h3>Hierarchy</h3>
 			<ul class="tsd-hierarchy">
 				<li>
-					<span class="tsd-signature-type">Immutable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span>
+					<span class="tsd-signature-type">Immutable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span>
 					<ul class="tsd-hierarchy">
 						<li>
 							<span class="target">Module</span>
@@ -1006,7 +1024,7 @@ img { max-width: 100%; }
 		<section class="tsd-panel">
 			<h3>Implements</h3>
 			<ul class="tsd-hierarchy">
-				<li><span class="tsd-signature-type">Resident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
+				<li><span class="tsd-signature-type">Resident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
 			</ul>
 		</section>
 		<section class="tsd-panel-group tsd-index-group">
@@ -1030,16 +1048,21 @@ img { max-width: 100%; }
 						<h3>Methods</h3>
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#accept" class="tsd-kind-icon">accept</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class"><a href="_app_module_index_.module.html#disable" class="tsd-kind-icon">disable</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class"><a href="_app_module_index_.module.html#enable" class="tsd-kind-icon">enable</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#exit" class="tsd-kind-icon">exit</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="_app_module_index_.module.html#init" class="tsd-kind-icon">init</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="_app_module_index_.module.html#install" class="tsd-kind-icon">install</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#kill" class="tsd-kind-icon">kill</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#ref" class="tsd-kind-icon">ref</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#notify" class="tsd-kind-icon">notify</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#raise" class="tsd-kind-icon">raise</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class"><a href="_app_module_index_.module.html#redirect" class="tsd-kind-icon">redirect</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="_app_module_index_.module.html#run" class="tsd-kind-icon">run</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite tsd-is-inherited"><a href="_app_module_index_.module.html#select" class="tsd-kind-icon">select</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#self" class="tsd-kind-icon">self</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="_app_module_index_.module.html#show" class="tsd-kind-icon">show</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#spawn" class="tsd-kind-icon">spawn</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#spawngroup" class="tsd-kind-icon">spawn<wbr>Group</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_app_module_index_.module.html#stop" class="tsd-kind-icon">stop</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="_app_module_index_.module.html#tell" class="tsd-kind-icon">tell</a></li>
 						</ul>
@@ -1060,7 +1083,7 @@ img { max-width: 100%; }
 						<aside class="tsd-sources">
 							<p>Overrides AbstractResident.__constructor</p>
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/module/index.ts#L56">app/module/index.ts:56</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L78">app/module/index.ts:78</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1079,11 +1102,11 @@ img { max-width: 100%; }
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-overwrite">
 				<a name="receive" class="tsd-anchor"></a>
 				<h3>receive</h3>
-				<div class="tsd-signature tsd-kind-icon">receive<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Case</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;behave(this)</span></div>
+				<div class="tsd-signature tsd-kind-icon">receive<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Case</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;&lt;Case&lt;Messages&lt;void&gt;&gt;[]&gt;[new Case(Disable, () &#x3D;&gt; this.disable()),new Case(Enable, () &#x3D;&gt; this.enable()),new Case(Redirect, (r: Redirect) &#x3D;&gt; this.redirect(r.location, r.status))]</span></div>
 				<aside class="tsd-sources">
 					<p>Overrides Immutable.receive</p>
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/module/index.ts#L60">app/module/index.ts:60</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L82">app/module/index.ts:82</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -1094,7 +1117,7 @@ img { max-width: 100%; }
 				<aside class="tsd-sources">
 					<p>Overrides AbstractResident.system</p>
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/module/index.ts#L58">app/module/index.ts:58</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L80">app/module/index.ts:80</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -1105,25 +1128,57 @@ img { max-width: 100%; }
 				<a name="accept" class="tsd-anchor"></a>
 				<h3>accept</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">accept<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+					<li class="tsd-signature tsd-kind-icon">accept<span class="tsd-signature-symbol">(</span>m<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Message</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<p>Inherited from AbstractResident.accept</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:159</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:67</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
-								<h5>__namedParameters: <span class="tsd-signature-type">object</span></h5>
-								<ul class="tsd-parameters">
-								</ul>
+								<h5>m: <span class="tsd-signature-type">Message</span></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<a name="disable" class="tsd-anchor"></a>
+				<h3>disable</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<li class="tsd-signature tsd-kind-icon">disable<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L118">app/module/index.ts:118</a></li>
+							</ul>
+						</aside>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<a name="enable" class="tsd-anchor"></a>
+				<h3>enable</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<li class="tsd-signature tsd-kind-icon">enable<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L127">app/module/index.ts:127</a></li>
+							</ul>
+						</aside>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -1138,7 +1193,7 @@ img { max-width: 100%; }
 						<aside class="tsd-sources">
 							<p>Inherited from AbstractResident.exit</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:192</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:111</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -1149,7 +1204,7 @@ img { max-width: 100%; }
 				<a name="init" class="tsd-anchor"></a>
 				<h3>init</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">init<span class="tsd-signature-symbol">(</span>c<span class="tsd-signature-symbol">: </span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a></li>
+					<li class="tsd-signature tsd-kind-icon">init<span class="tsd-signature-symbol">(</span>c<span class="tsd-signature-symbol">: </span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
@@ -1157,16 +1212,16 @@ img { max-width: 100%; }
 							<p>Inherited from Immutable.init</p>
 							<p>Overrides AbstractResident.init</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:224</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:148</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
-								<h5>c: <a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a></h5>
+								<h5>c: <a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a></h4>
+						<h4 class="tsd-returns-title">Returns <a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a></h4>
 					</li>
 				</ul>
 			</section>
@@ -1174,20 +1229,19 @@ img { max-width: 100%; }
 				<a name="install" class="tsd-anchor"></a>
 				<h3>install</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-					<li class="tsd-signature tsd-kind-icon">install&lt;A&gt;<span class="tsd-signature-symbol">(</span>method<span class="tsd-signature-symbol">: </span><a href="../modules/_app_op_route_.html#supportedmethod" class="tsd-signature-type">SupportedMethod</a>, path<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, filters<span class="tsd-signature-symbol">: </span><a href="../modules/_app_api_filter_.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					<li class="tsd-signature tsd-kind-icon">install&lt;A&gt;<span class="tsd-signature-symbol">(</span>routes<span class="tsd-signature-symbol">: </span><a href="../interfaces/_app_module_index_.routeconf.html" class="tsd-signature-type">RouteConf</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/module/index.ts#L67">app/module/index.ts:67</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L95">app/module/index.ts:95</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>install a route into the module&#39;s routing table.</p>
+								<p>install routes into the routing table for this module.</p>
 							</div>
-							<p>This is done as sys op to provide transparency.</p>
 						</div>
 						<h4 class="tsd-type-parameters-title">Type parameters</h4>
 						<ul class="tsd-type-parameters">
@@ -1198,13 +1252,7 @@ img { max-width: 100%; }
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
-								<h5>method: <a href="../modules/_app_op_route_.html#supportedmethod" class="tsd-signature-type">SupportedMethod</a></h5>
-							</li>
-							<li>
-								<h5>path: <span class="tsd-signature-type">string</span></h5>
-							</li>
-							<li>
-								<h5>filters: <a href="../modules/_app_api_filter_.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+								<h5>routes: <a href="../interfaces/_app_module_index_.routeconf.html" class="tsd-signature-type">RouteConf</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -1215,14 +1263,14 @@ img { max-width: 100%; }
 				<a name="kill" class="tsd-anchor"></a>
 				<h3>kill</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">kill<span class="tsd-signature-symbol">(</span>addr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">kill<span class="tsd-signature-symbol">(</span>addr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<p>Inherited from AbstractResident.kill</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:185</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:104</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1231,31 +1279,75 @@ img { max-width: 100%; }
 								<h5>addr: <span class="tsd-signature-type">Address</span></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
 					</li>
 				</ul>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-				<a name="ref" class="tsd-anchor"></a>
-				<h3>ref</h3>
+				<a name="notify" class="tsd-anchor"></a>
+				<h3>notify</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">ref<span class="tsd-signature-symbol">(</span>addr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">(Anonymous function)</span></li>
+					<li class="tsd-signature tsd-kind-icon">notify<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
-							<p>Inherited from (Anonymous function)</p>
+							<p>Inherited from AbstractResident.notify</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:153</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:55</li>
+							</ul>
+						</aside>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<a name="raise" class="tsd-anchor"></a>
+				<h3>raise</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<li class="tsd-signature tsd-kind-icon">raise<span class="tsd-signature-symbol">(</span>e<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Err</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<p>Inherited from AbstractResident.raise</p>
+							<ul>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:97</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
-								<h5>addr: <span class="tsd-signature-type">Address</span></h5>
+								<h5>e: <span class="tsd-signature-type">Err</span></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">(Anonymous function)</span></h4>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<a name="redirect" class="tsd-anchor"></a>
+				<h3>redirect</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<li class="tsd-signature tsd-kind-icon">redirect<span class="tsd-signature-symbol">(</span>location<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, status<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L136">app/module/index.ts:136</a></li>
+							</ul>
+						</aside>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>location: <span class="tsd-signature-type">string</span></h5>
+							</li>
+							<li>
+								<h5>status: <span class="tsd-signature-type">number</span></h5>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -1268,9 +1360,9 @@ img { max-width: 100%; }
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
-							<p>Overrides AbstractResident.run</p>
+							<p>Overrides Immutable.run</p>
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/module/index.ts#L82">app/module/index.ts:82</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L154">app/module/index.ts:154</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -1281,7 +1373,7 @@ img { max-width: 100%; }
 				<a name="select" class="tsd-anchor"></a>
 				<h3>select</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">select&lt;M&gt;<span class="tsd-signature-symbol">(</span>_<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Case</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">M</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Immutable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">select&lt;M&gt;<span class="tsd-signature-symbol">(</span>_<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Case</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">M</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Immutable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
@@ -1289,7 +1381,7 @@ img { max-width: 100%; }
 							<p>Inherited from Immutable.select</p>
 							<p>Overrides AbstractResident.select</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:237</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:161</li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -1309,7 +1401,7 @@ img { max-width: 100%; }
 								<h5>_: <span class="tsd-signature-type">Case</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">M</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Immutable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Immutable</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_module_index_.html#messages" class="tsd-signature-type">Messages</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -1322,9 +1414,9 @@ img { max-width: 100%; }
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
-							<p>Inherited from (Anonymous function)</p>
+							<p>Inherited from AbstractResident.self</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:155</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:61</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -1341,7 +1433,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/module/index.ts#L76">app/module/index.ts:76</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/module/index.ts#L148">app/module/index.ts:148</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -1366,23 +1458,50 @@ img { max-width: 100%; }
 				<a name="spawn" class="tsd-anchor"></a>
 				<h3>spawn</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">spawn<span class="tsd-signature-symbol">(</span>t<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Template</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span></li>
+					<li class="tsd-signature tsd-kind-icon">spawn<span class="tsd-signature-symbol">(</span>t<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Template</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<p>Inherited from AbstractResident.spawn</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:166</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:73</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
-								<h5>t: <span class="tsd-signature-type">Template</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								<h5>t: <span class="tsd-signature-type">Template</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h5>
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Address</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<a name="spawngroup" class="tsd-anchor"></a>
+				<h3>spawn<wbr>Group</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<li class="tsd-signature tsd-kind-icon">spawn<wbr>Group<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, tmpls<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Templates</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AddressMap</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<p>Inherited from AbstractResident.spawnGroup</p>
+							<ul>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:83</li>
+							</ul>
+						</aside>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+							</li>
+							<li>
+								<h5>tmpls: <span class="tsd-signature-type">Templates</span><span class="tsd-signature-symbol">&lt;</span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h5>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AddressMap</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -1397,7 +1516,7 @@ img { max-width: 100%; }
 						<aside class="tsd-sources">
 							<p>Inherited from AbstractResident.stop</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:198</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:117</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -1408,14 +1527,14 @@ img { max-width: 100%; }
 				<a name="tell" class="tsd-anchor"></a>
 				<h3>tell</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
-					<li class="tsd-signature tsd-kind-icon">tell&lt;M&gt;<span class="tsd-signature-symbol">(</span>ref<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span>, m<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">M</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">tell&lt;M&gt;<span class="tsd-signature-symbol">(</span>ref<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Address</span>, m<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">M</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<p>Inherited from AbstractResident.tell</p>
 							<ul>
-								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident.ts:176</li>
+								<li>Defined in /home/master/Documents/code/development/node/tendril/node_modules/@quenk/potoo/lib/actor/resident/index.ts:90</li>
 							</ul>
 						</aside>
 						<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -1433,7 +1552,7 @@ img { max-width: 100%; }
 								<h5>m: <span class="tsd-signature-type">M</span></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_state_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AbstractResident</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_app_actor_context_.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">, </span><a href="_app_index_.app.html" class="tsd-signature-type">App</a><span class="tsd-signature-symbol">&gt;</span></h4>
 					</li>
 				</ul>
 			</section>
