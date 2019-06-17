@@ -4,7 +4,7 @@ import { Template } from '../../../../../src/app/module/template';
 import { Module } from '../../../../../src/app/module';
 import { App } from '../../../../../src/app';
 
-export const template: Template<App> = {
+export const template = (): Template<App> => ({
 
     id: 'accounts',
 
@@ -28,4 +28,4 @@ export const template: Template<App> = {
 
     }
 
-};
+});

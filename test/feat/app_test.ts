@@ -20,7 +20,7 @@ describe('tendril', () => {
 
     describe('ledger', () => {
 
-        let app: App = new App(() => template, {});
+        let app: App = new App(template, {});
 
         beforeEach(() => process.env.APP_INIT = '');
 
@@ -202,7 +202,7 @@ describe('tendril', () => {
 
     describe('error escalation', () => {
 
-        let app: App = new App(() => template, {});
+        let app: App = new App(template, {});
 
         beforeEach(() => toPromise(app.start()));
 

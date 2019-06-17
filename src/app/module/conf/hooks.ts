@@ -1,39 +1,40 @@
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { App } from './';
+import { App } from '../../';
 
 /**
  * Init function type.
  */
-export type Init = (app:App) => Future<void>;
+export type Init<S extends App> = (app: S) => Future<void>;
 
 /**
  * Connected function type.
  */
-export type Connected = (app: App) => Future<void>;
+export type Connected<S extends App> = (app: S) => Future<void>;
 
 /**
  * Start function type.
  */
-export type Start = (app:App) => Future<void>;
+export type Start<S extends App> = (app: S) => Future<void>;
 
 /**
- * Configuration section.
+ * HookConf is used to configure handlers for events at various stages
+ * of boot up.
  */
-export interface Hooks {
+export interface HookConf<S extends App> {
 
     /**
      * init is invoked before the application is configured.
      */
-    init?: Init;
+    init?: Init<S>;
 
     /**
      * connected is invoked when all connections have been established.
      */
-    connected?: Connected;
+    connected?: Connected<S>;
 
     /**
      * start is invoked when the application is ready to serve requests.
      */
-    start?: Start;
+    start?: Start<S>;
 
 }

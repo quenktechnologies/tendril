@@ -1,7 +1,7 @@
 import { must } from '@quenk/must';
 import { Mutable } from '@quenk/potoo/lib/actor/resident';
 import { App } from '../../../src/app';
-import { Context } from '../../../src/app/state/context';
+import { Context } from '../../../src/app/actor/context';
 import { template } from '../../fixtures/ledger';
 
 let ran = false;

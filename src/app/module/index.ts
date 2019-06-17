@@ -3,7 +3,7 @@ import { just, nothing } from '@quenk/noni/lib/data/maybe';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 import { Method } from '../api/request';
-import { Context, getModule } from '../state/context';
+import { Context, getModule } from '../actor/context';
 import { Context as RequestContext } from '../api/context';
 import { Filter } from '../api/filter';
 import { show } from '../api/action/response';

@@ -1,5 +1,5 @@
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
-import { Context } from '../../src/app/state/context';
+import { Context } from '../../src/app/actor/context';
 import { App } from '../../src/app';
 
 export class Spawnable extends Immutable<void, Context, App> {

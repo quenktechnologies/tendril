@@ -4,7 +4,7 @@ import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
 import { show } from '../../../../../../../src/app/api/action/response';
 
-export const template: Template<App> = {
+export const template = (): Template<App> => ({
 
     id: 'reports',
 
@@ -30,4 +30,4 @@ export const template: Template<App> = {
 
     }
 
-};
+});

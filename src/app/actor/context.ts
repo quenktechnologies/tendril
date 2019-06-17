@@ -3,12 +3,13 @@ import * as context from '@quenk/potoo/lib/actor/context';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { State, get } from '@quenk/potoo/lib/actor/system/state';
-import { Hooks } from '../hooks';
-import { Routes } from '../configuration';
+import { HookConf } from '../module/conf/hooks';
+import { Routes } from '../module/conf/routes';
 import { Show } from '../show';
 import { Module as M } from '../module';
 import { Connections } from '../connection';
 import { Middlewares } from '../middleware';
+import { App } from '../';
 
 /**
  * Context used for actor entries in the Application.
@@ -19,14 +20,14 @@ export interface Context extends context.Context {
      * module contains module specific context information
      * for actors that are also modules.
      */
-    module: Maybe<Module>
+    module: Maybe<ModuleData>
 
 }
 
 /**
- * Module stores information related to modules.
+ * ModuleData stores information related to modules.
  */
-export interface Module {
+export interface ModuleData {
 
     /**
      * path is the mount point of the module.
@@ -41,7 +42,7 @@ export interface Module {
     /**
      * parent context for this context.
      */
-    parent: Maybe<Module>,
+    parent: Maybe<ModuleData>,
 
     /**
      * module instance
@@ -56,7 +57,7 @@ export interface Module {
     /**
      * hooks installed for the module.
      */
-    hooks: Hooks,
+    hooks: HookConf<App>,
 
     /**
      * middleware configuration for the module.
@@ -88,7 +89,7 @@ export interface Module {
      * redirect if set will force redirect all requests to
      * the module's routes.
      */
-    redirect: Maybe<{status:number, location:string}>
+    redirect: Maybe<{ status: number, location: string }>
 
 }
 
@@ -96,5 +97,5 @@ export interface Module {
  * getModule provides a module given an address.
  */
 export const getModule =
-    (s: State<Context>, addr: Address): Maybe<Module> =>
+    (s: State<Context>, addr: Address): Maybe<ModuleData> =>
         get(s, addr).chain((c: Context) => c.module);

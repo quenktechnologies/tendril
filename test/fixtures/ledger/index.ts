@@ -14,7 +14,7 @@ import { Child } from '../child';
 import { Pong } from '../pong';
 import { Spawnable } from '../spawnable';
 
-export const template: Template<App> = {
+export const template = (): Template<App> => ({
 
     id: '/',
 
@@ -125,4 +125,4 @@ export const template: Template<App> = {
 
     }
 
-}
+})

@@ -12,7 +12,7 @@ import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
 import { Context } from '../../context';
 import { Action, ActionM } from '../';
-import { getModule } from '../../../state/context';
+import { getModule } from '../../../actor/context';
 
 /**
  * Headers map.
