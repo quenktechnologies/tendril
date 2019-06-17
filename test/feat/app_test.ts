@@ -214,6 +214,16 @@ describe('tendril', () => {
 
         });
 
+        it('should invoke not found hooks', () =>
+            request
+                .get(`${ROUTE_ADMIN}/foobar`)
+                .catch((e) => {
+
+                    assert(process.env.NOT_FOUND_APPLIED).equal('yes');
+                    assert(e.response.status).equal(404);
+
+                }));
+
     });
 
     describe('error escalation', () => {
@@ -230,7 +240,7 @@ describe('tendril', () => {
                 .then(() => assert(false).true())
                 .catch((e) => {
 
-                    assert(e.response).object();
+                    assert(process.env.ERROR_HANDLER_APPLIED).equal('yes');
                     assert(e.response.status).equal(500);
 
                 }));

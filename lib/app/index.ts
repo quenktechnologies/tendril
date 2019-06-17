@@ -263,6 +263,12 @@ export class App extends AbstractSystem implements System {
 
                 }
 
+                if (t.app && t.app.notFoundHandler)
+                    m.app.use(t.app.notFoundHandler);
+
+                if (t.app && t.app.errorHandler)
+                    m.app.use(t.app.errorHandler);
+
                 m.parent.map(p => p.app.use(join('/', m.path), m.app));
 
             }

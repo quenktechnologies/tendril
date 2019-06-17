@@ -1,3 +1,4 @@
+import * as express from 'express';
 import * as handlers from './handlers';
 import { Err } from '@quenk/noni/lib/control/error';
 import { ACTION_IGNORE } from '@quenk/potoo/lib/actor/template';
@@ -24,8 +25,27 @@ export const template = (): Template<App> => ({
             { method: 'get', path: '/x-headers', filters: [handlers.xheaders] },
             { method: 'get', path: '/crash', filters: [handlers.crash] }
 
-        ]
+        ],
+
+        notFoundHandler: (_: express.Request, res: express.Response) => {
+
+            process.env.NOT_FOUND_APPLIED = 'yes';
+
+            res.status(404).send();
+
+        },
+
+        errorHandler: (
+            _: Error,
+            __: express.Request,
+            res: express.Response,
+            ___: express.NextFunction) => {
+
+            process.env.ERROR_HANDLER_APPLIED = 'yes';
+
+            res.status(500).send();
+
+        }
 
     }
-
 });
