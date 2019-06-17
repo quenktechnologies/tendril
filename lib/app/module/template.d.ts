@@ -1,22 +1,15 @@
 import * as T from '@quenk/potoo/lib/actor/template';
 import * as server from '../../net/http/server';
-import * as app from '../configuration';
-import * as connection from '../connection';
-import { Type } from '@quenk/noni/lib/data/type';
-import { Context } from '@quenk/potoo/lib/actor/context';
-import { Actor } from '@quenk/potoo/lib/actor';
+import * as show from '../../app/show';
+import * as app from './conf/app';
+import * as conn from './conf/connection';
+import * as spawn from './conf/spawn';
+import { Maybe } from '@quenk/noni/lib/data/maybe';
+import { ModuleData } from '../actor/context';
+import { Middlewares } from '../middleware';
+import { Connections } from '../connection';
 import { Module } from '../module';
 import { App } from '../';
-/**
- * Connector used to create a system managed connection.
- */
-export declare type Connector = (...options: Type[]) => connection.Connection;
-/**
- * Constructor of a new actor instance.
- */
-export interface Constructor {
-    new (...args: Type[]): Actor<Context>;
-}
 /**
  * Template for spawning a Module.
  */
@@ -36,7 +29,7 @@ export interface Template<S extends App> extends T.Template<S> {
      *
      * The ids of these actors are computed from their key values.
      */
-    spawn?: Spawnables;
+    spawn?: spawn.SpawnConfs;
     /**
      * server configuration settings.
      */
@@ -44,53 +37,40 @@ export interface Template<S extends App> extends T.Template<S> {
     /**
      * connections configuration settings.
      */
-    connections?: Connections;
+    connections?: conn.ConnectionConfs;
     /**
      * app configuration settings.
      */
-    app?: app.Configuration<S>;
+    app?: app.AppConf<S>;
 }
 /**
- * Connections declares a map of Connections to establish.
+ * getAvailableMiddleware extracts a map of available middleware
+ * from a Template.
  */
-export interface Connections {
-    [key: string]: Connection;
-}
+export declare const getAvailableMiddleware: (t: Template<App>) => Middlewares;
 /**
- * Connection declares the configuration for a remote service connections.
+ * getEnabledMiddleware extracts the list of enabled middleware.
  */
-export interface Connection {
-    /**
-     * connector used.
-     */
-    connector: Connector;
-    /**
-     * options (if any).
-     */
-    options?: Type[];
-}
+export declare const getEnabledMiddleware: (t: Template<App>) => string[];
 /**
- * Spawnables declares a map of Spawnable templates.
+ * getRoutes provides the route function from a Template.
  */
-export interface Spawnables {
-    [key: string]: Spawnable;
-}
+export declare const getRoutes: (t: Template<App>) => import("./conf/routes").Routes;
 /**
- * Spawnable is a declartive alternative for specifying child actors.
+ * getShowFun provides the "show" function of a Template.
  *
- * This method of specifying child actors is unsafe and care must be taken
- * to ensure the "args" property matches the arguments the constructor for
- * the actor accepts.
+ * If not specified, the parent show function is used.
  */
-export interface Spawnable {
-    /**
-     * constructor is used to instantiate an instance of the actor.
-     */
-    constructor: Constructor;
-    /**
-     * arguments passed to the constructor.
-     *
-     * Note that the first parameter must be the system instance.
-     */
-    arguments: Type[];
-}
+export declare const getShowFun: (t: Template<App>, parent: Maybe<ModuleData>) => Maybe<show.Show>;
+/**
+ * getServerConf provides the server configuration for the app.
+ */
+export declare const getServerConf: (t: Template<App>, defaults: server.Configuration) => server.Configuration;
+/**
+ * getHooks provides the hook handlers configuration from a template.
+ */
+export declare const getHooks: (t: Template<App>) => import("./conf/hooks").HookConf<App>;
+/**
+ * getConnections provides the connections from a template.
+ */
+export declare const getConnections: (t: Template<App>) => Connections;

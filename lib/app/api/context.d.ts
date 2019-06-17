@@ -12,8 +12,9 @@ export declare class Context<A> {
     module: Module;
     request: express.Request;
     response: express.Response;
+    onError: express.NextFunction;
     filters: Filter<A>[];
-    constructor(module: Module, request: express.Request, response: express.Response, filters: Filter<A>[]);
+    constructor(module: Module, request: express.Request, response: express.Response, onError: express.NextFunction, filters: Filter<A>[]);
     next(): Future<ActionM<A>>;
     /**
      * run processes the next filter or action in the chain.

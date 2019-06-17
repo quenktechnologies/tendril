@@ -1,13 +1,29 @@
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
-import { Method } from '../api/request';
-import { Context } from '../state/context';
+import { Context } from '../actor/context';
 import { Filter } from '../api/filter';
 import { App } from '../';
 /**
  * Messages supported by modules.
  */
 export declare type Messages<M> = Disable | Enable | Redirect | M;
+/**
+ * RouteConf describes a route to be installed in the application.
+ */
+export interface RouteConf<A> {
+    /**
+     * method of the route.
+     */
+    method: string;
+    /**
+     * path of the route.
+     */
+    path: string;
+    /**
+     * filters applied when the route is executed.
+     */
+    filters: Filter<A>[];
+}
 /**
  * Disable a Module.
  *
@@ -46,11 +62,9 @@ export declare class Module extends Immutable<Messages<any>, Context, App> {
     constructor(system: App);
     receive: Case<Messages<void>>[];
     /**
-     * install a route into the module's routing table.
-     *
-     * This is done as sys op to provide transparency.
+     * install routes into the routing table for this module.
      */
-    install<A>(method: Method, path: string, filters: Filter<A>[]): void;
+    install<A>(routes: RouteConf<A>[]): void;
     disable(): void;
     enable(): void;
     redirect(location: string, status: number): void;

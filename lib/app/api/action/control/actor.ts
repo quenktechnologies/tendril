@@ -8,7 +8,7 @@ import { Mutable } from '@quenk/potoo/lib/actor/resident';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
-import { Context as AppContext } from '../../../state/context';
+import { Context as AppContext } from '../../../actor/context';
 import { App } from '../../../../app';
 import { Context } from '../../context';
 import { Action, ActionM } from '../';

@@ -13,7 +13,7 @@ import { Address } from '@quenk/potoo/lib/actor/address';
 import { Server } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
-import { Context, Module as ModuleContext } from './state/context';
+import { Context, ModuleData } from './actor/context';
 /**
  * App is the main entry point to the framework.
  *
@@ -44,10 +44,9 @@ export declare class App extends AbstractSystem implements System {
     /**
      * spawnModule (not a generic actor) from a template.
      *
-     * A module may or may not have a parent. In the case of the latter the
-     * module should be the root module of tha App.
+     * A module must have a parent unless it is the root module of the app.
      */
-    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template<App>): App;
+    spawnModule(path: string, parent: Maybe<ModuleData>, tmpl: Template<App>): App;
     /**
      * installMiddleware at the specified mount point.
      *
