@@ -920,6 +920,9 @@ img { max-width: 100%; }
 					<a href="_app_api_context_.context.html#module" class="tsd-kind-icon">module</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class">
+					<a href="_app_api_context_.context.html#onerror" class="tsd-kind-icon">on<wbr>Error</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-class">
 					<a href="_app_api_context_.context.html#request" class="tsd-kind-icon">request</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class">
@@ -942,7 +945,7 @@ img { max-width: 100%; }
 				<div class="lead">
 					<p>Context represents the context of the http request.</p>
 				</div>
-				<p>It provides an api that assits with filtering the request and response.</p>
+				<p>It provides an api that assists with filtering the request and response.</p>
 			</div>
 		</section>
 		<section class="tsd-panel tsd-type-parameters">
@@ -976,6 +979,7 @@ img { max-width: 100%; }
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-property tsd-parent-kind-class"><a href="_app_api_context_.context.html#filters" class="tsd-kind-icon">filters</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class"><a href="_app_api_context_.context.html#module" class="tsd-kind-icon">module</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-class"><a href="_app_api_context_.context.html#onerror" class="tsd-kind-icon">on<wbr>Error</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class"><a href="_app_api_context_.context.html#request" class="tsd-kind-icon">request</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class"><a href="_app_api_context_.context.html#response" class="tsd-kind-icon">response</a></li>
 						</ul>
@@ -996,13 +1000,13 @@ img { max-width: 100%; }
 				<a name="constructor" class="tsd-anchor"></a>
 				<h3>constructor</h3>
 				<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">new <wbr>Context<span class="tsd-signature-symbol">(</span>module<span class="tsd-signature-symbol">: </span><a href="_app_module_index_.module.html" class="tsd-signature-type">Module</a>, request<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">express.Request</span>, response<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">express.Response</span>, filters<span class="tsd-signature-symbol">: </span><a href="../modules/_app_api_filter_.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_app_api_context_.context.html" class="tsd-signature-type">Context</a></li>
+					<li class="tsd-signature tsd-kind-icon">new <wbr>Context<span class="tsd-signature-symbol">(</span>module<span class="tsd-signature-symbol">: </span><a href="_app_module_index_.module.html" class="tsd-signature-type">Module</a>, request<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">express.Request</span>, response<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">express.Response</span>, onError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">express.NextFunction</span>, filters<span class="tsd-signature-symbol">: </span><a href="../modules/_app_api_filter_.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_app_api_context_.context.html" class="tsd-signature-type">Context</a></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L13">app/api/context.ts:13</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L13">app/api/context.ts:13</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1015,6 +1019,9 @@ img { max-width: 100%; }
 							</li>
 							<li>
 								<h5>response: <span class="tsd-signature-type">express.Response</span></h5>
+							</li>
+							<li>
+								<h5>onError: <span class="tsd-signature-type">express.NextFunction</span></h5>
 							</li>
 							<li>
 								<h5>filters: <a href="../modules/_app_api_filter_.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
@@ -1033,7 +1040,7 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">filters<span class="tsd-signature-symbol">:</span> <a href="../modules/_app_api_filter_.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L19">app/api/context.ts:19</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L20">app/api/context.ts:20</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -1043,7 +1050,17 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">module<span class="tsd-signature-symbol">:</span> <a href="_app_module_index_.module.html" class="tsd-signature-type">Module</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L16">app/api/context.ts:16</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L16">app/api/context.ts:16</a></li>
+					</ul>
+				</aside>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<a name="onerror" class="tsd-anchor"></a>
+				<h3>on<wbr>Error</h3>
+				<div class="tsd-signature tsd-kind-icon">on<wbr>Error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">express.NextFunction</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L19">app/api/context.ts:19</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -1053,7 +1070,7 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">request<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">express.Request</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L17">app/api/context.ts:17</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L17">app/api/context.ts:17</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -1063,7 +1080,7 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">response<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">express.Response</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L18">app/api/context.ts:18</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L18">app/api/context.ts:18</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -1080,7 +1097,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L21">app/api/context.ts:21</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L22">app/api/context.ts:22</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/_app_api_action_index_.html#actionm" class="tsd-signature-type">ActionM</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -1097,7 +1114,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/46ecf72/lib/app/api/context.ts#L32">app/api/context.ts:32</a></li>
+								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/c1f6410/lib/app/api/context.ts#L33">app/api/context.ts:33</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">

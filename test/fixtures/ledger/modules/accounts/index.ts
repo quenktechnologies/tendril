@@ -4,7 +4,7 @@ import { Template } from '../../../../../src/app/module/template';
 import { Module } from '../../../../../src/app/module';
 import { App } from '../../../../../src/app';
 
-export const template: Template = {
+export const template = (): Template<App> => ({
 
     id: 'accounts',
 
@@ -12,13 +12,15 @@ export const template: Template = {
 
     app: {
 
-        routes: (m: Module) => {
+        filters: [handlers.setModuleFiltersWorks],
 
-            m.install('get', '/', [m.show('accounts')]);
-            m.install('post', '/', [handlers.create]);
-            m.install('get', '/balance', [m.show('balance')]);
+        routes: (m: Module) => [
 
-        },
+            { method: 'get', path: '/', filters: [m.show('accounts')] },
+            { method: 'post', path: '/', filters: [handlers.create] },
+            { method: 'get', path: '/balance', filters: [m.show('balance')] }
+
+        ],
 
         modules: {
 
@@ -28,4 +30,4 @@ export const template: Template = {
 
     }
 
-};
+});

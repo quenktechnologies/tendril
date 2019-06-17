@@ -1,5 +1,4 @@
 import * as express from 'express';
-import { Err } from '@quenk/noni/lib/control/error';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
 import { Module } from '../module';
@@ -17,6 +16,7 @@ export class Context<A> {
         public module: Module,
         public request: express.Request,
         public response: express.Response,
+        public onError: express.NextFunction,
         public filters: Filter<A>[]) { }
 
     next(): Future<ActionM<A>> {
@@ -35,12 +35,7 @@ export class Context<A> {
         this
             .next()
             .chain(n => n.foldM(() => pure<any>(noop()), n => n.exec(this)))
-            .fork((e: Err) => {
-
-                this.response.sendStatus(500);
-                this.module.raise(e);
-
-            }, console.log);
+            .fork(this.onError, () => { });
 
     }
 

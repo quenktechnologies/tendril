@@ -4,7 +4,7 @@ import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
 import { show } from '../../../../../../../src/app/api/action/response';
 
-export const template: Template = {
+export const template = (): Template<App> => ({
 
     id: 'reports',
 
@@ -12,22 +12,28 @@ export const template: Template = {
 
     app: {
 
-        routes: (m: Module) => {
+        routes: (_: Module) => [
 
-            m.install('get', '/', [() => (show('reports'))]);
+            { method: 'get', path: '/', filters: [() => (show('reports'))] },
 
-            m.install('get', '/custom', [
-              () => { console.error('fuputa '); return show('custom', { content: 'Custom' }); }
-            ]);
+            {
+                method: 'get',
+                path: '/custom',
+                filters: [
+                    () => show('custom', { content: 'Custom' })
 
-            m.install('get', '/:report', [
-                filters.modify,
-                filters.isReport,
-                filters.quickShow,
-                () => (show('reports'))]);
+                ]
+            },
+            {
+                method: 'get', path: '/:report', filters: [
+                    filters.modify,
+                    filters.isReport,
+                    filters.quickShow,
+                    () => (show('reports'))
 
-        }
+                ]
+            }]
 
     }
 
-};
+});

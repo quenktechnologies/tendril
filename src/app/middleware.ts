@@ -1,7 +1,9 @@
 import * as express from 'express';
 
 /**
- * Middleware provides handlers used by the express framework pre-routing.
+ * Middleware for the express framework.
+ *
+ * These are installed per module prior to the configured routing.
  */
 export type Middleware = express.RequestHandler;
 

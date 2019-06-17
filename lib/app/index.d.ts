@@ -13,18 +13,20 @@ import { Address } from '@quenk/potoo/lib/actor/address';
 import { Server } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
-import { Context, Module as ModuleContext } from './state/context';
+import { Context, ModuleData } from './actor/context';
 /**
- * App is the main class of the framework.
+ * App is the main entry point to the framework.
  *
- * This class functions as an actor system and your
- * application.
+ * An App serves as an actor system for all the modules of the application.
+ * It configures routing of requests for each module and makes whatever services
+ * the user desires available via child actors.
  */
 export declare class App extends AbstractSystem implements System {
-    main: Template;
+    provider: (s: App) => Template<App>;
     configuration: config.Configuration;
-    constructor(main: Template, configuration?: config.Configuration);
+    constructor(provider: (s: App) => Template<App>, configuration?: config.Configuration);
     state: State<Context>;
+    main: Template<App>;
     server: Server;
     pool: Pool;
     init(c: Context): Context;
@@ -42,10 +44,9 @@ export declare class App extends AbstractSystem implements System {
     /**
      * spawnModule (not a generic actor) from a template.
      *
-     * A module may or may not have a parent. In the case of the latter the
-     * module should be the root module of tha App.
+     * A module must have a parent unless it is the root module of the app.
      */
-    spawnModule(path: string, parent: Maybe<ModuleContext>, tmpl: Template): App;
+    spawnModule(path: string, parent: Maybe<ModuleData>, tmpl: Template<App>): App;
     /**
      * installMiddleware at the specified mount point.
      *

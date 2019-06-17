@@ -167,6 +167,16 @@ describe('tendril', () => {
             toPromise(app.stop())
                 .then(() => assert(process.env.CHILD_RUNNING).equal('no')));
 
+        it('should spawn spawnables', () => {
+
+            assert(process.env.SPAWNABLE_RUNNING).equal('yes');
+
+        });
+
+        it('should stop spawnables', () =>
+            toPromise(app.stop())
+                .then(() => assert(process.env.SPAWNABLE_RUNNING).equal('no')));
+
         it('should allow asking of actors', () =>
             request
                 .get(ROUTE_ADMIN_PING)
@@ -188,6 +198,32 @@ describe('tendril', () => {
                 .get(ROUTE_REPORTS_CUSTOM)
                 .then((r: any) => assert(r.text).equal('Custom')));
 
+        it('should execute module filters', () => {
+
+            process.env.MODULE_FILTERS_WORK = '';
+
+            return request
+                .get(ROUTE_ADMIN_PING)
+                .then(() => assert(process.env.MODULE_FILTERS_WORK).not.equal('yes'))
+                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => {
+
+                    assert(process.env.MODULE_FILTERS_WORK).equal('yes');
+
+                })
+
+        });
+
+        it('should invoke not found hooks', () =>
+            request
+                .get(`${ROUTE_ADMIN}/foobar`)
+                .catch((e) => {
+
+                    assert(process.env.NOT_FOUND_APPLIED).equal('yes');
+                    assert(e.response.status).equal(404);
+
+                }));
+
     });
 
     describe('error escalation', () => {
@@ -204,7 +240,7 @@ describe('tendril', () => {
                 .then(() => assert(false).true())
                 .catch((e) => {
 
-                    assert(e.response).object();
+                    assert(process.env.ERROR_HANDLER_APPLIED).equal('yes');
                     assert(e.response.status).equal(500);
 
                 }));
