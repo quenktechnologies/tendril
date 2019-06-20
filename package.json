@@ -14,29 +14,29 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@quenk/test": "^2.1.0",
-    "@types/bluebird": "^3.5.26",
+    "@types/bluebird": "^3.5.27",
     "@types/body-parser": "^1.17.0",
-    "@types/express": "^4.16.1",
-    "@types/mocha": "^5.2.6",
+    "@types/express": "^4.17.0",
+    "@types/mocha": "^5.2.7",
     "@types/morgan": "^1.7.35",
-    "@types/node": "^12.0.0",
+    "@types/node": "^12.0.8",
     "@types/superagent": "^4.1.1",
     "@types/uuid": "^3.4.4",
     "bluebird": "^3.5.4",
     "body-parser": "^1.19.0",
     "mocha": "^6.1.4",
     "morgan": "^1.9.1",
-    "serve-static": "^1.13.2",
+    "serve-static": "^1.14.1",
     "superagent": "^5.0.5",
-    "ts-node": "^8.1.0",
+    "ts-node": "^8.3.0",
     "typedoc": "^0.14.2",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.2"
   },
   "dependencies": {
     "@quenk/must": "^1.0.4",
-    "@quenk/noni": "^1.23.0",
+    "@quenk/noni": "^1.24.0",
     "@quenk/potoo": "^2.2.1",
-    "express": "^4.16.4",
+    "express": "^4.17.1",
     "uuid": "^3.3.2"
   }
 }

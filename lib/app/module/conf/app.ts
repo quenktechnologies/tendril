@@ -1,4 +1,3 @@
-import * as express from 'express';
 import * as system from '@quenk/potoo/lib/actor/system/configuration';
 import * as filters from '../../api/filter';
 import * as hooks from './hooks';
@@ -27,9 +26,9 @@ export interface AppConf<S extends App> {
 
     routes?: routes.Routes,
 
-    errorHandler?: express.ErrorRequestHandler,
+    notFoundHandler?: filters.Filter<void>,
 
-    notFoundHandler?: express.RequestHandler,
+    errorHandler?: filters.ErrorFilter,
 
     views?: show.ShowConf,
 

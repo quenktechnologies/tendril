@@ -86,7 +86,7 @@ describe('tendril', () => {
                 .then((r: any) => assert(r.text).equal('A list of reports'))
                 .then(() => request.get(`${ROUTE_REPORTS}/liabilities`))
                 .catch((e: Error) => {
-
+                    console.error(e);
                     if (e.message !== 'Forbidden') throw e;
 
                     fourohfoured = true;

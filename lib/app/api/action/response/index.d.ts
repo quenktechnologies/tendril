@@ -87,12 +87,11 @@ export declare const created: <A>(body?: A | undefined) => import("@quenk/noni/l
  * InternalServerError response.
  */
 export declare class InternalServerError<A> extends Response<Err, A> {
-    body: Maybe<Err>;
+    error: Maybe<Err>;
     next: A;
-    constructor(body: Maybe<Err>, next: A);
+    constructor(error: Maybe<Err>, next: A);
     status: number;
     map<B>(f: (a: A) => B): InternalServerError<B>;
-    exec({ response }: Context<A>): Future<A>;
 }
 /**
  * error sends the "INTERNAL SERVER ERROR" status and can optionally log

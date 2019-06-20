@@ -5,7 +5,8 @@ import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 import { Context, getModule } from '../actor/context';
 import { Context as RequestContext } from '../api/context';
-import { Filter } from '../api/filter';
+import { Request } from '../api/request';
+import { Filter, ErrorFilter } from '../api/filter';
 import { show } from '../api/action/response';
 import { App } from '../';
 
@@ -90,6 +91,35 @@ export class Module extends Immutable<Messages<any>, Context, App> {
     ];
 
     /**
+     * runInContext given a list of filters, produces an
+     * express request handler where the action is the
+     * interpretation of the filters.
+     */
+    runInContext = <A>(filters: Filter<A>[]): express.RequestHandler => (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction) => {
+
+        new RequestContext(this, req, res, next, filters.slice()).run()
+
+    }
+
+    /**
+     * runInContextWithError is used when an error occurs during request 
+     * handling.
+     */
+    runInContextWithError = (filter: ErrorFilter): express.ErrorRequestHandler =>
+        (err: Error,
+            req: express.Request,
+            res: express.Response,
+            next: express.NextFunction) => {
+
+            new RequestContext(this, req, res, next,
+                [(r: Request) => filter(err, r)]).run();
+
+        }
+
+    /**
      * install routes into the routing table for this module.
      */
     install<A>(routes: RouteConf<A>[]): void {
@@ -102,12 +132,7 @@ export class Module extends Immutable<Messages<any>, Context, App> {
 
             routes.forEach(({ path, method, filters }) => {
 
-                (<Type>m.app)[method](path,
-                    (req: express.Request,
-                        res: express.Response,
-                        next: express.NextFunction) =>
-                        new RequestContext(this, req, res, next,
-                            filters.slice()).run())
+                (<Type>m.app)[method](path, this.runInContext(filters));
 
             });
 

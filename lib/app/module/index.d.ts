@@ -1,7 +1,8 @@
+import * as express from 'express';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 import { Context } from '../actor/context';
-import { Filter } from '../api/filter';
+import { Filter, ErrorFilter } from '../api/filter';
 import { App } from '../';
 /**
  * Messages supported by modules.
@@ -61,6 +62,17 @@ export declare class Module extends Immutable<Messages<any>, Context, App> {
     system: App;
     constructor(system: App);
     receive: Case<Messages<void>>[];
+    /**
+     * runInContext given a list of filters, produces an
+     * express request handler where the action is the
+     * interpretation of the filters.
+     */
+    runInContext: <A>(filters: Filter<A>[]) => express.RequestHandler;
+    /**
+     * runInContextWithError is used when an error occurs during request
+     * handling.
+     */
+    runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler;
     /**
      * install routes into the routing table for this module.
      */

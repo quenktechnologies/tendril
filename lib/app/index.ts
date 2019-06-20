@@ -240,6 +240,7 @@ export class App extends AbstractSystem implements System {
             if (c.module.isJust()) {
 
                 let m = c.module.get();
+                let mod = m.module;
                 let t: Template<App> = <Template<App>><Type>c.template;
                 let routes = m.routes(m.module);
 
@@ -247,7 +248,7 @@ export class App extends AbstractSystem implements System {
 
                     let filters = t.app.filters;
 
-                    m.module.install(routes.map(r => ({
+                    mod.install(routes.map(r => ({
 
                         method: r.method,
 
@@ -259,15 +260,15 @@ export class App extends AbstractSystem implements System {
 
                 } else {
 
-                    m.module.install(routes);
+                    mod.install(routes);
 
                 }
 
                 if (t.app && t.app.notFoundHandler)
-                    m.app.use(t.app.notFoundHandler);
+                    m.app.use(mod.runInContext([t.app.notFoundHandler]));
 
                 if (t.app && t.app.errorHandler)
-                    m.app.use(t.app.errorHandler);
+                    m.app.use(mod.runInContextWithError(t.app.errorHandler));
 
                 m.parent.map(p => p.app.use(join('/', m.path), m.app));
 

@@ -170,9 +170,9 @@ export const created = <A>(body?: A): ActionM<undefined> =>
  */
 export class InternalServerError<A> extends Response<Err, A> {
 
-    constructor(public body: Maybe<Err>, public next: A) {
+    constructor(public error: Maybe<Err>, public next: A) {
 
-        super(body, next);
+        super(nothing(), next);
 
     }
 
@@ -181,15 +181,6 @@ export class InternalServerError<A> extends Response<Err, A> {
     map<B>(f: (a: A) => B): InternalServerError<B> {
 
         return new InternalServerError(this.body, f(this.next));
-
-    }
-
-    exec({ response }: Context<A>): Future<A> {
-
-        this.body.map(b => console.error(`Internal Error: ${b.message}`));
-
-        return attempt(() => response.status(this.status))
-            .map(() => this.next);
 
     }
 
