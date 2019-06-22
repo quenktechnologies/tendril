@@ -22,7 +22,7 @@ describe('app', () => {
 
         it('should spawn actors', cb => {
 
-            let app: App = new App(template, {});
+            let app: App = new App(template);
 
             app.spawn({ id: 'act', create: s => new Act(s) });
 
@@ -39,7 +39,7 @@ describe('app', () => {
 
         it('should not loop indefinitely on raised error', cb => {
 
-            let app: App = new App(template, {});
+            let app: App = new App(template);
 
             try {
 

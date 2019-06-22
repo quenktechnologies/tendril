@@ -62,17 +62,18 @@ const defaultServConf = { port: 2407, host: '0.0.0.0' };
  */
 export class App extends AbstractSystem implements System {
 
-    constructor(
-        public provider: (s: App) => Template<App>,
-        public configuration: config.Configuration = {}) {
+    constructor(public provider: (s: App) => Template<App>) {
 
-        super(configuration);
+        super({});
 
     }
 
     state: State<Context> = newState(this);
 
     main: Template<App> = this.provider(this);
+
+    configuration: config.Configuration =
+        this.main.app && this.main.app.system || this.configuration;
 
     server: Server = new Server(getServerConf(this.main, defaultServConf));
 

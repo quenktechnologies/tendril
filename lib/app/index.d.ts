@@ -23,10 +23,10 @@ import { Context, ModuleData } from './actor/context';
  */
 export declare class App extends AbstractSystem implements System {
     provider: (s: App) => Template<App>;
-    configuration: config.Configuration;
-    constructor(provider: (s: App) => Template<App>, configuration?: config.Configuration);
+    constructor(provider: (s: App) => Template<App>);
     state: State<Context>;
     main: Template<App>;
+    configuration: config.Configuration;
     server: Server;
     pool: Pool;
     init(c: Context): Context;
