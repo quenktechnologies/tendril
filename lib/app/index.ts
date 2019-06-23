@@ -1,26 +1,25 @@
 import * as express from 'express';
-import * as hooks from './module/conf/hooks';
 import * as conn from './connection';
 import * as config from '@quenk/potoo/lib/actor/system/configuration';
 import { join } from 'path';
 import { Type } from '@quenk/noni/lib/data/type';
-import { merge, reduce, map, values } from '@quenk/noni/lib/data/record';
+import { noop } from '@quenk/noni/lib/data/function';
+import { merge, reduce, map } from '@quenk/noni/lib/data/record';
 import { Err } from '@quenk/noni/lib/control/error';
 import {
     Maybe,
     just,
-    fromNullable,
     fromBoolean,
     nothing
 } from '@quenk/noni/lib/data/maybe';
 import { Either, left, right } from '@quenk/noni/lib/data/either'
-import { cons, noop } from '@quenk/noni/lib/data/function';
+import { cons } from '@quenk/noni/lib/data/function';
 import {
     Future,
     pure,
     raise,
-    parallel,
-    attempt
+    attempt,
+    parallel
 } from '@quenk/noni/lib/control/monad/future';
 import { State, put } from '@quenk/potoo/lib/actor/system/state';
 import { Message } from '@quenk/potoo/lib/actor/message';
@@ -50,6 +49,7 @@ import {
 } from './module/template';
 import { Middleware } from './middleware';
 import { Filter } from './api/filter';
+import { Dispatcher } from './hooks';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
@@ -78,6 +78,8 @@ export class App extends AbstractSystem implements System {
     server: Server = new Server(getServerConf(this.main, defaultServConf));
 
     pool: Pool = getInstance();
+
+    hooks: Dispatcher<this> = new Dispatcher(this);
 
     init(c: Context): Context { return c; }
 
@@ -188,8 +190,7 @@ export class App extends AbstractSystem implements System {
      */
     initialize(): Future<App> {
 
-        return parallel(values<Future<void>>(map(this.state.contexts,
-            initContext(this)))).map(cons(<App>this));
+        return this.hooks.init().map(() => <App>this);
 
     }
 
@@ -210,9 +211,8 @@ export class App extends AbstractSystem implements System {
                 .orJust(() => p)
                 .get())
             .open()
-            .chain(() => parallel(values(map(this.state.contexts,
-                dispatchConnected(this)))))
-            .map(cons(<App>this));
+            .chain(() => this.hooks.connected())
+            .map(() => <App>this);
 
     }
 
@@ -283,11 +283,14 @@ export class App extends AbstractSystem implements System {
     /**
      * listen for incomming connections.
      */
-    listen() {
+    listen(): Future<void> {
 
-        return getModule(this.state, this.main.id)
-            .map(m => this.server.listen(m.app))
-            .get();
+        let mServer = getModule(this.state, this.main.id);
+
+        if (mServer.isJust())
+            return this.server.listen(mServer.get().app).map(noop);
+        else
+            return raise(new Error('Server not initialized!'));
 
     }
 
@@ -302,7 +305,8 @@ export class App extends AbstractSystem implements System {
             .chain(() => this.connections())
             .chain(() => this.middlewares())
             .chain(() => this.routing())
-            .chain(() => startListening(this));
+            .chain(() => parallel([this.listen(), this.hooks.started()]))
+            .map(() => <App>this);
 
     }
 
@@ -332,14 +336,6 @@ export class App extends AbstractSystem implements System {
 const getModuleAddress = (parent: Maybe<ModuleData>, path: string) =>
     (parent.isJust()) ? join(parent.get().address, path) : path;
 
-const initContext = (a: App) => (c: Context): Future<void> =>
-    c
-        .module
-        .chain(m => fromNullable(m.hooks.init))
-        .map((i: hooks.Init<App>) => i(a))
-        .orJust(() => pure(noop()))
-        .get();
-
 const mergeSpawnable = (id: string, c: SpawnConf): PotooTemplate<App> =>
     merge({
 
@@ -349,14 +345,6 @@ const mergeSpawnable = (id: string, c: SpawnConf): PotooTemplate<App> =>
             new c.constructor(...c.arguments.map(a => (a === '$') ? s : a))
 
     }, c)
-
-const dispatchConnected = (a: App) => (c: Context): Future<void> =>
-    c
-        .module
-        .chain(m => fromNullable(m.hooks.connected))
-        .map((c: hooks.Connected<App>) => c(a))
-        .orJust(() => pure(noop()))
-        .get();
 
 const applyMware = (app: Future<App>) => (m: ModuleData): Future<App> =>
     m
@@ -392,23 +380,6 @@ const concatMware = (m: ModuleData, key: string) => (list: Middleware[]) =>
 const errMware = (path: string, key: string) => ()
     : Either<Error, Middleware[]> =>
     left(new Error(`${path}: Unknown middleware "${key}"!`));
-
-const startListening = (a: App): Future<App> => {
-
-    let list: Future<void>[] = values(map(a.state.contexts, dispatchStart(a)));
-
-    return parallel([a.listen().map(() => { }), ...list])
-        .map(() => a);
-
-}
-
-const dispatchStart = (a: App) => (c: Context): Future<void> =>
-    c
-        .module
-        .chain(m => fromNullable(m.hooks.start))
-        .map((h: hooks.Start<App>) => h(a))
-        .orJust(() => pure(noop()))
-        .get();
 
 const newState = (app: App): State<Context> => ({
 

@@ -20,13 +20,13 @@ export interface HookConf<S extends App> {
     /**
      * init is invoked before the application is configured.
      */
-    init?: Init<S>;
+    init?: Init<S> | Init<S>[];
     /**
      * connected is invoked when all connections have been established.
      */
-    connected?: Connected<S>;
+    connected?: Connected<S> | Connected<S>[];
     /**
-     * start is invoked when the application is ready to serve requests.
+     * started is invoked when the application is ready to serve requests.
      */
-    start?: Start<S>;
+    started?: Start<S> | Start<S>[];
 }

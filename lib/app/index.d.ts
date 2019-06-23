@@ -14,6 +14,7 @@ import { Server } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
 import { Context, ModuleData } from './actor/context';
+import { Dispatcher } from './hooks';
 /**
  * App is the main entry point to the framework.
  *
@@ -29,6 +30,7 @@ export declare class App extends AbstractSystem implements System {
     configuration: config.Configuration;
     server: Server;
     pool: Pool;
+    hooks: Dispatcher<this>;
     init(c: Context): Context;
     allocate(a: Actor<Context>, r: Runtime, t: PotooTemplate<App>): Context;
     /**
@@ -79,7 +81,7 @@ export declare class App extends AbstractSystem implements System {
     /**
      * listen for incomming connections.
      */
-    listen(): Future<Server>;
+    listen(): Future<void>;
     /**
      * start the App.
      */
