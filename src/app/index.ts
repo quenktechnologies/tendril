@@ -351,7 +351,7 @@ const applyMware = (app: Future<App>) => (m: ModuleData): Future<App> =>
         .middleware
         .enabled
         .reduce(swap(m), right([preroute(m)]))
-        .map(list => m.app.use.apply(m.app, list))
+        .map(list => m.app.use.apply(m.app, <any>list))
         .map(() => app)
         .orRight(e => <Future<App>>raise(e))
         .takeRight();
