@@ -5,7 +5,7 @@
 /** imports */
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Context } from '../context';
-import { Action } from './';
+import { Action, ActionM } from './';
 /**
  * Checkout action.
  */
@@ -19,4 +19,4 @@ export declare class Checkout<A> extends Action<A> {
 /**
  * checkout a Connection from the application's pool.
  */
-export declare const checkout: <A>(name: string) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, A>;
+export declare const checkout: <A>(name: string) => ActionM<A>;

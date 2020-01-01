@@ -16,7 +16,7 @@ export declare class Value<A> extends Action<A> {
  * value wraps a value so that it is available to the next value in the
  * chain.
  */
-export declare const value: <A>(value: A) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, A>;
+export declare const value: <A>(value: A) => ActionM<A>;
 /**
  * Await action.
  */
@@ -30,7 +30,7 @@ export declare class Await<A> extends Action<A> {
 /**
  * await a value from an asynchrounous operation before continuing.
  */
-export declare const await: <A>(f: () => Future<A>) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, A>;
+export declare const await: <A>(f: () => Future<A>) => ActionM<A>;
 /**
  * Next action.
  */
@@ -48,4 +48,4 @@ export declare class Next<A> extends Action<A> {
  * This action allows the Request in the context to be modified and
  * short-circuits the current chain.
  */
-export declare const next: (r: Request) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+export declare const next: (r: Request) => ActionM<undefined>;

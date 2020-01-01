@@ -2,7 +2,7 @@ import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Context } from '../../context';
-import { Action } from '../';
+import { Action, ActionM } from '../';
 /**
  * Self instruction.
  */
@@ -15,7 +15,7 @@ export declare class Self<N, A> extends Action<A> {
 /**
  * self provides the address of the module.
  */
-export declare const self: () => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, string>;
+export declare const self: () => ActionM<string>;
 /**
  * Tell action.
  */
@@ -30,7 +30,7 @@ export declare class Tell<N, A> extends Action<A> {
 /**
  * tell sends a message to another actor.
  */
-export declare const tell: (to: string, m: any) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, undefined>;
+export declare const tell: (to: string, m: any) => ActionM<undefined>;
 /**
  * Request wraps a message to an actor in to indicate a reply is
  * expected.
@@ -64,4 +64,4 @@ export declare class Ask<N, A> extends Action<A> {
  *
  * The actor must respond with a Response message.
  */
-export declare const ask: <T>(to: string, m: any) => import("@quenk/noni/lib/control/monad/free").Free<Action<any>, T>;
+export declare const ask: <T>(to: string, m: any) => ActionM<T>;
