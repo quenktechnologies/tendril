@@ -35,7 +35,7 @@
   "dependencies": {
     "@quenk/must": "^1.0.4",
     "@quenk/noni": "^1.39.1",
-    "@quenk/potoo": "^2.5.2",
+    "@quenk/potoo": "2.5.x",
     "express": "^4.17.1",
     "uuid": "^7.0.3"
   }

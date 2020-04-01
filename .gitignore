@@ -33,3 +33,5 @@ node_modules
 .mongo
 .idea
 .env
+.tmp
+.temp
