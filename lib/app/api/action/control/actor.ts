@@ -134,7 +134,7 @@ export class Ask<N, A> extends Action<A> {
 
         return (<Future<A>>new Run<Message>(s => {
 
-            let id = uuid();
+            let id = uuid.v4();
             let cb = (t: Message) => s.onSuccess(t.value);
 
             ctx.module.tell(to,
