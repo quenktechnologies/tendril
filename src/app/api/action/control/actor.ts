@@ -1,14 +1,15 @@
 import * as uuid from 'uuid';
 import { resolve } from 'path';
+
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Constructor } from '@quenk/noni/lib/data/type/constructor';
-import { Mutable } from '@quenk/potoo/lib/actor/resident';
+import { Temp } from '@quenk/potoo/lib/actor/resident';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
-import { Context as AppContext } from '../../../actor/context';
+
 import { App } from '../../../../app';
 import { Context } from '../../context';
 import { Action, ActionM } from '../';
@@ -71,21 +72,20 @@ export class Tell<N, A> extends Action<A>{
 export const tell = (to: string, m: Message): ActionM<undefined> =>
     liftF(new Tell(to, m, undefined));
 
-class Callback<A> extends Mutable<AppContext, App> {
+class Callback<A> extends Temp<A, App> {
 
     constructor(
         public pattern: Constructor<A>,
         public f: (a: A) => void,
         public app: App) { super(app); }
 
-    run() {
+    receive = [
 
-        this.select([
-            new Case(this.pattern, (a: A) => {
-                this.f(a);
-                this.exit();
-            })
-        ]);
+        new Case(this.pattern, (a: A) => { this.f(a); })
+
+    ];
+
+    run() {
 
     }
 
@@ -137,13 +137,13 @@ export class Ask<N, A> extends Action<A> {
             let id = uuid.v4();
             let cb = (t: Message) => s.onSuccess(t.value);
 
-            ctx.module.tell(to,
-                new Request(resolve(`${ctx.module.self()}/${id}`), message));
-
             ctx.module.spawn({
                 id,
                 create: a => new Callback(Response, cb, a)
             });
+
+            ctx.module.tell(to,
+                new Request(resolve(`${ctx.module.self()}/${id}`), message));
 
             return () => { }
 

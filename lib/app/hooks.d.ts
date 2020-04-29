@@ -3,24 +3,24 @@ import { App } from './';
 /**
  * Dispatcher is used by the main App to dispatch hook events.
  *
- * Hooks are dispatched in parallel at the module level but at the
- * hook level the are executed sequentially.
+ * Hooks are dispatched in parallel at the app level but sequentially
+ * at the module level.
  */
 export declare class Dispatcher<S extends App> {
     app: S;
     constructor(app: S);
     /**
-     * init fires all the "init" hooks for all the installed modules.
+     * init fires the "init" hook.
      */
     init(): Future<void>;
     /**
-     * connected fires all the "connected" hooks when all services have been
-     * connected.
+     * connected fires all the "connected" hook when all remote connections
+     * have been established.
      */
     connected(): Future<void>;
     /**
-     * stared fires the "started" hooks when the app has started servicing
-     * requests.
+     * stared fires the "started" hook when the app has started listening
+     * for requests.
      */
     started(): Future<void>;
 }

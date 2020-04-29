@@ -6,13 +6,20 @@
 import * as status from './status';
 import * as express from 'express';
 import * as headers from '../../../../net/http/headers';
-import { Future, attempt, pure, raise } from '@quenk/noni/lib/control/monad/future';
+
+import {
+    Future,
+    attempt,
+    pure,
+    raise
+} from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
+
 import { Context } from '../../context';
 import { Action, ActionM } from '../';
-import { getModule } from '../../../actor/context';
+import { getModule } from '../../../module/data';
 
 /**
  * Headers map.
@@ -350,7 +357,7 @@ export class Show<A, C> extends Action<A> {
 
     exec({ response, module }: Context<A>): Future<A> {
 
-        return getModule(module.system.state, module.self())
+        return getModule(module.system.modules, module.self())
             .chain(m => m.show)
             .map(f =>
                 f(this.view, <any>this.context.orJust(() => ({})).get())

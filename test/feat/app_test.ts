@@ -167,16 +167,6 @@ describe('tendril', () => {
             toPromise(app.stop())
                 .then(() => assert(process.env.CHILD_RUNNING).equal('no')));
 
-        it('should spawn spawnables', () => {
-
-            assert(process.env.SPAWNABLE_RUNNING).equal('yes');
-
-        });
-
-        it('should stop spawnables', () =>
-            toPromise(app.stop())
-                .then(() => assert(process.env.SPAWNABLE_RUNNING).equal('no')));
-
         it('should allow asking of actors', () =>
             request
                 .get(ROUTE_ADMIN_PING)

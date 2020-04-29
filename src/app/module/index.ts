@@ -1,9 +1,11 @@
 import * as express from 'express';
+
 import { Type } from '@quenk/noni/lib/data/type';
 import { just, nothing } from '@quenk/noni/lib/data/maybe';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
-import { Context, getModule } from '../actor/context';
+
+import { getModule } from '../module/data';
 import { Context as RequestContext } from '../api/context';
 import { Request } from '../api/request';
 import { Filter, ErrorFilter } from '../api/filter';
@@ -76,7 +78,7 @@ export class Redirect {
  * This makes debugging slightly easier as we can review to some extent what
  * individual modules are doing via the op log.
  */
-export class Module extends Immutable<Messages<any>, Context, App> {
+export class Module extends Immutable<Messages<any>, App> {
 
     constructor(public system: App) { super(system); }
 
@@ -124,7 +126,7 @@ export class Module extends Immutable<Messages<any>, Context, App> {
      */
     install<A>(routes: RouteConf<A>[]): void {
 
-        let maybeModule = getModule(this.system.state, this.self());
+        let maybeModule = getModule(this.system.modules, this.self());
 
         if (maybeModule.isJust()) {
 
@@ -142,7 +144,7 @@ export class Module extends Immutable<Messages<any>, Context, App> {
 
     disable() {
 
-        getModule(this.system.state, this.self())
+        getModule(this.system.modules, this.self())
             .map(m => { m.disabled = true; })
             .orJust(() => console.warn(`${this.self()}: Cannot be disabled!`))
             .get();
@@ -151,7 +153,7 @@ export class Module extends Immutable<Messages<any>, Context, App> {
 
     enable() {
 
-        getModule(this.system.state, this.self())
+        getModule(this.system.modules, this.self())
             .map(m => { m.disabled = false; m.redirect = nothing() })
             .orJust(() => console.warn(`${this.self()}: Cannot be enabled!`))
             .get();
@@ -160,7 +162,7 @@ export class Module extends Immutable<Messages<any>, Context, App> {
 
     redirect(location: string, status: number) {
 
-        return getModule(this.system.state, this.self())
+        getModule(this.system.modules, this.self())
             .map(m => { m.redirect = just({ location, status }) })
             .orJust(() => console.warn(`${this.self()}: Cannot be enabled!`))
             .get();
