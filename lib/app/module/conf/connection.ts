@@ -1,4 +1,5 @@
 import * as connection from '../../connection';
+
 import { Type } from '@quenk/noni/lib/data/type';
 
 /**

@@ -1,19 +1,17 @@
 import * as express from 'express';
-import * as config from '@quenk/potoo/lib/actor/system/configuration';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { State } from '@quenk/potoo/lib/actor/system/state';
-import { Message } from '@quenk/potoo/lib/actor/message';
-import { AbstractSystem } from '@quenk/potoo/lib/actor/system/framework';
-import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
+import { PVM } from '@quenk/potoo/lib/actor/system/vm';
 import { System } from '@quenk/potoo/lib/actor/system';
-import { Actor } from '@quenk/potoo/lib/actor';
+import { Instance } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
+import { PTValue } from '@quenk/potoo/lib/actor/system/vm/type';
+import { Script } from '@quenk/potoo/lib/actor/system/vm/script';
 import { Server } from '../net/http/server';
 import { Pool } from './connection';
 import { Template } from './module/template';
-import { Context, ModuleData } from './actor/context';
+import { ModuleData, ModuleDatas } from './module/data';
 import { Dispatcher } from './hooks';
 /**
  * App is the main entry point to the framework.
@@ -22,33 +20,29 @@ import { Dispatcher } from './hooks';
  * It configures routing of requests for each module and makes whatever services
  * the user desires available via child actors.
  */
-export declare class App extends AbstractSystem implements System {
+export declare class App implements System {
     provider: (s: App) => Template<App>;
     constructor(provider: (s: App) => Template<App>);
-    state: State<Context>;
     main: Template<App>;
-    configuration: config.Configuration;
+    vm: PVM<this>;
+    modules: ModuleDatas;
     server: Server;
     pool: Pool;
     hooks: Dispatcher<this>;
-    init(c: Context): Context;
-    allocate(a: Actor<Context>, r: Runtime, t: PotooTemplate<App>): Context;
-    /**
-     * tell a message to an actor in the system.
-     */
-    tell(to: Address, msg: Message): App;
+    exec(i: Instance, s: Script): void;
+    execNow(i: Instance, s: Script): Maybe<PTValue>;
     /**
      * spawn a regular actor from a template.
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<App>): App;
+    spawn(tmpl: PotooTemplate<this>): App;
     /**
      * spawnModule (not a generic actor) from a template.
      *
      * A module must have a parent unless it is the root module of the app.
      */
-    spawnModule(path: string, parent: Maybe<ModuleData>, tmpl: Template<App>): App;
+    spawnModule(path: string, parent: Maybe<ModuleData>, tmpl: Template<App>): Future<Address>;
     /**
      * installMiddleware at the specified mount point.
      *
@@ -79,7 +73,7 @@ export declare class App extends AbstractSystem implements System {
      */
     routing(): Future<App>;
     /**
-     * listen for incomming connections.
+     * listen for incoming connections.
      */
     listen(): Future<void>;
     /**

@@ -1,11 +1,11 @@
 import * as express from 'express';
 import * as conn from './connection';
-import * as config from '@quenk/potoo/lib/actor/system/configuration';
+
 import { join } from 'path';
+
 import { Type } from '@quenk/noni/lib/data/type';
 import { noop } from '@quenk/noni/lib/data/function';
-import { merge, reduce, map } from '@quenk/noni/lib/data/record';
-import { Err } from '@quenk/noni/lib/control/error';
+import { merge, reduce, map, mapTo } from '@quenk/noni/lib/data/record';
 import {
     Maybe,
     just,
@@ -19,25 +19,21 @@ import {
     pure,
     raise,
     attempt,
-    parallel
+    parallel,
+    sequential
 } from '@quenk/noni/lib/control/monad/future';
-import { State, put } from '@quenk/potoo/lib/actor/system/state';
-import { Message } from '@quenk/potoo/lib/actor/message';
-import { TellScript } from '@quenk/potoo/lib/actor/resident/scripts';
-import { SpawnScript } from '@quenk/potoo/lib/actor/system/framework/scripts';
-import { AbstractSystem } from '@quenk/potoo/lib/actor/system/framework';
-import { StopScript } from '@quenk/potoo/lib/actor/system/vm/runtime/scripts';
-import { This } from '@quenk/potoo/lib/actor/system/vm/runtime/this';
-import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
+import { PVM } from '@quenk/potoo/lib/actor/system/vm';
 import { System } from '@quenk/potoo/lib/actor/system';
-import { Actor } from '@quenk/potoo/lib/actor';
+import { Instance } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
+import { PTValue } from '@quenk/potoo/lib/actor/system/vm/type';
+import { Script } from '@quenk/potoo/lib/actor/system/vm/script';
+
 import { Server } from '../net/http/server';
 import { Pool, getInstance } from './connection';
-import { SpawnConf } from './module/conf/spawn';
 import { Template } from './module/template';
-import { Context, ModuleData, getModule } from './actor/context';
+import { ModuleData, getModule, ModuleDatas } from './module/data';
 import {
     getAvailableMiddleware,
     getEnabledMiddleware,
@@ -53,6 +49,8 @@ import { Dispatcher } from './hooks';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
+const dconf = { log: { level: 3 } }
+
 /**
  * App is the main entry point to the framework.
  *
@@ -60,20 +58,15 @@ const defaultServConf = { port: 2407, host: '0.0.0.0' };
  * It configures routing of requests for each module and makes whatever services
  * the user desires available via child actors.
  */
-export class App extends AbstractSystem implements System {
+export class App implements System {
 
-    constructor(public provider: (s: App) => Template<App>) {
-
-        super({});
-
-    }
-
-    state: State<Context> = newState(this);
+    constructor(public provider: (s: App) => Template<App>) { }
 
     main: Template<App> = this.provider(this);
 
-    configuration: config.Configuration =
-        this.main.app && this.main.app.system || this.configuration;
+    vm = PVM.create(this, this.main.app && this.main.app.system || dconf);
+
+    modules: ModuleDatas = {};
 
     server: Server = new Server(getServerConf(this.main, defaultServConf));
 
@@ -81,24 +74,15 @@ export class App extends AbstractSystem implements System {
 
     hooks: Dispatcher<this> = new Dispatcher(this);
 
-    init(c: Context): Context { return c; }
+    exec(i: Instance, s: Script): void {
 
-    allocate(
-        a: Actor<Context>,
-        r: Runtime,
-        t: PotooTemplate<App>): Context {
-
-        return newContext(nothing(), a, r, t);
+        return this.vm.exec(i, s);
 
     }
 
-    /**
-     * tell a message to an actor in the system.
-     */
-    tell(to: Address, msg: Message): App {
+    execNow(i: Instance, s: Script): Maybe<PTValue> {
 
-        (new This('$', this)).exec(new TellScript(to, msg));
-        return this;
+        return this.vm.execNow(i, s);
 
     }
 
@@ -107,10 +91,9 @@ export class App extends AbstractSystem implements System {
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<App>): App {
+    spawn(tmpl: PotooTemplate<this>): App {
 
-        (new This('$', this)).exec(new SpawnScript('',
-            <PotooTemplate<System>>tmpl));
+        this.vm.spawn(tmpl);
 
         return this;
 
@@ -124,47 +107,55 @@ export class App extends AbstractSystem implements System {
     spawnModule(
         path: string,
         parent: Maybe<ModuleData>,
-        tmpl: Template<App>): App {
+        tmpl: Template<App>): Future<Address> {
 
         let module = tmpl.create(this);
+
+        let t = merge(tmpl, { create: () => module });
+
+        let address = parent.isNothing() ?
+            this.vm.spawn(t) :
+            parent.get().module.spawn(t);
+
         let app = express();
-        let address = getModuleAddress(parent, path);
-        let runtime = new This(address, this);
 
         let mctx: ModuleData = {
             path,
             address,
             parent,
-            module,
             app,
-            hooks: getHooks(tmpl),
+            module,
+            hooks: getHooks(t),
+            template: t,
             middleware: {
-                enabled: getEnabledMiddleware(tmpl),
-                available: getAvailableMiddleware(tmpl)
+
+                enabled: getEnabledMiddleware(t),
+
+                available: getAvailableMiddleware(t)
+
             },
-            routes: getRoutes(tmpl),
-            show: getShowFun(tmpl, parent),
-            connections: getConnections(tmpl),
-            disabled: tmpl.disabled || false,
+            routes: getRoutes(t),
+            show: getShowFun(t, parent),
+            connections: getConnections(t),
+            disabled: t.disabled || false,
             redirect: nothing()
         };
 
-        put(this.state, address,
-            module.init(newContext(just(mctx), module, runtime, tmpl)));
+        this.modules[address] = mctx;
 
-        if (tmpl.app && tmpl.app.modules)
-            map(tmpl.app.modules, (m, k) =>
-                this.spawnModule(k, just(mctx), m(this)));
+        if (t.app && t.app.modules) {
 
-        if (Array.isArray(tmpl.children))
-            tmpl.children.forEach(c =>
-                runtime.exec(new SpawnScript(address, <PotooTemplate<System>>c)));
+            let mmctx = just(mctx);
 
-        if (tmpl.spawn != null)
-            map(tmpl.spawn, (c, id) => runtime.exec(new SpawnScript(address,
-                <PotooTemplate<System>>mergeSpawnable(id, c))));
+            return sequential(mapTo(t.app.modules, (c, k) =>
+                this.spawnModule(k, mmctx, c(this))))
+                .chain(() => pure(address));
 
-        return this;
+        } else {
+
+            return pure(address);
+
+        }
 
     }
 
@@ -175,7 +166,7 @@ export class App extends AbstractSystem implements System {
      */
     installMiddleware(path: string, handler: express.RequestHandler): App {
 
-        return getModule(this.state, path)
+        return getModule(this.modules, path)
             .map(m => m.app.use(handler))
             .map(() => this)
             .orJust(() => this)
@@ -203,13 +194,13 @@ export class App extends AbstractSystem implements System {
      */
     connections(): Future<App> {
 
-        return reduce(this.state.contexts, this.pool, (p, c) =>
-            c
-                .module
-                .map(m => map(m.connections, (c: conn.Connection, k) => p.add(k, c)))
-                .map(cons(p))
-                .orJust(() => p)
-                .get())
+        return reduce(this.modules, this.pool, (p, m) => {
+
+            map(m.connections, (c: conn.Connection, k) => p.add(k, c));
+
+            return p;
+
+        })
             .open()
             .chain(() => this.hooks.connected())
             .map(() => <App>this);
@@ -221,12 +212,8 @@ export class App extends AbstractSystem implements System {
      */
     middlewares(): Future<App> {
 
-        return reduce(this.state.contexts, pure(<App>this), (p, c) =>
-            c
-                .module
-                .map(applyMware(p))
-                .orJust(() => p)
-                .get());
+        return reduce(this.modules, pure(<App>this),
+            (p, c) => applyMware(p, c));
 
     }
 
@@ -236,44 +223,39 @@ export class App extends AbstractSystem implements System {
      */
     routing(): Future<App> {
 
-        return attempt(() => map(this.state.contexts, c => {
+        return attempt(() => map(this.modules, m => {
 
-            if (c.module.isJust()) {
+            let mod = m.module;
+            let t: Template<App> = <Template<App>><Type>m.template;
+            let routes = m.routes(m.module);
 
-                let m = c.module.get();
-                let mod = m.module;
-                let t: Template<App> = <Template<App>><Type>c.template;
-                let routes = m.routes(m.module);
+            if (t.app && t.app.filters) {
 
-                if (t.app && t.app.filters) {
+                let filters = t.app.filters;
 
-                    let filters = t.app.filters;
+                mod.install(routes.map(r => ({
 
-                    mod.install(routes.map(r => ({
+                    method: r.method,
 
-                        method: r.method,
+                    path: r.path,
 
-                        path: r.path,
+                    filters: <Filter<undefined>[]>[...filters, ...r.filters]
 
-                        filters: <Filter<undefined>[]>[...filters, ...r.filters]
+                })));
 
-                    })));
+            } else {
 
-                } else {
-
-                    mod.install(routes);
-
-                }
-
-                if (t.app && t.app.notFoundHandler)
-                    m.app.use(mod.runInContext([t.app.notFoundHandler]));
-
-                if (t.app && t.app.errorHandler)
-                    m.app.use(mod.runInContextWithError(t.app.errorHandler));
-
-                m.parent.map(p => p.app.use(join('/', m.path), m.app));
+                mod.install(routes);
 
             }
+
+            if (t.app && t.app.notFoundHandler)
+                m.app.use(mod.runInContext([t.app.notFoundHandler]));
+
+            if (t.app && t.app.errorHandler)
+                m.app.use(mod.runInContextWithError(t.app.errorHandler));
+
+            m.parent.map(p => p.app.use(join('/', m.path), m.app));
 
         }))
             .map(cons(<App>this));
@@ -281,14 +263,14 @@ export class App extends AbstractSystem implements System {
     }
 
     /**
-     * listen for incomming connections.
+     * listen for incoming connections.
      */
     listen(): Future<void> {
 
-        let mServer = getModule(this.state, this.main.id);
+        let mmodule = getModule(this.modules, mainPath(this.main.id));
 
-        if (mServer.isJust())
-            return this.server.listen(mServer.get().app).map(noop);
+        if (mmodule.isJust())
+            return this.server.listen(mmodule.get().app).map(noop);
         else
             return raise(new Error('Server not initialized!'));
 
@@ -300,8 +282,8 @@ export class App extends AbstractSystem implements System {
     start(): Future<App> {
 
         return this
-            .spawnModule(this.main.id, nothing(), this.main)
-            .initialize()
+            .spawnModule(mainPath(this.main.id), nothing(), this.main)
+            .chain(() => this.initialize())
             .chain(() => this.connections())
             .chain(() => this.middlewares())
             .chain(() => this.routing())
@@ -316,16 +298,10 @@ export class App extends AbstractSystem implements System {
             .server
             .stop()
             .chain(() => this.pool.close())
+            .chain(() => this.vm.stop())
             .map(() => {
 
-                let t = new This('$', this);
-                t.exec(new StopScript(this.main.id))
-
-            })
-            .map(() => {
-
-                this.state = newState(this);
-                this.pool = new Pool({});
+                this.pool.store = {};
 
             });
 
@@ -333,20 +309,9 @@ export class App extends AbstractSystem implements System {
 
 }
 
-const getModuleAddress = (parent: Maybe<ModuleData>, path: string) =>
-    (parent.isJust()) ? join(parent.get().address, path) : path;
+const mainPath = (path?: string): string => (path != null) ? path : '/';
 
-const mergeSpawnable = (id: string, c: SpawnConf): PotooTemplate<App> =>
-    merge({
-
-        id,
-
-        create: (s: App) =>
-            new c.constructor(...c.arguments.map(a => (a === '$') ? s : a))
-
-    }, c)
-
-const applyMware = (app: Future<App>) => (m: ModuleData): Future<App> =>
+const applyMware = (app: Future<App>, m: ModuleData): Future<App> =>
     m
         .middleware
         .enabled
@@ -360,7 +325,8 @@ const preroute = (module: ModuleData) =>
     (_: express.Request, res: express.Response, next: express.NextFunction) =>
         fromBoolean(module.disabled)
             .map(() => res.status(404).end())
-            .orElse(() => module.redirect.map(r => res.redirect(r.status, r.location)))
+            .orElse(() => module.redirect.map(r =>
+                res.redirect(r.status, r.location)))
             .orJust(() => next());
 
 const swap = (m: ModuleData) => (p: Either<Error, Middleware[]>, c: string)
@@ -380,44 +346,3 @@ const concatMware = (m: ModuleData, key: string) => (list: Middleware[]) =>
 const errMware = (path: string, key: string) => ()
     : Either<Error, Middleware[]> =>
     left(new Error(`${path}: Unknown middleware "${key}"!`));
-
-const newState = (app: App): State<Context> => ({
-
-    contexts: {
-
-        $: newContext(nothing(), app, new This('$', app), {
-            id: '$',
-            create: () => new App(() => app.main),
-            trap: (e: Err) => {
-
-                if (e instanceof Error) {
-                    throw e;
-                } else {
-                    throw new Error(e.message);
-                }
-
-            }
-        })
-
-    },
-    routers: {},
-
-    groups: {}
-
-});
-
-const newContext = (
-    module: Maybe<ModuleData>,
-    actor: Actor<Context>,
-    runtime: Runtime,
-    template: PotooTemplate<App>): Context => ({
-
-        module,
-        mailbox: nothing(),
-        actor,
-        runtime,
-        behaviour: [],
-        flags: { immutable: true, buffered: false },
-        template: <PotooTemplate<System>>template
-
-    });

@@ -1,4 +1,4 @@
-import * as system from '@quenk/potoo/lib/actor/system/configuration';
+import * as conf from '@quenk/potoo/lib/actor/system/vm/conf';
 import * as filters from '../../api/filter';
 import * as hooks from './hooks';
 import * as show from './show';
@@ -10,7 +10,7 @@ import { App } from '../../';
  * AppConf for the application.
  */
 export interface AppConf<S extends App> {
-    system?: system.Configuration;
+    system?: conf.Conf;
     on?: hooks.HookConf<S>;
     middleware?: {
         available?: mid.AvailableMiddleware;

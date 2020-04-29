@@ -3,9 +3,8 @@ import * as server from '../../net/http/server';
 import * as show from '../../app/show';
 import * as app from './conf/app';
 import * as conn from './conf/connection';
-import * as spawn from './conf/spawn';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
-import { ModuleData } from '../actor/context';
+import { ModuleData } from '../module/data';
 import { Middlewares } from '../middleware';
 import { Connections } from '../connection';
 import { Module } from '../module';
@@ -24,12 +23,6 @@ export interface Template<S extends App> extends T.Template<S> {
      * Overrides the base function to specifically provide a module.
      */
     create: (s: S) => Module;
-    /**
-     * spawn child actors using the declerative API.
-     *
-     * The ids of these actors are computed from their key values.
-     */
-    spawn?: spawn.SpawnConfs;
     /**
      * server configuration settings.
      */

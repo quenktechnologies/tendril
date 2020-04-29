@@ -1,7 +1,6 @@
 import * as express from 'express';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
-import { Context } from '../actor/context';
 import { Filter, ErrorFilter } from '../api/filter';
 import { App } from '../';
 /**
@@ -58,7 +57,7 @@ export declare class Redirect {
  * This makes debugging slightly easier as we can review to some extent what
  * individual modules are doing via the op log.
  */
-export declare class Module extends Immutable<Messages<any>, Context, App> {
+export declare class Module extends Immutable<Messages<any>, App> {
     system: App;
     constructor(system: App);
     receive: Case<Messages<void>>[];
@@ -67,12 +66,12 @@ export declare class Module extends Immutable<Messages<any>, Context, App> {
      * express request handler where the action is the
      * interpretation of the filters.
      */
-    runInContext: <A>(filters: Filter<A>[]) => express.RequestHandler<import("express-serve-static-core").ParamsDictionary>;
+    runInContext: <A>(filters: Filter<A>[]) => express.RequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("express-serve-static-core").Query>;
     /**
      * runInContextWithError is used when an error occurs during request
      * handling.
      */
-    runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler<import("express-serve-static-core").ParamsDictionary>;
+    runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("express-serve-static-core").Query>;
     /**
      * install routes into the routing table for this module.
      */
