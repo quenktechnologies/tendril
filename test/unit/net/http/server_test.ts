@@ -17,39 +17,51 @@ const writeNothing = (_: http.IncomingMessage, __: http.ServerResponse) => { }
 
 const newServer = () => new Server({ port: 8888, host: 'localhost' });
 
+let server: Server;
+
 describe('server', () => {
+
+    beforeEach(() => {
+
+        server = newServer();
+
+    });
+
+    afterEach(() => {
+
+        if (server != null)
+            return toPromise(server.stop());
+
+    });
 
     describe('listen', () => {
 
         it('should work', () => {
 
-            let s = newServer();
-
-            return toPromise(s.listen(writeOk))
+            return toPromise(server.listen(writeOk))
                 .then(() =>
                     request
                         .get('localhost:8888')
                         .then((r: any) => must(r.text).equal('ok'))
-                        .then(() => toPromise(s.stop())))
+                        .then(() => toPromise(server.stop())))
 
 
         });
 
         it('must queue sockets', cb => {
 
-            let s = newServer();
+            toPromise(
+                server.listen(
+                    (_: http.IncomingMessage, res: http.ServerResponse) => {
 
-            toPromise(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
+                        must(server.sockets.length).equal(1);
+                        res.end();
+                        cb();
 
-                must(s.sockets.length).equal(1);
-                res.end();
-                cb();
-
-            }))
+                    }))
                 .then(() =>
                     request
-                        .get('localhost:8888')
-                        .then(() => toPromise(s.stop())))
+                        .get('localhost:8888'))
                 .catch(e => cb(e))
         });
 
@@ -59,21 +71,19 @@ describe('server', () => {
 
         it('it must not wait on clients', cb => {
 
-            let s = newServer();
-
             setTimeout(() => {
 
-                must(s.sockets.length).equal(4);
+                must(server.sockets.length).equal(4);
 
-                s
+                server
                     .stop()
-                    .map(() => must(s.sockets.length).equal(0))
+                    .map(() => must(server.sockets.length).equal(0))
                     .map(() => cb())
                     .fork(console.error, console.log);
 
             }, 1000);
 
-            toPromise(s.listen(writeNothing))
+            toPromise(server.listen(writeNothing))
                 .then(() => Promise.all([
                     request.get('localhost:8888').catch(noop),
                     request.get('localhost:8888').catch(noop),
@@ -85,28 +95,28 @@ describe('server', () => {
 
         it('should not use the same handlers after stopping', () => {
 
-            let s = newServer();
-
             let state: number[] = [];
 
-            return toPromise(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
+            return toPromise(server.listen(
+                (_: http.IncomingMessage, res: http.ServerResponse) => {
 
-                state.push(1);
-                res.end('ok');
+                    state.push(1);
+                    res.end('ok');
 
-            }))
+                }))
                 .then(() => request.get('localhost:8888'))
-                .then(() => toPromise(s.stop()))
+                .then(() => toPromise(server.stop()))
                 .then(() =>
-                    toPromise(s.listen((_: http.IncomingMessage, res: http.ServerResponse) => {
+                    toPromise(server.listen(
+                        (_: http.IncomingMessage, res: http.ServerResponse) => {
 
-                        state.push(2);
-                        res.end('ok');
+                            state.push(2);
+                            res.end('ok');
 
-                    })))
+                        })))
                 .then(() => request.get('localhost:8888'))
                 .then(() => must(state).equate([1, 2]))
-                .then(() => toPromise(s.stop()));
+                .then(() => toPromise(server.stop()));
 
         });
 

@@ -1,31 +1,25 @@
 import * as express from 'express';
-import * as context from '@quenk/potoo/lib/actor/context';
-import { Maybe } from '@quenk/noni/lib/data/maybe';
+
+import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
+import { Record } from '@quenk/noni/lib/data/record';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { State, get } from '@quenk/potoo/lib/actor/system/state';
+
 import { HookConf } from '../module/conf/hooks';
 import { Routes } from '../module/conf/routes';
 import { Show } from '../show';
-import { Module as M } from '../module';
 import { Connections } from '../connection';
 import { Middlewares } from '../middleware';
 import { App } from '../';
+import { Module as M } from './';
+import { Template } from './template';
 
 /**
- * Context used for actor entries in the Application.
+ * ModuleDatas map.
  */
-export interface Context extends context.Context {
-
-    /**
-     * module contains module specific context information
-     * for actors that are also modules.
-     */
-    module: Maybe<ModuleData>
-
-}
+export interface ModuleDatas extends Record<ModuleData> { }
 
 /**
- * ModuleData stores information related to modules.
+ * ModuleData stores information about modules in the app.
  */
 export interface ModuleData {
 
@@ -47,7 +41,12 @@ export interface ModuleData {
     /**
      * module instance
      */
-    module: M
+    module: M,
+
+    /**
+     * template used to spawn the module.
+     */
+    template: Template<App>,
 
     /**
      * app (express) for the module.
@@ -97,5 +96,5 @@ export interface ModuleData {
  * getModule provides a module given an address.
  */
 export const getModule =
-    (s: State<Context>, addr: Address): Maybe<ModuleData> =>
-        get(s, addr).chain((c: Context) => c.module);
+    (data: ModuleDatas, addr: Address): Maybe<ModuleData> =>
+        fromNullable(data[addr]);

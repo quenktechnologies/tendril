@@ -7,49 +7,40 @@ import {
     parallel,
     sequential,
 } from '@quenk/noni/lib/control/monad/future';
-import { Context } from './actor/context';
+
+import { ModuleData } from './module/data';
 import { App } from './';
 
 /**
  * Dispatcher is used by the main App to dispatch hook events.
  *
- * Hooks are dispatched in parallel at the module level but at the 
- * hook level the are executed sequentially.
+ * Hooks are dispatched in parallel at the app level but sequentially
+ * at the module level.
  */
 export class Dispatcher<S extends App>  {
 
     constructor(public app: S) { }
 
     /**
-     * init fires all the "init" hooks for all the installed modules.
+     * init fires the "init" hook.
      */
     init(): Future<void> {
 
         let { app } = this;
 
-        return parallel(values<Future<void>>(map(app.state.contexts,
-            (c: Context) => {
+        return parallel(values<Future<void>>(map(app.modules,
+            (m: ModuleData) => {
 
-                if (c.module.isJust()) {
+                let mHooks = fromNullable(m.hooks.init);
 
-                    let m = c.module.get();
+                if (mHooks.isNothing()) return pure(<void>undefined);
 
-                    let mHooks = fromNullable(m.hooks.init);
+                let hooks = mHooks.get();
 
-                    if (mHooks.isNothing()) return pure(<void>undefined);
-
-                    let hooks = mHooks.get();
-
-                    return Array.isArray(hooks) ?
-                        sequential(hooks.map(f => f(app)))
-                            .map(noop) :
-                        hooks(app);
-
-                } else {
-
-                    return pure(<void>undefined);
-
-                }
+                return Array.isArray(hooks) ?
+                    sequential(hooks.map(f => f(app)))
+                        .map(noop) :
+                    hooks(app);
 
             })))
             .map(noop);
@@ -57,36 +48,26 @@ export class Dispatcher<S extends App>  {
     }
 
     /**
-     * connected fires all the "connected" hooks when all services have been
-     * connected.
+     * connected fires all the "connected" hook when all remote connections
+     * have been established.
      */
     connected(): Future<void> {
 
         let { app } = this;
 
-        return parallel(values(map(app.state.contexts,
-            (c: Context) => {
+        return parallel(values(map(app.modules,
+            (m: ModuleData) => {
 
-                if (c.module.isJust()) {
+                let mHooks = fromNullable(m.hooks.connected);
 
-                    let m = c.module.get();
+                if (mHooks.isNothing()) return pure(<void>undefined);
 
-                    let mHooks = fromNullable(m.hooks.connected);
+                let hooks = mHooks.get();
 
-                    if (mHooks.isNothing()) return pure(<void>undefined);
-
-                    let hooks = mHooks.get();
-
-                    return (Array.isArray(hooks)) ?
-                        sequential(hooks.map(f => f(app)))
-                            .map(() => { }) :
-                        hooks(app);
-
-                } else {
-
-                    return pure(<void>undefined);
-
-                }
+                return (Array.isArray(hooks)) ?
+                    sequential(hooks.map(f => f(app)))
+                        .map(() => { }) :
+                    hooks(app);
 
             })))
             .map(noop);
@@ -94,36 +75,26 @@ export class Dispatcher<S extends App>  {
     }
 
     /**
-     * stared fires the "started" hooks when the app has started servicing
-     * requests.
+     * stared fires the "started" hook when the app has started listening
+     * for requests.
      */
     started(): Future<void> {
 
         let { app } = this;
 
-        return parallel(values(map(app.state.contexts,
-            (c: Context) => {
+        return parallel(values(map(app.modules,
+            (m: ModuleData) => {
 
-                if (c.module.isJust()) {
+                let mHooks = fromNullable(m.hooks.started);
 
-                    let m = c.module.get();
+                if (mHooks.isNothing()) return pure(<void>undefined);
 
-                    let mHooks = fromNullable(m.hooks.started);
+                let hooks = mHooks.get();
 
-                    if (mHooks.isNothing()) return pure(<void>undefined);
-
-                    let hooks = mHooks.get();
-
-                    return Array.isArray(hooks) ?
-                        sequential(hooks.map(f => f(app)))
-                            .map(() => { }) :
-                        hooks(app);
-
-                } else {
-
-                    return pure(<void>undefined);
-
-                }
+                return Array.isArray(hooks) ?
+                    sequential(hooks.map(f => f(app)))
+                        .map(() => { }) :
+                    hooks(app);
 
             })))
             .map(noop);

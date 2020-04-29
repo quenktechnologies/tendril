@@ -115,14 +115,11 @@ export const template = (): Template<App> => ({
     },
 
     children: [
+
         { id: 'child', create: (app: App) => new Child(app) },
+
         { id: 'pong', create: (app: App) => new Pong(app) }
-    ],
 
-    spawn: {
-
-        spawnable: { constructor: Spawnable, arguments: ['$'] }
-
-    }
+    ]
 
 })
