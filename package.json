@@ -35,7 +35,7 @@
   "dependencies": {
     "@quenk/must": "^1.0.4",
     "@quenk/noni": "^1.39.1",
-    "@quenk/potoo": "git+https://github.com/quenktechnologies/potoo.git#potoo3",
+    "@quenk/potoo": "^3.0.0-rc.0",
     "express": "^4.17.1",
     "uuid": "^7.0.3"
   }
