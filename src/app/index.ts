@@ -114,7 +114,7 @@ export class App implements System {
         let t = merge(tmpl, { create: () => module });
 
         let address = parent.isNothing() ?
-            this.vm.spawn(t) :
+            this.vm.spawn(<Template<this>>t) :
             parent.get().module.spawn(t);
 
         let app = express();
