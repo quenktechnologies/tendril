@@ -1,4 +1,5 @@
 import * as conf from '@quenk/potoo/lib/actor/system/vm/conf';
+
 import * as filters from '../../api/filter';
 import * as hooks from './hooks';
 import * as show from './show';
@@ -9,7 +10,10 @@ import * as routes from './routes';
 import { App } from '../../';
 
 /**
- * AppConf for the application.
+ * AppConf is the type of the configuration object for tendril apps and modules.
+ *
+ * It is based on the Potoo template with additional optional sections 
+ * for configuring tendril modules.
  */
 export interface AppConf<S extends App> {
 
