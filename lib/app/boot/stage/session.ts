@@ -13,7 +13,9 @@ import { Stage } from './';
 
 type Work = DoFn<void, Future<void>>;
 
-const WARN_NO_SECRET =
+export const SESSION_COOKIE_NAME = 'tendril.session.id';
+
+export const WARN_NO_SECRET =
     '[SessionStage]: Warning! No app.session.options.secret configured! \
 A random string will be generated and used however this means user sessions\
 will not be valid if the application restarts!';
@@ -22,7 +24,15 @@ const defaultOptions = {
 
     enabled: false,
 
-    options: {},
+    options: {
+
+        name: SESSION_COOKIE_NAME,
+
+        saveUnitialized: false,
+
+        resave: false 
+
+    },
 
     store: {
 

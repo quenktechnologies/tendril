@@ -1,6 +1,8 @@
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { ModuleDatas } from '../../module/data';
 import { Stage } from './';
+export declare const SESSION_COOKIE_NAME = "tendril.session.id";
+export declare const WARN_NO_SECRET = "[SessionStage]: Warning! No app.session.options.secret configured! A random string will be generated and used however this means user sessionswill not be valid if the application restarts!";
 /**
  * SessionStage configures session middleware automtically if enabled.
  *
