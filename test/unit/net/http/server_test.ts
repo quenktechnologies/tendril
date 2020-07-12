@@ -1,9 +1,11 @@
 import * as http from 'http';
 import * as request from 'superagent';
 import * as Promise from 'bluebird';
-import { must } from '@quenk/must';
+
+import { assert } from '@quenk/test/lib/assert';
 import { toPromise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
+
 import { Server } from '../../../../src/net/http/server';
 
 const writeOk = (_: http.IncomingMessage, res: http.ServerResponse) => {
@@ -42,7 +44,7 @@ describe('server', () => {
                 .then(() =>
                     request
                         .get('localhost:8888')
-                        .then((r: any) => must(r.text).equal('ok'))
+                        .then((r: any) => assert(r.text).equal('ok'))
                         .then(() => toPromise(server.stop())))
 
 
@@ -54,7 +56,7 @@ describe('server', () => {
                 server.listen(
                     (_: http.IncomingMessage, res: http.ServerResponse) => {
 
-                        must(server.sockets.length).equal(1);
+                        assert(server.sockets.length).equal(1);
                         res.end();
                         cb();
 
@@ -73,11 +75,11 @@ describe('server', () => {
 
             setTimeout(() => {
 
-                must(server.sockets.length).equal(4);
+                assert(server.sockets.length).equal(4);
 
                 server
                     .stop()
-                    .map(() => must(server.sockets.length).equal(0))
+                    .map(() => assert(server.sockets.length).equal(0))
                     .map(() => cb())
                     .fork(console.error, console.log);
 
@@ -115,7 +117,7 @@ describe('server', () => {
 
                         })))
                 .then(() => request.get('localhost:8888'))
-                .then(() => must(state).equate([1, 2]))
+                .then(() => assert(state).equate([1, 2]))
                 .then(() => toPromise(server.stop()));
 
         });

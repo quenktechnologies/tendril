@@ -52,17 +52,15 @@ export const template = (): Template<App> => ({
 
         },
 
+        log: {
+
+          enabled: true
+
+        },
+
         middleware: {
 
             available: {
-
-                log: {
-
-                    provider: morgan,
-
-                    options: [process.env.HTTP_LOG_FORMAT]
-
-                },
 
                 static: {
 
@@ -86,7 +84,7 @@ export const template = (): Template<App> => ({
 
             },
 
-            enabled: ['log', 'static', 'json', 'urlencoded']
+            enabled: ['static', 'json', 'urlencoded']
 
         },
 

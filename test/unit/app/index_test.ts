@@ -1,4 +1,4 @@
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { Mutable } from '@quenk/potoo/lib/actor/resident';
 
 import { App } from '../../../src/app';
@@ -28,7 +28,7 @@ describe('app', () => {
 
             setTimeout(() => {
 
-                must(ran).be.true();
+                assert(ran).true();
                 ran = false;
                 cb();
 
@@ -52,7 +52,7 @@ describe('app', () => {
 
             setTimeout(() => {
 
-                must(true).be.true();
+                assert(true).true();
                 cb();
 
             }, 1000)

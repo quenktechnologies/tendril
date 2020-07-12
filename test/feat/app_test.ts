@@ -1,8 +1,10 @@
 import * as request from 'superagent';
+
 import { assert } from '@quenk/test/lib/assert';
 import { toPromise } from '@quenk/noni/lib/control/monad/future';
-import { App } from '../../src/app';
+
 import { template } from '../fixtures/ledger';
+import { App } from '../../src/app';
 
 const URL = 'localhost:8888';
 const FILE_STYLE_CSS = `${URL}/style.css`;
