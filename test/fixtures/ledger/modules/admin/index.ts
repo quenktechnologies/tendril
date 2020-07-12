@@ -16,6 +16,12 @@ export const template = (): Template<App> => ({
 
     app: {
 
+        session: {
+
+            enabled: true
+
+        },
+
         routes: (_: Module) => [
 
             { method: 'delete', path: '/', filters: [handlers.disable] },
@@ -23,7 +29,9 @@ export const template = (): Template<App> => ({
             { method: 'put', path: '/', filters: [handlers.redirect] },
             { method: 'get', path: '/ping', filters: [handlers.ping] },
             { method: 'get', path: '/x-headers', filters: [handlers.xheaders] },
-            { method: 'get', path: '/crash', filters: [handlers.crash] }
+            { method: 'get', path: '/crash', filters: [handlers.crash] },
+            { method: 'get', path: '/num', filters: [handlers.getNum] },
+            { method: 'post', path: '/num', filters: [handlers.saveNum] }
 
         ],
 

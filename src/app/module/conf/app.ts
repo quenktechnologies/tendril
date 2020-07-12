@@ -6,6 +6,7 @@ import * as show from './show';
 import * as mid from './middleware';
 import * as mod from './modules';
 import * as routes from './routes';
+import * as session from './session';
 
 import { App } from '../../';
 
@@ -20,6 +21,8 @@ export interface AppConf<S extends App> {
     system?: conf.Conf,
 
     on?: hooks.HookConf<S>,
+
+    session?: session.SessionConf,
 
     middleware?: {
 

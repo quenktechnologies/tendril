@@ -14,7 +14,10 @@ const ROUTE_ADMIN = `${URL}/admin`;
 const ROUTE_ADMIN_PING = `${ROUTE_ADMIN}/ping`;
 const ROUTE_ADMIN_CRASH = `${ROUTE_ADMIN}/crash`;
 const ROUTE_ADMIN_XHEADERS = `${ROUTE_ADMIN}/x-headers`;
+const ROUTE_ADMIN_NUM = `${ROUTE_ADMIN}/num`;
 const ROUTE_ANALYTICS = `${URL}/analytics`;
+
+const agent = request.agent();
 
 describe('tendril', () => {
 
@@ -45,31 +48,31 @@ describe('tendril', () => {
             () => assert(app.pool.store['main']).not.be.undefined());
 
         it('should show views', () =>
-            request
+            agent
                 .get(URL)
                 .then((r: any) =>
                     assert(r.text).equal('<b>Index</b>')));
 
         it('should show parent views if none configured for child', () =>
-            request
+            agent
                 .get(ROUTE_ACCOUNTS_BALANCE)
                 .then((r: any) =>
                     assert(r.text).equal('$0.00')));
 
         it('should bubble views up', () =>
-            request
+            agent
                 .get(ROUTE_REPORTS)
                 .then((r: any) =>
                     assert(r.text).equal('A list of reports')));
 
         it('should apply middleware', () =>
-            request
+            agent
                 .get(FILE_STYLE_CSS)
                 .then((r: any) =>
                     assert(r.text).equal('body{background:black;color:white;}\n')));
 
         it('should configure post routes', () =>
-            request
+            agent
                 .post(ROUTE_ACCOUNTS)
                 .send({ name: 'sundry', class: 'expense' })
                 .then((r: any) =>
@@ -79,12 +82,12 @@ describe('tendril', () => {
 
             let fourohfoured = false;
 
-            return request
+            return agent
                 .get(`${ROUTE_REPORTS}/xincome`)
                 .then((r: any) => assert(r.text).equal('Income Report'))
-                .then(() => request.get(`${ROUTE_REPORTS}/xexpense`))
+                .then(() => agent.get(`${ROUTE_REPORTS}/xexpense`))
                 .then((r: any) => assert(r.text).equal('A list of reports'))
-                .then(() => request.get(`${ROUTE_REPORTS}/liabilities`))
+                .then(() => agent.get(`${ROUTE_REPORTS}/liabilities`))
                 .catch((e: Error) => {
                     console.error(e);
                     if (e.message !== 'Forbidden') throw e;
@@ -97,63 +100,63 @@ describe('tendril', () => {
         });
 
         it('should allow modules to be recursively disabled', () =>
-            request
+            agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00'))
-                .then(() => request.delete(ROUTE_ADMIN))
-                .then(() => request.get(ROUTE_ACCOUNTS)
+                .then(() => agent.delete(ROUTE_ADMIN))
+                .then(() => agent.get(ROUTE_ACCOUNTS)
                     .catch((e: Error) => assert(e.message).equal('Not Found')))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE)
                     .catch((e: Error) => assert(e.message).equal('Not Found'))));
 
         it('should allow modules to enable each other recursively', () =>
-            request
+            agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00'))
-                .then(() => request.delete(ROUTE_ADMIN))
-                .then(() => request.get(ROUTE_ACCOUNTS)
+                .then(() => agent.delete(ROUTE_ADMIN))
+                .then(() => agent.get(ROUTE_ACCOUNTS)
                     .catch((e: Error) => assert(e.message).equal('Not Found')))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE)
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE)
                     .catch((e: Error) => assert(e.message).equal('Not Found')))
-                .then(() => request.post(ROUTE_ADMIN))
-                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then(() => agent.post(ROUTE_ADMIN))
+                .then(() => agent.get(ROUTE_ACCOUNTS))
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00')));
 
         it('should allow modules to redirect each other recursively', () =>
-            request
+            agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => request.put(ROUTE_ADMIN))
-                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then(() => agent.put(ROUTE_ADMIN))
+                .then(() => agent.get(ROUTE_ACCOUNTS))
                 .then((r: any) => assert(r.text).equal('<b>Index</b>'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('<b>Index</b>')));
 
         it('should stop redirecting enabled modules', () =>
-            request
+            agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00'))
-                .then(() => request.put(ROUTE_ADMIN))
-                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then(() => agent.put(ROUTE_ADMIN))
+                .then(() => agent.get(ROUTE_ACCOUNTS))
                 .then((r: any) => assert(r.text).equal('<b>Index</b>'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('<b>Index</b>'))
-                .then(() => request.post(ROUTE_ADMIN))
-                .then(() => request.get(ROUTE_ACCOUNTS))
+                .then(() => agent.post(ROUTE_ADMIN))
+                .then(() => agent.get(ROUTE_ACCOUNTS))
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00')))
 
         it('should acknowledge some modules start disabled', () =>
-            request
+            agent
                 .get(ROUTE_ANALYTICS)
                 .catch((e: Error) => assert(e.message).equal('Not Found')));
 
@@ -168,12 +171,12 @@ describe('tendril', () => {
                 .then(() => assert(process.env.CHILD_RUNNING).equal('no')));
 
         it('should allow asking of actors', () =>
-            request
+            agent
                 .get(ROUTE_ADMIN_PING)
                 .then((r: any) => assert(r.text).equal('pong')));
 
         it('should send custom headers', () =>
-            request
+            agent
                 .get(ROUTE_ADMIN_XHEADERS)
                 .then((r: any) => {
 
@@ -184,7 +187,7 @@ describe('tendril', () => {
                 }))
 
         it('should provide context to views', () =>
-            request
+            agent
                 .get(ROUTE_REPORTS_CUSTOM)
                 .then((r: any) => assert(r.text).equal('Custom')));
 
@@ -192,10 +195,10 @@ describe('tendril', () => {
 
             process.env.MODULE_FILTERS_WORK = '';
 
-            return request
+            return agent
                 .get(ROUTE_ADMIN_PING)
                 .then(() => assert(process.env.MODULE_FILTERS_WORK).not.equal('yes'))
-                .then(() => request.get(ROUTE_ACCOUNTS_BALANCE))
+                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then(() => {
 
                     assert(process.env.MODULE_FILTERS_WORK).equal('yes');
@@ -205,7 +208,7 @@ describe('tendril', () => {
         });
 
         it('should invoke not found hooks', () =>
-            request
+            agent
                 .get(`${ROUTE_ADMIN}/foobar`)
                 .catch((e) => {
 
@@ -214,6 +217,26 @@ describe('tendril', () => {
 
                 }));
 
+        it('should enable sessions when configured', () =>
+            agent
+                .get(ROUTE_ADMIN_NUM)
+                .then((r: any) => {
+
+                    assert(r.body.num).equal(0);
+
+                })
+                .then(() =>
+                    agent
+                        .post(ROUTE_ADMIN_NUM)
+                        .send({ num: 9 }))
+                .then(() =>
+                    agent
+                        .get(ROUTE_ADMIN_NUM)
+                        .then((r: any) => {
+
+                            assert(r.body.num).equal(9);
+
+                        })))
     });
 
     describe('error escalation', () => {
@@ -225,7 +248,7 @@ describe('tendril', () => {
         afterEach(() => toPromise(app.stop()));
 
         it('should respond with 500', () =>
-            request
+            agent
                 .get(ROUTE_ADMIN_CRASH)
                 .then(() => assert(false).true())
                 .catch((e) => {

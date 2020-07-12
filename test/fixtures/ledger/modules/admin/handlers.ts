@@ -3,7 +3,7 @@ import { Disable, Enable, Redirect } from '../../../../../src/app/module';
 import { await } from '../../../../../src/app/api/action/control';
 import { ActionM } from '../../../../../src/app/api/action';
 import { Request } from '../../../../../src/app/api/request';
-import { ok } from '../../../../../src/app/api/action/response';
+import { ok, forbidden } from '../../../../../src/app/api/action/response';
 import { header } from '../../../../../src/app/api/action/response';
 import { Response, ask, tell }
     from '../../../../../src/app/api/action/control/actor';
@@ -33,3 +33,28 @@ export const xheaders = (_: Request): ActionM<undefined> =>
 
 export const crash = (_: Request): ActionM<undefined> =>
     await(() => raise(Error('crashed!')));
+
+export const saveNum = (r: Request): ActionM<undefined> => {
+
+    if (r.session) {
+
+        r.session.num = r.body.num;
+        console.error('saving ', r.session.num);
+        return ok();
+
+    } else {
+
+        return forbidden();
+
+    }
+
+}
+
+export const getNum = (r: Request): ActionM<undefined> => {
+
+    if (r.session) 
+        return ok({ num: r.session.num || 0 });
+     else 
+        return forbidden();
+
+}

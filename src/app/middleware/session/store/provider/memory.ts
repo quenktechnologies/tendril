@@ -13,6 +13,7 @@ export class MemoryStoreProvider implements SessionStoreProvider {
 
     create(): Future<session.Store> {
 
+        console.warn('[MemoryStoreProvider]: Should not be used in production!');
         return pure(<session.Store>new session.MemoryStore());
 
     }
