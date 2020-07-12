@@ -6,6 +6,7 @@ import * as mid from './middleware';
 import * as mod from './modules';
 import * as routes from './routes';
 import * as session from './session';
+import * as log from '../../boot/stage/log';
 import { App } from '../../';
 /**
  * AppConf is the type of the configuration object for tendril apps and modules.
@@ -16,6 +17,7 @@ import { App } from '../../';
 export interface AppConf<S extends App> {
     system?: conf.Conf;
     on?: hooks.HookConf<S>;
+    log?: log.LogConf;
     session?: session.SessionConf;
     middleware?: {
         available?: mid.AvailableMiddleware;
