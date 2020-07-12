@@ -83,4 +83,4 @@ export interface ModuleData {
 /**
  * getModule provides a module given an address.
  */
-export declare const getModule: (data: ModuleDatas, addr: string) => Maybe<ModuleData>;
+export declare const getModule: (data: ModuleDatas, addr: Address) => Maybe<ModuleData>;

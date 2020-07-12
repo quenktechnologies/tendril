@@ -9,9 +9,9 @@ import { Address } from '@quenk/potoo/lib/actor/address';
 import { PTValue } from '@quenk/potoo/lib/actor/system/vm/type';
 import { Script } from '@quenk/potoo/lib/actor/system/vm/script';
 import { Server } from '../net/http/server';
-import { Pool } from './connection';
 import { Template } from './module/template';
 import { ModuleData, ModuleDatas } from './module/data';
+import { StageBundle } from './boot/stage';
 import { Dispatcher } from './hooks';
 /**
  * App is the main entry point to the framework.
@@ -27,8 +27,17 @@ export declare class App implements System {
     vm: PVM<this>;
     modules: ModuleDatas;
     server: Server;
-    pool: Pool;
+    pool: import("./connection").Pool;
     hooks: Dispatcher<this>;
+    stages: StageBundle;
+    /**
+     * create a new Application instance.
+     */
+    static create(provider: (s: App) => Template<App>): App;
+    /**
+     * createDefaultStageBundle produces a StageBundle
+     */
+    static createDefaultStageBundle(app: App): StageBundle;
     exec(i: Instance, s: Script): void;
     execNow(i: Instance, s: Script): Maybe<PTValue>;
     /**
@@ -49,33 +58,6 @@ export declare class App implements System {
      * If no module exists there, the attempt will be ignored.
      */
     installMiddleware(path: string, handler: express.RequestHandler): App;
-    /**
-     * initialize the App
-     *
-     * Invokes the init hooks of all modules.
-     */
-    initialize(): Future<App>;
-    /**
-     * connections opens all the connections the modules of the App have
-     * declared.
-     *
-     * Connections are open in parallel, any failing will prevent the whole
-     * application from booting.
-     */
-    connections(): Future<App>;
-    /**
-     * middlewares installs the middleware each module declares.
-     */
-    middlewares(): Future<App>;
-    /**
-     * routing installs all the routes of each module and creates a tree
-     * out of express.
-     */
-    routing(): Future<App>;
-    /**
-     * listen for incoming connections.
-     */
-    listen(): Future<void>;
     /**
      * start the App.
      */

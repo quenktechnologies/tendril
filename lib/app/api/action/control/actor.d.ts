@@ -30,7 +30,7 @@ export declare class Tell<N, A> extends Action<A> {
 /**
  * tell sends a message to another actor.
  */
-export declare const tell: (to: string, m: any) => ActionM<undefined>;
+export declare const tell: (to: string, m: Message) => ActionM<undefined>;
 /**
  * Request wraps a message to an actor in to indicate a reply is
  * expected.
@@ -64,4 +64,4 @@ export declare class Ask<N, A> extends Action<A> {
  *
  * The actor must respond with a Response message.
  */
-export declare const ask: <T>(to: string, m: any) => ActionM<T>;
+export declare const ask: <T>(to: Address, m: Message) => ActionM<T>;

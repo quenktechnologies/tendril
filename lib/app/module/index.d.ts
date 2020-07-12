@@ -66,12 +66,12 @@ export declare class Module extends Immutable<Messages<any>, App> {
      * express request handler where the action is the
      * interpretation of the filters.
      */
-    runInContext: <A>(filters: Filter<A>[]) => express.RequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("express-serve-static-core").Query>;
+    runInContext: <A>(filters: Filter<A>[]) => express.RequestHandler;
     /**
      * runInContextWithError is used when an error occurs during request
      * handling.
      */
-    runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("express-serve-static-core").Query>;
+    runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler;
     /**
      * install routes into the routing table for this module.
      */
