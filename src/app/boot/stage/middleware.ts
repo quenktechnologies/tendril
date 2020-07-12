@@ -16,13 +16,15 @@ import { Stage } from './';
  */
 export class MiddlewareStage implements Stage {
 
-    constructor(public modules: ModuleDatas) { }
+    constructor(
+      public app: App,
+      public modules: ModuleDatas) { }
 
     name = 'middleware';
 
-    execute(app: App): Future<void> {
+    execute(): Future<void> {
 
-        let { modules } = this;
+        let { app, modules } = this;
 
         return <Future<void>>reduce(modules, pure(app),
             (p, c) => applyMware(p, c))

@@ -22,18 +22,18 @@ export class ListenStage implements Stage {
 
     constructor(
         public server: Server,
-        public moduleProvider: () => Maybe<ModuleData>,
-        public hooks: Dispatcher<App>) { }
+public hooks: Dispatcher<App>,
+        public mainProvider: () => Maybe<ModuleData>        ) { }
 
     name = 'listen';
 
     execute(): Future<void> {
 
-        let { moduleProvider, server, hooks } = this;
+        let { mainProvider, server, hooks } = this;
 
         return doN(<DoFn<void, Future<void>>>function*() {
 
-            let mmodule = moduleProvider();
+            let mmodule = mainProvider();
 
             if (mmodule.isJust())
                 yield parallel([
