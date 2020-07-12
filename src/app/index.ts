@@ -35,10 +35,11 @@ import {
 import { StageBundle } from './boot/stage';
 import { InitStage } from './boot/stage/init';
 import { ConnectionsStage } from './boot/stage/connections';
-import { RoutingStage } from './boot/stage/routing';
-import { MiddlewareStage } from './boot/stage/middleware';
-import { ListenStage } from './boot/stage/listen';
+import { LogStage } from './boot/stage/log';
 import { SessionStage } from './boot/stage/session';
+import { MiddlewareStage } from './boot/stage/middleware';
+import { RoutingStage } from './boot/stage/routing';
+import { ListenStage } from './boot/stage/listen';
 import { Dispatcher } from './hooks';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
@@ -87,6 +88,7 @@ export class App implements System {
         return new StageBundle([
             new InitStage(app.hooks),
             new ConnectionsStage(app.pool, app.modules, app.hooks),
+            new LogStage(app.modules),
             new SessionStage(app.modules),
             new MiddlewareStage(app, app.modules),
             new RoutingStage(app.modules),
