@@ -5,8 +5,11 @@ import * as show from './show';
 import * as mid from './middleware';
 import * as mod from './modules';
 import * as routes from './routes';
-import * as session from './session';
+import * as session from '../../boot/stage/session';
 import * as log from '../../boot/stage/log';
+import * as csrf from '../../boot/stage/csrf-token';
+import * as bodyParser from '../../boot/stage/body-parser';
+import * as cookieParser from '../../boot/stage/cookie-parser';
 import { App } from '../../';
 /**
  * AppConf is the type of the configuration object for tendril apps and modules.
@@ -19,6 +22,13 @@ export interface AppConf<S extends App> {
     on?: hooks.HookConf<S>;
     log?: log.LogConf;
     session?: session.SessionConf;
+    csrf?: {
+        token?: csrf.CSRFTokenConf;
+    };
+    parser?: {
+        body?: bodyParser.BodyParserConf;
+        cookie?: cookieParser.CookieParserConf;
+    };
     middleware?: {
         available?: mid.AvailableMiddleware;
         enabled?: string[];

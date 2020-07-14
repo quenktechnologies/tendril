@@ -37,6 +37,9 @@ import { InitStage } from './boot/stage/init';
 import { ConnectionsStage } from './boot/stage/connections';
 import { LogStage } from './boot/stage/log';
 import { SessionStage } from './boot/stage/session';
+import { CSRFTokenStage } from './boot/stage/csrf-token';
+import { CookieParserStage } from './boot/stage/cookie-parser';
+import { BodyParserStage } from './boot/stage/body-parser';
 import { MiddlewareStage } from './boot/stage/middleware';
 import { RoutingStage } from './boot/stage/routing';
 import { ListenStage } from './boot/stage/listen';
@@ -90,6 +93,9 @@ export class App implements System {
             new ConnectionsStage(app.pool, app.modules, app.hooks),
             new LogStage(app.modules),
             new SessionStage(app.modules),
+            new CSRFTokenStage(app.modules),
+            new CookieParserStage(app.modules),
+            new BodyParserStage(app.modules),
             new MiddlewareStage(app, app.modules),
             new RoutingStage(app.modules),
             new ListenStage(app.server, app.hooks, () =>
