@@ -54,7 +54,7 @@ export const template = (): Template<App> => ({
 
         log: {
 
-          enabled: true
+            enable: true
 
         },
 

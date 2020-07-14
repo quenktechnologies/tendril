@@ -5,10 +5,12 @@ import { doN, DoFn } from '@quenk/noni/lib/control/monad';
 import { merge, mapTo } from '@quenk/noni/lib/data/record';
 import { noop } from '@quenk/noni/lib/data/function';
 
+import { SessionStoreProvider } from '../../middleware/session/store/provider';
 import {
     MemoryStoreProvider
 } from '../../middleware/session/store/provider/memory';
 import { ModuleDatas } from '../../module/data';
+import { randomSecret } from './cookie-parser';
 import { Stage } from './';
 
 type Work = DoFn<void, Future<void>>;
@@ -22,7 +24,7 @@ will not be valid if the application restarts!';
 
 const defaultOptions = {
 
-    enabled: false,
+    enable: false,
 
     options: {
 
@@ -30,7 +32,7 @@ const defaultOptions = {
 
         saveUnitialized: false,
 
-        resave: false 
+        resave: false
 
     },
 
@@ -45,10 +47,48 @@ const defaultOptions = {
 }
 
 /**
+ * SessionConf contains settings for configuring session usage.
+ */
+export interface SessionConf {
+
+    /**
+     * enable if true, will turn on session support.
+     *
+     * Defaults to true.
+     */
+    enable?: boolean,
+
+    /**
+     * options configurable for the session module.
+     */
+    options?: session.SessionOptions,
+
+    /**
+     * store configuration for the session.
+     */
+    store?: {
+
+        /**
+         * provider used to create the underlying Store object.
+         *
+         * If unspecified, the inefficient memory store will be used.
+         */
+        provider?: SessionStoreProvider,
+
+        /**
+         * options passed to the SessionStoreProvider
+         */
+        options?: object
+
+    }
+
+}
+
+/**
  * SessionStage configures session middleware automtically if enabled.
  *
  * This will configure session support for EACH module that declares 
- * "app.session.enabled = true". A app.session.options.secret SHOULD be provided 
+ * "app.session.enable = true". A app.session.options.secret SHOULD be provided 
  * for sigining cookies (to detect tampering). If it is not supplied the 
  * following takes place:
  *
@@ -72,7 +112,7 @@ export class SessionStage implements Stage {
             if (m.template &&
                 m.template.app &&
                 m.template.app.session &&
-                m.template.app.session.enabled) {
+                m.template.app.session.enable) {
 
                 let conf = merge(defaultOptions, m.template.app.session);
 
@@ -86,7 +126,7 @@ export class SessionStage implements Stage {
                         conf.options.secret = process.env.SECRET;
                     } else {
                         console.warn(WARN_NO_SECRET);
-                        conf.options.secret = defaultSecret();
+                        conf.options.secret = randomSecret;
                     }
                 }
 
@@ -103,13 +143,3 @@ export class SessionStage implements Stage {
         }))).map(noop);
     }
 }
-
-const defaultSecret = () =>
-    (Math
-        .random()
-        .toString(36)
-        .substring(2, 15)) +
-    (Math
-        .random()
-        .toString(36)
-        .substring(2, 15));

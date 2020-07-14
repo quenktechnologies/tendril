@@ -13,9 +13,9 @@ import { Stage } from './';
 export interface LogConf {
 
     /**
-     * enabled if true will enable the logging middleware.
+     * enable if true will enable the logging middleware.
      */
-    enabled?: boolean,
+    enable?: boolean,
 
     /**
      * format is a valid format string the morgan middleware can use for logging
@@ -54,7 +54,7 @@ export class LogStage implements Stage {
             if (m.template &&
                 m.template.app &&
                 m.template.app.log &&
-                m.template.app.log.enabled) {
+                m.template.app.log.enable) {
 
                 let conf = merge(defaultOptions, m.template.app.log);
 
