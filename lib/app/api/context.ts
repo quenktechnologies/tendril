@@ -1,6 +1,9 @@
 import * as express from 'express';
+
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
+import { Object} from '@quenk/noni/lib/data/jsonx';
+
 import { Module } from '../module';
 import { ActionM, } from './action';
 import { Filter } from './filter';
@@ -17,7 +20,8 @@ export class Context<A> {
         public request: express.Request,
         public response: express.Response,
         public onError: express.NextFunction,
-        public filters: Filter<A>[]) { }
+        public filters: Filter<A>[],
+    public prs:Object = {}) { }
 
     next(): Future<ActionM<A>> {
 

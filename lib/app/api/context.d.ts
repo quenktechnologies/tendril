@@ -1,5 +1,6 @@
 import * as express from 'express';
 import { Future } from '@quenk/noni/lib/control/monad/future';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 import { Module } from '../module';
 import { ActionM } from './action';
 import { Filter } from './filter';
@@ -14,7 +15,8 @@ export declare class Context<A> {
     response: express.Response;
     onError: express.NextFunction;
     filters: Filter<A>[];
-    constructor(module: Module, request: express.Request, response: express.Response, onError: express.NextFunction, filters: Filter<A>[]);
+    prs: Object;
+    constructor(module: Module, request: express.Request, response: express.Response, onError: express.NextFunction, filters: Filter<A>[], prs?: Object);
     next(): Future<ActionM<A>>;
     /**
      * run processes the next filter or action in the chain.
