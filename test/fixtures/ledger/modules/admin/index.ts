@@ -39,7 +39,11 @@ export const template = (): Template<App> => ({
                     handlers.prsExists,
                     handlers.prsRemove
                 ]
-            }
+            },
+            { method: 'get', path: '/session', filters: [handlers.sessionGet] },
+            { method: 'post', path: '/session', filters: [handlers.sessionSet] },
+            { method: 'head', path: '/session', filters: [handlers.sessionExists] },
+            { method: 'delete', path: '/session', filters: [handlers.sessionRemove] }
 
         ],
 

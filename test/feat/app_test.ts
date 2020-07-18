@@ -18,6 +18,7 @@ const ROUTE_ADMIN_CRASH = `${ROUTE_ADMIN}/crash`;
 const ROUTE_ADMIN_XHEADERS = `${ROUTE_ADMIN}/x-headers`;
 const ROUTE_ADMIN_NUM = `${ROUTE_ADMIN}/num`;
 const ROUTE_ADMIN_PRS = `${ROUTE_ADMIN}/prs`;
+const ROUTE_ADMIN_SESSION = `${ROUTE_ADMIN}/session`;
 const ROUTE_ANALYTICS = `${URL}/analytics`;
 
 const agent = request.agent();
@@ -38,50 +39,50 @@ describe('tendril', () => {
 
         afterEach(() => toPromise(app.stop()));
 
-        xit('should invoke init hook',
+        it('should invoke init hook',
             () => assert(process.env.APP_INIT).equal('true'));
 
-        xit('should invoke connected hook',
+        it('should invoke connected hook',
             () => assert(process.env.APP_CONNECTED).equal('true'));
 
-        xit('should invoke connected hook',
+        it('should invoke connected hook',
             () => assert(process.env.APP_START).equal('true'));
 
-        xit('should have connections',
+        it('should have connections',
             () => assert(app.pool.store['main']).not.be.undefined());
 
-        xit('should show views', () =>
+        it('should show views', () =>
             agent
                 .get(URL)
                 .then((r: any) =>
                     assert(r.text).equal('<b>Index</b>')));
 
-        xit('should show parent views if none configured for child', () =>
+        it('should show parent views if none configured for child', () =>
             agent
                 .get(ROUTE_ACCOUNTS_BALANCE)
                 .then((r: any) =>
                     assert(r.text).equal('$0.00')));
 
-        xit('should bubble views up', () =>
+        it('should bubble views up', () =>
             agent
                 .get(ROUTE_REPORTS)
                 .then((r: any) =>
                     assert(r.text).equal('A list of reports')));
 
-        xit('should apply middleware', () =>
+        it('should apply middleware', () =>
             agent
                 .get(FILE_STYLE_CSS)
                 .then((r: any) =>
                     assert(r.text).equal('body{background:black;color:white;}\n')));
 
-        xit('should configure post routes', () =>
+        it('should configure post routes', () =>
             agent
                 .post(ROUTE_ACCOUNTS)
                 .send({ name: 'sundry', class: 'expense' })
                 .then((r: any) =>
                     assert(r.body.id).not.equal(undefined)));
 
-        xit('should run filters', () => {
+        it('should run filters', () => {
 
             let fourohfoured = false;
 
@@ -102,7 +103,7 @@ describe('tendril', () => {
 
         });
 
-        xit('should allow modules to be recursively disabled', () =>
+        it('should allow modules to be recursively disabled', () =>
             agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
@@ -114,7 +115,7 @@ describe('tendril', () => {
                 .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE)
                     .catch((e: Error) => assert(e.message).equal('Not Found'))));
 
-        xit('should allow modules to enable each other recursively', () =>
+        it('should allow modules to enable each other recursively', () =>
             agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
@@ -131,7 +132,7 @@ describe('tendril', () => {
                 .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00')));
 
-        xit('should allow modules to redirect each other recursively', () =>
+        it('should allow modules to redirect each other recursively', () =>
             agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
@@ -141,7 +142,7 @@ describe('tendril', () => {
                 .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('<b>Index</b>')));
 
-        xit('should stop redirecting enabled modules', () =>
+        it('should stop redirecting enabled modules', () =>
             agent
                 .get(ROUTE_ACCOUNTS)
                 .then((r: any) => assert(r.text).equal('Chart of Accounts'))
@@ -158,27 +159,27 @@ describe('tendril', () => {
                 .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
                 .then((r: any) => assert(r.text).equal('$0.00')))
 
-        xit('should acknowledge some modules start disabled', () =>
+        it('should acknowledge some modules start disabled', () =>
             agent
                 .get(ROUTE_ANALYTICS)
                 .catch((e: Error) => assert(e.message).equal('Not Found')));
 
-        xit('should spawn child actors', () => {
+        it('should spawn child actors', () => {
 
             assert(process.env.CHILD_RUNNING).equal('yes');
 
         });
 
-        xit('should stop child actors', () =>
+        it('should stop child actors', () =>
             toPromise(app.stop())
                 .then(() => assert(process.env.CHILD_RUNNING).equal('no')));
 
-        xit('should allow asking of actors', () =>
+        it('should allow asking of actors', () =>
             agent
                 .get(ROUTE_ADMIN_PING)
                 .then((r: any) => assert(r.text).equal('pong')));
 
-        xit('should send custom headers', () =>
+        it('should send custom headers', () =>
             agent
                 .get(ROUTE_ADMIN_XHEADERS)
                 .then((r: any) => {
@@ -189,12 +190,12 @@ describe('tendril', () => {
 
                 }))
 
-        xit('should provide context to views', () =>
+        it('should provide context to views', () =>
             agent
                 .get(ROUTE_REPORTS_CUSTOM)
                 .then((r: any) => assert(r.text).equal('Custom')));
 
-        xit('should execute module filters', () => {
+        it('should execute module filters', () => {
 
             process.env.MODULE_FILTERS_WORK = '';
 
@@ -210,7 +211,7 @@ describe('tendril', () => {
 
         });
 
-        xit('should invoke not found hooks', () =>
+        it('should invoke not found hooks', () =>
             agent
                 .get(`${ROUTE_ADMIN}/foobar`)
                 .catch((e) => {
@@ -220,7 +221,7 @@ describe('tendril', () => {
 
                 }));
 
-        xit('should enable sessions when configured', () =>
+        it('should enable sessions when configured', () =>
             agent
                 .get(ROUTE_ADMIN_NUM)
                 .then((r: any) => {
@@ -246,6 +247,19 @@ describe('tendril', () => {
                 .get(ROUTE_ADMIN_PRS)
                 .then(r => assert(r.status).equal(200)));
 
+        it('should allow the session api', () =>
+            agent
+                .post(ROUTE_ADMIN_SESSION)
+                .send({ value: 9 })
+                .then(() => agent.get(ROUTE_ADMIN_SESSION))
+                .then(r => assert(r.body.value).equal(9))
+                .then(() => agent.head(ROUTE_ADMIN_SESSION))
+                .then(() => agent.delete(ROUTE_ADMIN_SESSION))
+                .then(() => agent.head(ROUTE_ADMIN_SESSION))
+                .catch(e => assert(e.response.status).equal(404))
+                .then(() => agent.get(ROUTE_ADMIN_SESSION))
+                .then(r => assert(r.body.value).equal(undefined)));
+
     });
 
     describe('error escalation', () => {
@@ -256,7 +270,7 @@ describe('tendril', () => {
 
         afterEach(() => toPromise(app.stop()));
 
-        xit('should respond with 500', () =>
+        it('should respond with 500', () =>
             agent
                 .get(ROUTE_ADMIN_CRASH)
                 .then(() => assert(false).true())

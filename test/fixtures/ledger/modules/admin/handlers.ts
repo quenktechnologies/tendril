@@ -1,4 +1,5 @@
 import * as prs from '../../../../../lib/app/api/action/storage/prs';
+import * as session from '../../../../../lib/app/api/action/storage/session';
 
 import { raise } from '@quenk/noni/lib/control/monad/future';
 
@@ -11,7 +12,7 @@ import { Disable, Enable, Redirect } from '../../../../../src/app/module';
 import { await, next } from '../../../../../src/app/api/action/control';
 import { ActionM } from '../../../../../src/app/api/action';
 import { Request } from '../../../../../src/app/api/request';
-import { ok, forbidden } from '../../../../../src/app/api/action/response';
+import { ok, forbidden, notFound } from '../../../../../src/app/api/action/response';
 import { header } from '../../../../../src/app/api/action/response';
 
 export const disable = (_: Request): ActionM<undefined> =>
@@ -85,3 +86,23 @@ export const prsRemove = (_: Request): ActionM<undefined> =>
         .remove('value')
         .chain(() => prs.get('value'))
         .chain(m => m.isNothing() ? ok() : forbidden());
+
+export const sessionSet = (r: Request): ActionM<undefined> =>
+    session
+        .set('value', r.body.value)
+        .chain(() => ok());
+
+export const sessionGet = (_: Request): ActionM<undefined> =>
+    session
+        .get('value')
+        .chain(v => ok({ value: v.orJust(() => undefined).get() }))
+
+export const sessionExists = (_: Request): ActionM<undefined> =>
+    session
+        .exists('value')
+        .chain(b => b ? ok({ value: b }) : notFound() );
+
+export const sessionRemove = (_: Request): ActionM<undefined> =>
+    session
+        .remove('value')
+        .chain(() => ok({}));

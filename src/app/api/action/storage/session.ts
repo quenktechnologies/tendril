@@ -1,20 +1,19 @@
 /**
- * The Per Request Storage module (PRS) provides an API for storing small 
- * amounts of data that exist only for the duration of a request.
+ * The session storage module provides apis for storing session data.
  *
- * This APIs primary purpose is to provide a way for filters to share data
- * with each other, without modifying the Request object.
+ * "app.session.enable" must be set to true in order for these apis to work,
+ * they fail silently otherwise.
  */
 
 /** imports */
 import * as path from '@quenk/noni/lib/data/record/path';
 
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
-import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { liftF } from '@quenk/noni/lib/control/monad/free';
+import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
-import { Maybe } from '@quenk/noni/lib/data/maybe';
+import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
 
 import { Context } from '../../context';
 import { ActionM, Action } from '../';
@@ -36,7 +35,9 @@ export class Get<A> extends Action<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        return pure(this.next(path.get(this.key, ctx.prs)));
+        let session: Object = ctx.request.session || {};
+
+        return pure(this.next(fromNullable(session[this.key])));
 
     }
 
@@ -61,7 +62,10 @@ export class Set<A> extends Action<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        ctx.prs = path.set(this.key, this.value, ctx.prs);
+        let session: Object = ctx.request.session || {};
+
+        session[this.key] = this.value;
+
         return pure(this.next);
 
     }
@@ -86,11 +90,9 @@ export class Remove<A> extends Action<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let prs = path.flatten(ctx.prs);
+        let session: Object = ctx.request.session || {};
 
-        delete prs[this.key];
-
-        ctx.prs = path.unflatten(prs);
+        delete session[this.key];
 
         return pure(this.next);
 
@@ -115,14 +117,16 @@ export class Exists<A> extends Action<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        return pure(this.next(path.get(this.key, ctx.prs).isJust()));
+        let session: Object = ctx.request.session || {};
+
+        return pure(this.next(fromNullable(session[this.key]).isJust()));
 
     }
 
 }
 
 /**
- * get a value from PRS.
+ * get a value from session by key.
  *
  * The value is is wrapped in a Maybe to promote safe access.
  */
@@ -130,25 +134,19 @@ export const get = (key: path.Path): ActionM<Maybe<Value>> =>
     liftF(new Get(key, identity));
 
 /**
- * set will store a value in the PRS that can be later
- * read by filters or handlers that follow.
- *
- * When setting values it is recommended to use to namespace keys to avoid
- * collisions. For example:
- *
- * set('resource.search.query', {name: 'foo'});
+ * set a value for a key in the session.
  */
 export const set = (key: path.Path, value: Value): ActionM<undefined> =>
     liftF(new Set(key, value, undefined));
 
 /**
- * remove a value from PRS.
+ * remove a value from the session.
  */
 export const remove = (key: path.Path): ActionM<undefined> =>
     liftF(new Remove(key, undefined));
 
 /**
- * exists checks whether a value exists in PRS or not.
+ * exists checks whether a value exists in the session.
  */
 export const exists = (key: path.Path): ActionM<boolean> =>
     liftF(new Exists(key, identity));
