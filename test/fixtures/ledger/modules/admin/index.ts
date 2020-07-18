@@ -18,7 +18,7 @@ export const template = (): Template<App> => ({
 
         session: {
 
-            enabled: true
+            enable: true
 
         },
 
@@ -31,7 +31,15 @@ export const template = (): Template<App> => ({
             { method: 'get', path: '/x-headers', filters: [handlers.xheaders] },
             { method: 'get', path: '/crash', filters: [handlers.crash] },
             { method: 'get', path: '/num', filters: [handlers.getNum] },
-            { method: 'post', path: '/num', filters: [handlers.saveNum] }
+            { method: 'post', path: '/num', filters: [handlers.saveNum] },
+            {
+                method: 'get', path: '/prs', filters: [
+                    handlers.prsSet,
+                    handlers.prsGet,
+                    handlers.prsExists,
+                    handlers.prsRemove
+                ]
+            }
 
         ],
 

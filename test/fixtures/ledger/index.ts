@@ -1,18 +1,19 @@
 import * as accounts from './modules/accounts';
 import * as admin from './modules/admin';
 import * as analytics from './modules/analytics';
-import * as morgan from 'morgan';
 import * as bodyParser from 'body-parser';
+
 import { static as statc } from 'express';
+
 import { pure } from '@quenk/noni/lib/control/monad/future';
+
+import { Template } from '../../../src/app/module/template';
 import { App } from '../../../src/app';
 import { Module } from '../../../src/app/module';
-import { Template } from '../../../src/app/module/template';
 import { memdb } from '../memgodb';
-import { show } from './show';
 import { Child } from '../child';
 import { Pong } from '../pong';
-import { Spawnable } from '../spawnable';
+import { show } from './show';
 
 export const template = (): Template<App> => ({
 
