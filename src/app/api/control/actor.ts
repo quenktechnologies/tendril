@@ -14,7 +14,8 @@ import { App } from '../../../app';
 import { Api, Action, Context } from '../';
 
 /**
- * Self instruction.
+ * Self
+ * @private
  */
 export class Self<N, A> extends Api<A> {
 
@@ -35,13 +36,8 @@ export class Self<N, A> extends Api<A> {
 }
 
 /**
- * self provides the address of the module.
- */
-export const self = (): Action<Address> =>
-    liftF(new Self(identity));
-
-/**
- * Tell action.
+ * Tell 
+ * @private
  */
 export class Tell<N, A> extends Api<A>{
 
@@ -64,12 +60,6 @@ export class Tell<N, A> extends Api<A>{
     }
 
 }
-
-/**
- * tell sends a message to another actor.
- */
-export const tell = (to: string, m: Message): Action<undefined> =>
-    liftF(new Tell(to, m, undefined));
 
 class Callback<A> extends Temp<A, App> {
 
@@ -112,7 +102,8 @@ export class Response<T> {
 }
 
 /**
- * Ask action.
+ * Ask
+ * @private
  */
 export class Ask<N, A> extends Api<A> {
 
@@ -161,3 +152,15 @@ export class Ask<N, A> extends Api<A> {
  */
 export const ask = <T>(to: Address, m: Message): Action<T> =>
     liftF(new Ask(to, m, identity));
+
+/**
+ * self provides the address of the module.
+ */
+export const self = (): Action<Address> =>
+    liftF(new Self(identity));
+
+/**
+ * tell sends a message to another actor.
+ */
+export const tell = (to: string, m: Message): Action<undefined> =>
+    liftF(new Tell(to, m, undefined));

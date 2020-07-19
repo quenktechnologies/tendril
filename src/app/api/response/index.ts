@@ -17,8 +17,8 @@ import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
 
-import { Api, Action, Context } from '../';
 import { getModule } from '../../module/data';
+import { Api, Action, Context } from '../';
 
 /**
  * Headers map.
@@ -82,12 +82,6 @@ export class Header<A> extends Api<A> {
 }
 
 /**
- * header queues up on or more headers to send to the client.
- */
-export const header = (list: Headers): Action<undefined> =>
-    liftF(new Header(list, undefined));
-
-/**
  * Accepted response.
  */
 export class Accepted<B, A> extends Response<B, A> {
@@ -101,12 +95,6 @@ export class Accepted<B, A> extends Response<B, A> {
     }
 
 }
-
-/**
- * accepted sends the "ACCEPTED" status to the client with optional body.
- */
-export const accepted = <A>(body: A): Action<undefined> =>
-    liftF(new Accepted(fromNullable(body), undefined));
 
 /**
  * BadRequest response.
@@ -124,12 +112,6 @@ export class BadRequest<B, A> extends Response<B, A> {
 }
 
 /**
- * badRequest sends the "BAD REQUEST" status to the client with optional body.
- */
-export const badRequest = <A>(body?: A): Action<undefined> =>
-    liftF(new BadRequest(fromNullable(body), undefined));
-
-/**
  * Conflict response.
  */
 export class Conflict<B, A> extends Response<B, A> {
@@ -145,12 +127,6 @@ export class Conflict<B, A> extends Response<B, A> {
 }
 
 /**
- * conflict sends the "CONFLICT" status to the client with optional body.
- */
-export const conflict = <A>(body?: A): Action<undefined> =>
-    liftF(new Conflict(fromNullable(body), undefined));
-
-/**
  * Created response.
  */
 export class Created<B, A> extends Response<B, A> {
@@ -164,12 +140,6 @@ export class Created<B, A> extends Response<B, A> {
     }
 
 }
-
-/**
- * created sends the "CREATED" status to the client with optional body.
- */
-export const created = <A>(body?: A): Action<undefined> =>
-    liftF(new Created(fromNullable(body), undefined));
 
 /**
  * InternalServerError response.
@@ -193,13 +163,6 @@ export class InternalServerError<A> extends Response<Err, A> {
 }
 
 /**
- * error sends the "INTERNAL SERVER ERROR" status and can optionally log
- * the error to console.
- */
-export const error = (err?: Err): Action<undefined> =>
-    liftF(new InternalServerError(fromNullable(err), undefined));
-
-/**
  * Forbiddden response.
  */
 export class Forbidden<B, A> extends Response<B, A> {
@@ -213,12 +176,6 @@ export class Forbidden<B, A> extends Response<B, A> {
     }
 
 }
-
-/**
- * forbidden sends the "FORBIDDEN" status to the client with optional body.
- */
-export const forbidden = <A>(body?: A): Action<undefined> =>
-    liftF(new Forbidden(fromNullable(body), undefined));
 
 /**
  * NoContent response.
@@ -238,12 +195,6 @@ export class NoContent<A> extends Response<void, A> {
 }
 
 /**
- * noContent sends the "NO CONTENT" status to the client.
- */
-export const noContent = (): Action<undefined> =>
-    liftF(new NoContent(undefined));
-
-/**
  * NotFound response.
  */
 export class NotFound<B, A> extends Response<B, A> {
@@ -259,12 +210,6 @@ export class NotFound<B, A> extends Response<B, A> {
 }
 
 /**
- * notFound sends the "NOT FOUND" status to the client with optional body.
- */
-export const notFound = <A>(body?: A): Action<undefined> =>
-    liftF(new NotFound(fromNullable(body), undefined));
-
-/**
  * Ok action.
  */
 export class Ok<B, A> extends Response<B, A> {
@@ -278,12 +223,6 @@ export class Ok<B, A> extends Response<B, A> {
     }
 
 }
-
-/**
- * ok sends the "OK" status to the client with optional body. 
- */
-export const ok = <A>(body?: A): Action<undefined> =>
-    liftF(new Ok(fromNullable(body), undefined));
 
 /**
  * Redirect action.
@@ -311,12 +250,6 @@ export class Redirect<A> extends Api<A> {
 }
 
 /**
- * redirect the client to a new resource.
- */
-export const redirect = (url: string, code: number): Action<undefined> =>
-    liftF(new Redirect(url, code, undefined));
-
-/**
  * Unauthorized response.
  */
 export class Unauthorized<B, A> extends Response<B, A> {
@@ -330,12 +263,6 @@ export class Unauthorized<B, A> extends Response<B, A> {
     }
 
 }
-
-/**
- * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
- */
-export const unauthorized = <A>(body?: A): Action<undefined> =>
-    liftF(new Unauthorized(fromNullable(body), undefined));
 
 /**
  * Show action.
@@ -379,8 +306,81 @@ export class Show<A, C> extends Api<A> {
 }
 
 /**
+ * header queues up on or more headers to send to the client.
+ */
+export const header = (list: Headers): Action<undefined> =>
+    liftF(new Header(list, undefined));
+
+/**
  * show the client some content.
  */
 export const show = <C>
     (view: string, context?: C, status = 200): Action<undefined> =>
     liftF(new Show(view, fromNullable(context), status, undefined));
+
+/**
+ * accepted sends the "ACCEPTED" status to the client with optional body.
+ */
+export const accepted = <A>(body: A): Action<undefined> =>
+    liftF(new Accepted(fromNullable(body), undefined));
+
+/**
+ * badRequest sends the "BAD REQUEST" status to the client with optional body.
+ */
+export const badRequest = <A>(body?: A): Action<undefined> =>
+    liftF(new BadRequest(fromNullable(body), undefined));
+
+/**
+ * conflict sends the "CONFLICT" status to the client with optional body.
+ */
+export const conflict = <A>(body?: A): Action<undefined> =>
+    liftF(new Conflict(fromNullable(body), undefined));
+
+/**
+ * created sends the "CREATED" status to the client with optional body.
+ */
+export const created = <A>(body?: A): Action<undefined> =>
+    liftF(new Created(fromNullable(body), undefined));
+
+/**
+ * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
+ */
+export const unauthorized = <A>(body?: A): Action<undefined> =>
+    liftF(new Unauthorized(fromNullable(body), undefined));
+
+/**
+ * error sends the "INTERNAL SERVER ERROR" status and can optionally log
+ * the error to console.
+ */
+export const error = (err?: Err): Action<undefined> =>
+    liftF(new InternalServerError(fromNullable(err), undefined));
+
+/**
+ * forbidden sends the "FORBIDDEN" status to the client with optional body.
+ */
+export const forbidden = <A>(body?: A): Action<undefined> =>
+    liftF(new Forbidden(fromNullable(body), undefined));
+
+/**
+ * noContent sends the "NO CONTENT" status to the client.
+ */
+export const noContent = (): Action<undefined> =>
+    liftF(new NoContent(undefined));
+
+/**
+ * notFound sends the "NOT FOUND" status to the client with optional body.
+ */
+export const notFound = <A>(body?: A): Action<undefined> =>
+    liftF(new NotFound(fromNullable(body), undefined));
+
+/**
+ * ok sends the "OK" status to the client with optional body. 
+ */
+export const ok = <A>(body?: A): Action<undefined> =>
+    liftF(new Ok(fromNullable(body), undefined));
+
+/**
+ * redirect the client to a new resource.
+ */
+export const redirect = (url: string, code: number): Action<undefined> =>
+    liftF(new Redirect(url, code, undefined));

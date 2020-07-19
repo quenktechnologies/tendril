@@ -32,7 +32,7 @@ export interface AppConf<S extends App> {
 
     csrf?: {
 
-      token?: csrf.CSRFTokenConf
+        token?: csrf.CSRFTokenConf
 
     },
 
