@@ -1,6 +1,6 @@
 import * as conf from '@quenk/potoo/lib/actor/system/vm/conf';
 
-import * as filters from '../../api/filter';
+import * as filters from '../../api/request';
 import * as hooks from './hooks';
 import * as show from './show';
 import * as mid from './middleware';
@@ -32,7 +32,7 @@ export interface AppConf<S extends App> {
 
     csrf?: {
 
-      token?: csrf.CSRFTokenConf
+        token?: csrf.CSRFTokenConf
 
     },
 

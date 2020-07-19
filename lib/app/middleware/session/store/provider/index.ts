@@ -16,7 +16,7 @@ export interface SessionStoreProvider {
      * reflected in the app boot up.
      *
      * @param expressSession - This is the express-session default export.
-     * @param options        - Options provided for the store (if any).
+     * @param options        - Apitions provided for the store (if any).
      */
     create<O extends object>(
         expressSession: Function,

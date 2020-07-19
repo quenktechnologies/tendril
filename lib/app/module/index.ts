@@ -6,10 +6,9 @@ import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 
 import { getModule } from '../module/data';
-import { Context as RequestContext } from '../api/context';
-import { Request } from '../api/request';
-import { Filter, ErrorFilter } from '../api/filter';
-import { show } from '../api/action/response';
+import { Request, Filter, ErrorFilter } from '../api/request';
+import { show } from '../api/response';
+import { Context as RequestContext } from '../api';
 import { App } from '../';
 
 /**
@@ -72,7 +71,7 @@ export class Redirect {
  * into a series of modules. Each module is an actor with the
  * ability to send and receive messages.
  *
- * Most actions of a Module are implemented using Op classes that
+ * Most actions of a Module are implemented using Api classes that
  * are executed by the App.
  *
  * This makes debugging slightly easier as we can review to some extent what

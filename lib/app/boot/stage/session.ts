@@ -22,7 +22,7 @@ export const WARN_NO_SECRET =
 A random string will be generated and used however this means user sessions\
 will not be valid if the application restarts!';
 
-const defaultOptions = {
+const defaultApitions = {
 
     enable: false,
 
@@ -114,7 +114,7 @@ export class SessionStage implements Stage {
                 m.template.app.session &&
                 m.template.app.session.enable) {
 
-                let conf = merge(defaultOptions, m.template.app.session);
+                let conf = merge(defaultApitions, m.template.app.session);
 
                 if (!conf.options.secret) {
 

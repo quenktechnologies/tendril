@@ -5,14 +5,14 @@ import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { map, merge } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { Filter } from '../../api/filter';
+import { Filter } from '../../api/request';
 import { ModuleDatas } from '../../module/data';
 import { Stage } from './';
 
 export const DEFAULT_SEND_COOKIE_NAME = 'xsrf-token';
 export const ERROR_TOKEN_INVALID = 'EBADCSRFTOKEN';
 
-const defaultOptions = {
+const defaultApitions = {
 
     send_cookie: false,
 
@@ -94,7 +94,7 @@ export class CSRFTokenStage implements Stage {
                 m.template.app.csrf.token &&
                 m.template.app.csrf.token.enable) {
 
-                let conf = merge(defaultOptions, m.template.app.csrf.token);
+                let conf = merge(defaultApitions, m.template.app.csrf.token);
 
                 m.app.use(csurf(conf.options));
 
