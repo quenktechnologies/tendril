@@ -1,16 +1,23 @@
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
+import { Type } from '@quenk/noni/lib/data/type';
 
-import {Request} from '../request';
+import { Request } from '../request';
 import { Action, Api, Context } from '../';
 
 /**
- * Value action.
+ * Forkable is an argument valid for the fork function.
+ */
+export type Forkable<A> = () => Future<A> | Future<A>;
+
+/**
+ * Value
+ * @private
  */
 export class Value<A> extends Api<A> {
 
-    constructor(public value: any, public next: (a: any) => A) { super(next); }
+    constructor(public value: Type, public next: (a: Type) => A) { super(next); }
 
     map<B>(f: (a: A) => B): Value<B> {
 
@@ -27,44 +34,35 @@ export class Value<A> extends Api<A> {
 }
 
 /**
- * value wraps a value so that it is available to the next value in the 
- * chain.
+ * Fork
+ * @private
  */
-export const value = <A>(value: A): Action<A> =>
-    liftF(new Value(value, identity));
-
-
-/**
- * Await action.
- */
-export class Await<A> extends Api<A>{
+export class Fork<A> extends Api<A>{
 
     constructor(
-        public f: () => Future<any>,
-        public next: (a: any) => A) { super(next); }
+        public f: Forkable<Type>,
+        public next: (a: Type) => A) { super(next); }
 
-    map<B>(f: (a: A) => B): Await<B> {
+    map<B>(f: (a: A) => B): Fork<B> {
 
-        return new Await(this.f, compose(this.next, f));
+        return new Fork(this.f, compose(this.next, f));
 
     }
 
     exec(_: Context<A>): Future<A> {
 
-        return this.f().map(this.next);
+        let { f, next } = this;
+        let fut: Future<A> = (typeof f === 'function') ? f() : <Future<A>>f;
+
+        return fut.map(next);
 
     }
 
 }
 
 /**
- * await a value from an asynchrounous operation before continuing.
- */
-export const await = <A>(f: () => Future<A>): Action<A> =>
-    liftF(new Await(f, identity));
-
-/**
- * Next action.
+ * Next
+ * @private
  */
 export class Next<A> extends Api<A> {
 
@@ -92,5 +90,18 @@ export class Next<A> extends Api<A> {
  * This action allows the Request in the context to be modified and
  * short-circuits the current chain.
  */
-export const next = (r: Request): Action<undefined> => liftF(new Next(r, undefined));
+export const next = (r: Request): Action<undefined> =>
+    liftF(new Next(r, undefined));
 
+/**
+ * value wraps a value so that it is available to the next value in the 
+ * chain.
+ */
+export const value = <A>(value: A): Action<A> =>
+    liftF(new Value(value, identity));
+
+/**
+ * fork suspends execution for a Future to execute and provide a value.
+ */
+export const fork = <A>(f: Forkable<A>): Action<A> =>
+    liftF(new Fork(f, identity));
