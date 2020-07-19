@@ -1,6 +1,8 @@
 import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free } from '@quenk/noni/lib/control/monad/free';
 import { Future } from '@quenk/noni/lib/control/monad/future';
+import {doN, DoFn} from '@quenk/noni/lib/control/monad';
+
 import { Context } from '../context';
 
 /**
@@ -34,3 +36,11 @@ export abstract class Action<A> implements Functor<A> {
     abstract exec(ctx: Context<A>): Future<A> | Future<ActionM<A>>;
 
 }
+
+/**
+ * doAction provides a do notation function specialized to ActionM
+ * monads.
+ *
+ * Use this to chain ActionMs together using ES6's generator syntax.
+ */
+export const doAction = <A>(f: DoFn<A, ActionM<A>>) => doN(f);
