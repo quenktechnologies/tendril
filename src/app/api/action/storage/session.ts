@@ -6,9 +6,10 @@
  */
 
 /** imports */
+
 import * as path from '@quenk/noni/lib/data/record/path';
 
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, pure, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
@@ -126,6 +127,102 @@ export class Exists<A> extends Action<A> {
 }
 
 /**
+ * Regenerate
+ * @private
+ */
+export class Regenerate<A> extends Action<A> {
+
+    constructor(public next: A) { super(next); }
+
+
+    map<B>(f: (n: A) => B): Regenerate<B> {
+
+        return new Regenerate(f(this.next));
+
+    }
+
+    exec({ request }: Context<A>): Future<A> {
+
+        if (request.session != null) {
+
+            let session = request.session;
+
+            return fromCallback(cb => session.regenerate(cb))
+                .chain(() => pure(this.next));
+
+        }
+
+        return pure(this.next);
+
+    }
+
+}
+
+/**
+ * Destroy
+ * @private
+ */
+export class Destroy<A> extends Action<A> {
+
+    constructor(public next: A) { super(next); }
+
+
+    map<B>(f: (n: A) => B): Destroy<B> {
+
+        return new Destroy(f(this.next));
+
+    }
+
+    exec({ request }: Context<A>): Future<A> {
+
+        if (request.session != null) {
+
+            let session = request.session;
+
+            return fromCallback(cb => session.destroy(cb))
+                .chain(() => pure(this.next));
+
+        }
+
+        return pure(this.next);
+
+    }
+
+}
+
+/**
+ * Save
+ * @private
+ */
+export class Save<A> extends Action<A> {
+
+    constructor(public next: A) { super(next); }
+
+
+    map<B>(f: (n: A) => B): Save<B> {
+
+        return new Save(f(this.next));
+
+    }
+
+    exec({ request }: Context<A>): Future<A> {
+
+        if (request.session != null) {
+
+            let session = request.session;
+
+            return fromCallback(cb => session.save(cb))
+                .chain(() => pure(this.next));
+
+        }
+
+        return pure(this.next);
+
+    }
+
+}
+
+/**
  * get a value from session by key.
  *
  * The value is is wrapped in a Maybe to promote safe access.
@@ -150,3 +247,24 @@ export const remove = (key: path.Path): ActionM<undefined> =>
  */
 export const exists = (key: path.Path): ActionM<boolean> =>
     liftF(new Exists(key, identity));
+
+/**
+ * regenerate causes the session to be regenerated and a new SID set.
+ */
+export const regenerate = (): ActionM<undefined> =>
+    liftF(new Regenerate(undefined));
+
+/**
+ * destroy the session.
+ */
+export const destroy = (): ActionM<undefined> =>
+    liftF(new Destroy(undefined));
+
+/**
+ * Save session data.
+ *
+ * This causes session data to be stored immediately instead of at the end
+ * of the request.
+ */
+export const save = (): ActionM<undefined> =>
+    liftF(new Save(undefined));
