@@ -3,12 +3,12 @@ import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Context } from '../../context';
 import {Request} from '../../request';
-import { ActionM, Action } from '../';
+import { Action, Api } from '../';
 
 /**
  * Value action.
  */
-export class Value<A> extends Action<A> {
+export class Value<A> extends Api<A> {
 
     constructor(public value: any, public next: (a: any) => A) { super(next); }
 
@@ -30,14 +30,14 @@ export class Value<A> extends Action<A> {
  * value wraps a value so that it is available to the next value in the 
  * chain.
  */
-export const value = <A>(value: A): ActionM<A> =>
+export const value = <A>(value: A): Action<A> =>
     liftF(new Value(value, identity));
 
 
 /**
  * Await action.
  */
-export class Await<A> extends Action<A>{
+export class Await<A> extends Api<A>{
 
     constructor(
         public f: () => Future<any>,
@@ -60,13 +60,13 @@ export class Await<A> extends Action<A>{
 /**
  * await a value from an asynchrounous operation before continuing.
  */
-export const await = <A>(f: () => Future<A>): ActionM<A> =>
+export const await = <A>(f: () => Future<A>): Action<A> =>
     liftF(new Await(f, identity));
 
 /**
  * Next action.
  */
-export class Next<A> extends Action<A> {
+export class Next<A> extends Api<A> {
 
     constructor(public request: Request, public next: A) { super(next); }
 
@@ -76,7 +76,7 @@ export class Next<A> extends Action<A> {
 
     }
 
-    exec(ctx: Context<A>): Future<ActionM<A>> {
+    exec(ctx: Context<A>): Future<Action<A>> {
 
         ctx.request = this.request;
         return ctx.next();
@@ -92,5 +92,5 @@ export class Next<A> extends Action<A> {
  * This action allows the Request in the context to be modified and
  * short-circuits the current chain.
  */
-export const next = (r: Request): ActionM<undefined> => liftF(new Next(r, undefined));
+export const next = (r: Request): Action<undefined> => liftF(new Next(r, undefined));
 

@@ -8,12 +8,12 @@ import { Future, raise } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Context } from '../context';
-import { Action, ActionM  } from './';
+import { Api, Action  } from './';
 
 /**
  * Checkout action.
  */
-export class Checkout<A> extends Action<A> {
+export class Checkout<A> extends Api<A> {
 
     constructor(public name: string, public next: (x: any) => A) { super(next); }
 
@@ -38,5 +38,5 @@ export class Checkout<A> extends Action<A> {
 /**
  * checkout a Connection from the application's pool.
  */
-export const checkout = <A>(name: string): ActionM<A> =>
+export const checkout = <A>(name: string): Action<A> =>
     liftF(new Checkout<A>(name, identity));

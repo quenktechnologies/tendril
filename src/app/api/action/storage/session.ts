@@ -17,13 +17,13 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
 
 import { Context } from '../../context';
-import { ActionM, Action } from '../';
+import { Action, Api } from '../';
 
 /**
  * Get
  * @private
  */
-export class Get<A> extends Action<A> {
+export class Get<A> extends Api<A> {
 
     constructor(public key: path.Path,
         public next: (v: Type) => A) { super(next); }
@@ -48,7 +48,7 @@ export class Get<A> extends Action<A> {
  * Set
  * @private
  */
-export class Set<A> extends Action<A> {
+export class Set<A> extends Api<A> {
 
     constructor(
         public key: path.Path,
@@ -77,7 +77,7 @@ export class Set<A> extends Action<A> {
  * Remove
  * @private
  */
-export class Remove<A> extends Action<A> {
+export class Remove<A> extends Api<A> {
 
     constructor(
         public key: path.Path,
@@ -105,7 +105,7 @@ export class Remove<A> extends Action<A> {
  * Exists
  * @private
  */
-export class Exists<A> extends Action<A> {
+export class Exists<A> extends Api<A> {
 
     constructor(public key: path.Path,
         public next: (v: Type) => A) { super(next); }
@@ -130,7 +130,7 @@ export class Exists<A> extends Action<A> {
  * Regenerate
  * @private
  */
-export class Regenerate<A> extends Action<A> {
+export class Regenerate<A> extends Api<A> {
 
     constructor(public next: A) { super(next); }
 
@@ -162,7 +162,7 @@ export class Regenerate<A> extends Action<A> {
  * Destroy
  * @private
  */
-export class Destroy<A> extends Action<A> {
+export class Destroy<A> extends Api<A> {
 
     constructor(public next: A) { super(next); }
 
@@ -194,7 +194,7 @@ export class Destroy<A> extends Action<A> {
  * Save
  * @private
  */
-export class Save<A> extends Action<A> {
+export class Save<A> extends Api<A> {
 
     constructor(public next: A) { super(next); }
 
@@ -227,37 +227,37 @@ export class Save<A> extends Action<A> {
  *
  * The value is is wrapped in a Maybe to promote safe access.
  */
-export const get = (key: path.Path): ActionM<Maybe<Value>> =>
+export const get = (key: path.Path): Action<Maybe<Value>> =>
     liftF(new Get(key, identity));
 
 /**
  * set a value for a key in the session.
  */
-export const set = (key: path.Path, value: Value): ActionM<undefined> =>
+export const set = (key: path.Path, value: Value): Action<undefined> =>
     liftF(new Set(key, value, undefined));
 
 /**
  * remove a value from the session.
  */
-export const remove = (key: path.Path): ActionM<undefined> =>
+export const remove = (key: path.Path): Action<undefined> =>
     liftF(new Remove(key, undefined));
 
 /**
  * exists checks whether a value exists in the session.
  */
-export const exists = (key: path.Path): ActionM<boolean> =>
+export const exists = (key: path.Path): Action<boolean> =>
     liftF(new Exists(key, identity));
 
 /**
  * regenerate causes the session to be regenerated and a new SID set.
  */
-export const regenerate = (): ActionM<undefined> =>
+export const regenerate = (): Action<undefined> =>
     liftF(new Regenerate(undefined));
 
 /**
  * destroy the session.
  */
-export const destroy = (): ActionM<undefined> =>
+export const destroy = (): Action<undefined> =>
     liftF(new Destroy(undefined));
 
 /**
@@ -266,5 +266,5 @@ export const destroy = (): ActionM<undefined> =>
  * This causes session data to be stored immediately instead of at the end
  * of the request.
  */
-export const save = (): ActionM<undefined> =>
+export const save = (): Action<undefined> =>
     liftF(new Save(undefined));

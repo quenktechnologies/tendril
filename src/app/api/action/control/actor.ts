@@ -12,12 +12,12 @@ import { Case } from '@quenk/potoo/lib/actor/resident/case';
 
 import { App } from '../../../../app';
 import { Context } from '../../context';
-import { Action, ActionM } from '../';
+import { Api, Action } from '../';
 
 /**
  * Self instruction.
  */
-export class Self<N, A> extends Action<A> {
+export class Self<N, A> extends Api<A> {
 
     constructor(public next: (a: any) => A) { super(next); }
 
@@ -38,13 +38,13 @@ export class Self<N, A> extends Action<A> {
 /**
  * self provides the address of the module.
  */
-export const self = (): ActionM<Address> =>
+export const self = (): Action<Address> =>
     liftF(new Self(identity));
 
 /**
  * Tell action.
  */
-export class Tell<N, A> extends Action<A>{
+export class Tell<N, A> extends Api<A>{
 
     constructor(
         public to: Address,
@@ -69,7 +69,7 @@ export class Tell<N, A> extends Action<A>{
 /**
  * tell sends a message to another actor.
  */
-export const tell = (to: string, m: Message): ActionM<undefined> =>
+export const tell = (to: string, m: Message): Action<undefined> =>
     liftF(new Tell(to, m, undefined));
 
 class Callback<A> extends Temp<A, App> {
@@ -115,7 +115,7 @@ export class Response<T> {
 /**
  * Ask action.
  */
-export class Ask<N, A> extends Action<A> {
+export class Ask<N, A> extends Api<A> {
 
     constructor(
         public to: Address,
@@ -160,5 +160,5 @@ export class Ask<N, A> extends Action<A> {
  *
  * The actor must respond with a Response message.
  */
-export const ask = <T>(to: Address, m: Message): ActionM<T> =>
+export const ask = <T>(to: Address, m: Message): Action<T> =>
     liftF(new Ask(to, m, identity));

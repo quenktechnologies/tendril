@@ -18,7 +18,7 @@ import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
 
 import { Context } from '../../context';
-import { Action, ActionM } from '../';
+import { Api, Action } from '../';
 import { getModule } from '../../../module/data';
 
 /**
@@ -33,7 +33,7 @@ export interface Headers {
 /**
  * Response terminates the http request with an actual HTTP response.
  */
-export abstract class Response<B, A> extends Action<A> {
+export abstract class Response<B, A> extends Api<A> {
 
     constructor(
         public body: Maybe<B>,
@@ -62,7 +62,7 @@ const send = <B>(body: Maybe<B>, res: express.Response): void =>
 /**
  * Header sets header values to send out.
  */
-export class Header<A> extends Action<A> {
+export class Header<A> extends Api<A> {
 
     constructor(public headers: Headers, public next: A) { super(next); }
 
@@ -85,7 +85,7 @@ export class Header<A> extends Action<A> {
 /**
  * header queues up on or more headers to send to the client.
  */
-export const header = (list: Headers): ActionM<undefined> =>
+export const header = (list: Headers): Action<undefined> =>
     liftF(new Header(list, undefined));
 
 /**
@@ -106,7 +106,7 @@ export class Accepted<B, A> extends Response<B, A> {
 /**
  * accepted sends the "ACCEPTED" status to the client with optional body.
  */
-export const accepted = <A>(body: A): ActionM<undefined> =>
+export const accepted = <A>(body: A): Action<undefined> =>
     liftF(new Accepted(fromNullable(body), undefined));
 
 /**
@@ -127,7 +127,7 @@ export class BadRequest<B, A> extends Response<B, A> {
 /**
  * badRequest sends the "BAD REQUEST" status to the client with optional body.
  */
-export const badRequest = <A>(body?: A): ActionM<undefined> =>
+export const badRequest = <A>(body?: A): Action<undefined> =>
     liftF(new BadRequest(fromNullable(body), undefined));
 
 /**
@@ -148,7 +148,7 @@ export class Conflict<B, A> extends Response<B, A> {
 /**
  * conflict sends the "CONFLICT" status to the client with optional body.
  */
-export const conflict = <A>(body?: A): ActionM<undefined> =>
+export const conflict = <A>(body?: A): Action<undefined> =>
     liftF(new Conflict(fromNullable(body), undefined));
 
 /**
@@ -169,7 +169,7 @@ export class Created<B, A> extends Response<B, A> {
 /**
  * created sends the "CREATED" status to the client with optional body.
  */
-export const created = <A>(body?: A): ActionM<undefined> =>
+export const created = <A>(body?: A): Action<undefined> =>
     liftF(new Created(fromNullable(body), undefined));
 
 /**
@@ -197,7 +197,7 @@ export class InternalServerError<A> extends Response<Err, A> {
  * error sends the "INTERNAL SERVER ERROR" status and can optionally log
  * the error to console.
  */
-export const error = (err?: Err): ActionM<undefined> =>
+export const error = (err?: Err): Action<undefined> =>
     liftF(new InternalServerError(fromNullable(err), undefined));
 
 /**
@@ -218,7 +218,7 @@ export class Forbidden<B, A> extends Response<B, A> {
 /**
  * forbidden sends the "FORBIDDEN" status to the client with optional body.
  */
-export const forbidden = <A>(body?: A): ActionM<undefined> =>
+export const forbidden = <A>(body?: A): Action<undefined> =>
     liftF(new Forbidden(fromNullable(body), undefined));
 
 /**
@@ -241,7 +241,7 @@ export class NoContent<A> extends Response<void, A> {
 /**
  * noContent sends the "NO CONTENT" status to the client.
  */
-export const noContent = (): ActionM<undefined> =>
+export const noContent = (): Action<undefined> =>
     liftF(new NoContent(undefined));
 
 /**
@@ -262,7 +262,7 @@ export class NotFound<B, A> extends Response<B, A> {
 /**
  * notFound sends the "NOT FOUND" status to the client with optional body.
  */
-export const notFound = <A>(body?: A): ActionM<undefined> =>
+export const notFound = <A>(body?: A): Action<undefined> =>
     liftF(new NotFound(fromNullable(body), undefined));
 
 /**
@@ -283,13 +283,13 @@ export class Ok<B, A> extends Response<B, A> {
 /**
  * ok sends the "OK" status to the client with optional body. 
  */
-export const ok = <A>(body?: A): ActionM<undefined> =>
+export const ok = <A>(body?: A): Action<undefined> =>
     liftF(new Ok(fromNullable(body), undefined));
 
 /**
  * Redirect action.
  */
-export class Redirect<A> extends Action<A> {
+export class Redirect<A> extends Api<A> {
 
     constructor(
         public url: string,
@@ -314,7 +314,7 @@ export class Redirect<A> extends Action<A> {
 /**
  * redirect the client to a new resource.
  */
-export const redirect = (url: string, code: number): ActionM<undefined> =>
+export const redirect = (url: string, code: number): Action<undefined> =>
     liftF(new Redirect(url, code, undefined));
 
 /**
@@ -335,13 +335,13 @@ export class Unauthorized<B, A> extends Response<B, A> {
 /**
  * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
  */
-export const unauthorized = <A>(body?: A): ActionM<undefined> =>
+export const unauthorized = <A>(body?: A): Action<undefined> =>
     liftF(new Unauthorized(fromNullable(body), undefined));
 
 /**
  * Show action.
  */
-export class Show<A, C> extends Action<A> {
+export class Show<A, C> extends Api<A> {
 
     constructor(
         public view: string,
@@ -383,5 +383,5 @@ export class Show<A, C> extends Action<A> {
  * show the client some content.
  */
 export const show = <C>
-    (view: string, context?: C, status = 200): ActionM<undefined> =>
+    (view: string, context?: C, status = 200): Action<undefined> =>
     liftF(new Show(view, fromNullable(context), status, undefined));

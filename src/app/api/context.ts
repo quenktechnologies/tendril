@@ -2,10 +2,10 @@ import * as express from 'express';
 
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
-import { Object} from '@quenk/noni/lib/data/jsonx';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 
 import { Module } from '../module';
-import { ActionM, } from './action';
+import { Action, } from './action';
 import { Filter } from './filter';
 
 /**
@@ -21,9 +21,9 @@ export class Context<A> {
         public response: express.Response,
         public onError: express.NextFunction,
         public filters: Filter<A>[],
-    public prs:Object = {}) { }
+        public prs: Object = {}) { }
 
-    next(): Future<ActionM<A>> {
+    next(): Future<Action<A>> {
 
         return (this.filters.length > 0) ?
             pure((<Filter<A>>this.filters.shift())(this.request)) :

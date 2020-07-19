@@ -25,7 +25,7 @@ export interface BodyParserConf {
         /**
          * options for the parser.
          */
-        options?: parser.OptionsJson
+        options?: parser.ApitionsJson
 
     },
 
@@ -42,7 +42,7 @@ export interface BodyParserConf {
         /**
          * options for this parser.
          */
-        options?: parser.Options
+        options?: parser.Apitions
 
     },
 
@@ -59,7 +59,7 @@ export interface BodyParserConf {
         /**
          * options for this parser.
          */
-        options?: parser.OptionsText
+        options?: parser.ApitionsText
 
     },
 
@@ -76,7 +76,7 @@ export interface BodyParserConf {
         /**
          * options for this parser.
          */
-        options?: parser.OptionsUrlencoded
+        options?: parser.ApitionsUrlencoded
 
     }
 

@@ -1,4 +1,4 @@
-import { ActionM } from './action';
+import { Action } from './action';
 import { Request } from './request';
 
 /**
@@ -6,9 +6,9 @@ import { Request } from './request';
  * 
  * These can either transform the request or terminate.
  */
-export type Filter<A> = (r: Request) => ActionM<A>;
+export type Filter<A> = (r: Request) => Action<A>;
 
 /**
  * ErrorFilter functions are applied to a request when it triggers an error.
  */
-export type ErrorFilter = (e: Error, r: Request) => ActionM<void>;
+export type ErrorFilter = (e: Error, r: Request) => Action<void>;

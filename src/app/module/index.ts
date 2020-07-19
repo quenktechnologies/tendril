@@ -72,7 +72,7 @@ export class Redirect {
  * into a series of modules. Each module is an actor with the
  * ability to send and receive messages.
  *
- * Most actions of a Module are implemented using Op classes that
+ * Most actions of a Module are implemented using Api classes that
  * are executed by the App.
  *
  * This makes debugging slightly easier as we can review to some extent what
