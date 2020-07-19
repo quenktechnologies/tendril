@@ -12,12 +12,11 @@ import * as path from '@quenk/noni/lib/data/record/path';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 
-import { Context } from '../../context';
-import { Action, Api } from '../';
+import { Action, Api, Context } from '../';
 
 /**
  * Get

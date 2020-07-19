@@ -37,7 +37,7 @@ export interface CookieParserConf {
     /**
      * options for the parser.
      */
-    options?: parser.CookieParseApitions
+    options?: parser.CookieParseOptions
 
 }
 

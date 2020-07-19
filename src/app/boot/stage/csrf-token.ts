@@ -5,7 +5,7 @@ import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { map, merge } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { Filter } from '../../api/filter';
+import { Filter } from '../../api/request';
 import { ModuleDatas } from '../../module/data';
 import { Stage } from './';
 

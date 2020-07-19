@@ -1,9 +1,9 @@
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
-import { Context } from '../../context';
-import {Request} from '../../request';
-import { Action, Api } from '../';
+
+import {Request} from '../request';
+import { Action, Api, Context } from '../';
 
 /**
  * Value action.

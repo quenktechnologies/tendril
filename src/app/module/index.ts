@@ -6,10 +6,9 @@ import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 
 import { getModule } from '../module/data';
-import { Context as RequestContext } from '../api/context';
-import { Request } from '../api/request';
-import { Filter, ErrorFilter } from '../api/filter';
-import { show } from '../api/action/response';
+import { Request, Filter, ErrorFilter } from '../api/request';
+import { show } from '../api/response';
+import { Context as RequestContext } from '../api';
 import { App } from '../';
 
 /**

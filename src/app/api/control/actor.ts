@@ -10,9 +10,8 @@ import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 
-import { App } from '../../../../app';
-import { Context } from '../../context';
-import { Api, Action } from '../';
+import { App } from '../../../app';
+import { Api, Action, Context } from '../';
 
 /**
  * Self instruction.

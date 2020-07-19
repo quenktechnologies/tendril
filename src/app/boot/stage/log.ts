@@ -26,7 +26,7 @@ export interface LogConf {
     /**
      * options that can be additionally passed to the morgan middleware.
      */
-    options?: morgan.Apitions<express.Request, express.Response>
+    options?: morgan.Options<express.Request, express.Response>
 
 }
 

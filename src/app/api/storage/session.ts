@@ -16,8 +16,7 @@ import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
 
-import { Context } from '../../context';
-import { Action, Api } from '../';
+import { Action, Api, Context } from '../';
 
 /**
  * Get

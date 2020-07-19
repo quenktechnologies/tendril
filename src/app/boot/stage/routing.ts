@@ -5,7 +5,7 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { map } from '@quenk/noni/lib/data/record';
 
 import { Template } from '../../module/template';
-import { Filter } from '../../api/filter';
+import { Filter } from '../../api/request';
 import { ModuleDatas } from '../../module/data';
 import { App } from '../../';
 import { Stage } from './';

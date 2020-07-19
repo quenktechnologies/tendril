@@ -3,9 +3,9 @@
  */
 
 /** imports */
-import * as status from './status';
 import * as express from 'express';
-import * as headers from '../../../../net/http/headers';
+import * as headers from '../../../net/http/headers';
+import * as status from './status';
 
 import {
     Future,
@@ -17,9 +17,8 @@ import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
 
-import { Context } from '../../context';
-import { Api, Action } from '../';
-import { getModule } from '../../../module/data';
+import { Api, Action, Context } from '../';
+import { getModule } from '../../module/data';
 
 /**
  * Headers map.

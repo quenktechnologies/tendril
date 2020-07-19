@@ -61,7 +61,7 @@ export interface SessionConf {
     /**
      * options configurable for the session module.
      */
-    options?: session.SessionApitions,
+    options?: session.SessionOptions,
 
     /**
      * store configuration for the session.

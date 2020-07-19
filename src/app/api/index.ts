@@ -33,13 +33,18 @@
  * Api in a Free on behalf of the user. They can be chained together using
  * the `chain` method or via yield expressions in a `doAction` block.
  */
+import * as express from 'express';
+
 import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free } from '@quenk/noni/lib/control/monad/free';
-import { Future } from '@quenk/noni/lib/control/monad/future';
+import { noop } from '@quenk/noni/lib/data/function';
+import {Object} from '@quenk/noni/lib/data/jsonx';
+import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { doN, DoFn } from '@quenk/noni/lib/control/monad';
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { Context } from '../context';
+import { Module } from '../module';
+import { Filter } from './request';
 
 /**
  * Action represents a sequence of actions the app takes
@@ -48,6 +53,48 @@ import { Context } from '../context';
  * Actions are implemented as an Api wrapped in a Free monad.
  */
 export type Action<A> = Free<Api<Type>, A>;
+
+/**
+ * Context represents the context of the http request.
+ * 
+ * This is an internal API not directly exposed to request handlers. It
+ * stores lower level APIs used to execute the work of the higher level Api
+ * objects.
+ */
+export class Context<A> {
+
+    constructor(
+        public module: Module,
+        public request: express.Request,
+        public response: express.Response,
+        public onError: express.NextFunction,
+        public filters: Filter<A>[],
+        public prs: Object = {}) { }
+
+    /**
+     * next provides the next Action to be interpreted.
+     */
+    next(): Future<Action<A>> {
+
+        return (this.filters.length > 0) ?
+            pure((<Filter<A>>this.filters.shift())(this.request)) :
+            raise(new Error(`${this.module.self()}: No more filters!`));
+
+    }
+
+    /**
+     * run processes the next filter or action in the chain.
+     */
+    run(): void {
+
+        this
+            .next()
+            .chain(n => n.foldM(() => pure<any>(noop()), n => n.exec(this)))
+            .fork(this.onError, () => { });
+
+    }
+
+}
 
 /**
  * Api represents an instruction to the tendril framework to carry out.
