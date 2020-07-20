@@ -36,7 +36,7 @@ export interface AppConf<S extends App> {
 
     },
 
-    parser?: {
+    parsers?: {
 
         body?: bodyParser.BodyParserConf,
 
@@ -53,10 +53,6 @@ export interface AppConf<S extends App> {
     },
 
     routes?: routes.Routes,
-
-    notFoundHandler?: filters.Filter<void>,
-
-    errorHandler?: filters.ErrorFilter,
 
     views?: show.ShowConf,
 
