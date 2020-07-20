@@ -58,11 +58,11 @@ export class CookieParserStage implements Stage {
 
             if (m.template &&
                 m.template.app &&
-                m.template.app.parser &&
-                m.template.app.parser.cookie &&
-                m.template.app.parser.cookie.enable) {
+                m.template.app.parsers &&
+                m.template.app.parsers.cookie &&
+                m.template.app.parsers.cookie.enable) {
 
-                let { cookie } = m.template.app.parser;
+                let { cookie } = m.template.app.parsers;
 
                 let secret = cookie.secret ||
                     process.env.COOKIE_SECRET ||

@@ -49,16 +49,15 @@ export class RoutingStage implements Stage {
 
             }
 
-            if (t.app && t.app.notFoundHandler)
-                m.app.use(mod.runInContext([t.app.notFoundHandler]));
+            if (t.app && t.app.on && t.app.on.notFound)
+                m.app.use(mod.runInContext([t.app.on.notFound]));
 
-            if (t.app && t.app.errorHandler)
-                m.app.use(mod.runInContextWithError(t.app.errorHandler));
+            if (t.app && t.app.on && t.app.on.internalError)
+                m.app.use(mod.runInContextWithError(t.app.on.internalError));
 
             m.parent.map(p => p.app.use(join('/', m.path), m.app));
 
-        }))
-            .map(() => undefined);
+        }))            .map(() => undefined);
 
     }
 

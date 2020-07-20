@@ -30,7 +30,7 @@ export interface LogConf {
 
 }
 
-const defaultApitions = {
+const defaultOptions = {
 
     format: 'combined'
 
@@ -56,7 +56,7 @@ export class LogStage implements Stage {
                 m.template.app.log &&
                 m.template.app.log.enable) {
 
-                let conf = merge(defaultApitions, m.template.app.log);
+                let conf = merge(defaultOptions, m.template.app.log);
 
                 m.app.use(morgan(conf.format, conf.options));
 

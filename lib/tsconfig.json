@@ -1,5 +1,5 @@
 {
-    "compilerApitions": {
+    "compilerOptions": {
         "baseUrl": "src",
         "lib": ["ES2015", "DOM"],
         "module": "commonjs",

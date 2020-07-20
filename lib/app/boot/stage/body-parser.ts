@@ -102,10 +102,10 @@ export class BodyParserStage implements Stage {
 
             if (m.template &&
                 m.template.app &&
-                m.template.app.parser &&
-                m.template.app.parser.body) {
+                m.template.app.parsers &&
+                m.template.app.parsers.body) {
 
-                let { body } = m.template.app.parser;
+                let { body } = m.template.app.parsers;
 
                 if (body.json && body.json.enable)
                     app.use(parser.json(body.json.options));
