@@ -1,10 +1,12 @@
 import * as handlers from './handlers';
+
 import { Err } from '@quenk/noni/lib/control/error';
 import { ACTION_IGNORE } from '@quenk/potoo/lib/actor/template';
+
+import { notFound, error } from '../../../../../src/app/api/response';
 import { Template } from '../../../../../src/app/module/template';
 import { Module } from '../../../../../src/app/module';
 import { App } from '../../../../../src/app';
-import { notFound, error } from '../../../../../src/app/api/action/response';
 
 export const template = (): Template<App> => ({
 
@@ -47,21 +49,25 @@ export const template = (): Template<App> => ({
 
         ],
 
-        notFoundHandler: () => {
+        on: {
 
-            process.env.NOT_FOUND_APPLIED = 'yes';
+            notFound: () => {
 
-            return notFound();
+                process.env.NOT_FOUND_APPLIED = 'yes';
 
-        },
+                return notFound();
 
-        errorHandler: () => {
+            },
 
-            process.env.ERROR_HANDLER_APPLIED = 'yes';
+            internalError: () => {
 
-            return error();
+                process.env.ERROR_HANDLER_APPLIED = 'yes';
+
+                return error();
+
+            }
 
         }
 
-    }
-});
+        }
+    });

@@ -1,7 +1,7 @@
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 
-import { Request, Response } from '../../src/app/api/action/control/actor';
+import { Request, Response } from '../../src/app/api/control/actor';
 import { App } from '../../src/app';
 
 export class Pong extends Immutable<Request<string>, App> {

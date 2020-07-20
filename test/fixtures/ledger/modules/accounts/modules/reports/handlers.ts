@@ -1,6 +1,6 @@
-import { ActionM  } from '../../../../../../../src/app/api/action';
+import { Action  } from '../../../../../../../src/app/api';
 import { Request  } from '../../../../../../../src/app/api/request';
 import {  show } from '../../../../../../../src/app/api/action/response';
 
-export const generate = (_: Request): ActionM<undefined> =>
+export const generate = (_: Request): Action<undefined> =>
     (show('reports'));
