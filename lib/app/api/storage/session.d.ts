@@ -11,6 +11,7 @@ import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Action, Api, Context } from '../';
+export declare const SESSION_STORAGE_KEY = "tendril";
 /**
  * Get
  * @private
@@ -20,6 +21,26 @@ export declare class Get<A> extends Api<A> {
     next: (v: Type) => A;
     constructor(key: path.Path, next: (v: Type) => A);
     map<B>(f: (n: A) => B): Get<B>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
+ * GetString
+ * @private
+ */
+export declare class GetString<A> extends Get<A> {
+    map<B>(f: (n: A) => B): Get<B>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
+ * GetOrElse
+ * @private
+ */
+export declare class GetOrElse<A> extends Api<A> {
+    key: path.Path;
+    value: Value;
+    next: (v: Type) => A;
+    constructor(key: path.Path, value: Value, next: (v: Type) => A);
+    map<B>(f: (n: A) => B): GetOrElse<B>;
     exec(ctx: Context<A>): Future<A>;
 }
 /**
@@ -92,6 +113,18 @@ export declare class Save<A> extends Api<A> {
  * The value is is wrapped in a Maybe to promote safe access.
  */
 export declare const get: (key: path.Path) => Action<Maybe<Value>>;
+/**
+ * getString from session storage.
+ *
+ * Retrieves a value that is cast to string via String(). If the value does
+ * not exist, an empty string is returned.
+ */
+export declare const getString: (key: path.Path) => Action<string>;
+/**
+ * getOrElse provides a value from session storage or an alternative
+ * if it is == null.
+ */
+export declare const getOrElse: (key: path.Path, value: Value) => Action<string>;
 /**
  * set a value for a key in the session.
  */

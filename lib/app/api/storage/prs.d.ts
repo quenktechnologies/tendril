@@ -24,6 +24,26 @@ export declare class Get<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A>;
 }
 /**
+ * GetString
+ * @private
+ */
+export declare class GetString<A> extends Get<A> {
+    map<B>(f: (n: A) => B): GetString<B>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
+ * GetOrElse
+ * @private
+ */
+export declare class GetOrElse<A> extends Api<A> {
+    key: path.Path;
+    value: Value;
+    next: (v: Type) => A;
+    constructor(key: path.Path, value: Value, next: (v: Type) => A);
+    map<B>(f: (n: A) => B): GetOrElse<B>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
  * Set
  * @private
  */
@@ -63,6 +83,17 @@ export declare class Exists<A> extends Api<A> {
  * The value is is wrapped in a Maybe to promote safe access.
  */
 export declare const get: (key: path.Path) => Action<Maybe<Value>>;
+/**
+ * getString from PRS.
+ *
+ * Retrieves a value that is cast to string via String(). If the value does
+ * not exist, an empty string is returned.
+ */
+export declare const getString: (key: path.Path) => Action<string>;
+/**
+ * getOrElse provides a value from PRS or an alternative if it is == null.
+ */
+export declare const getOrElse: (key: path.Path, value: Value) => Action<string>;
 /**
  * set will store a value in the PRS that can be later
  * read by filters or handlers that follow.
