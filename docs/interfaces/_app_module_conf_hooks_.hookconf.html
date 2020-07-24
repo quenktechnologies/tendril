@@ -2727,7 +2727,16 @@ img {
 					<a href="_app_module_conf_hooks_.hookconf.html#connected" class="tsd-kind-icon">connected</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-interface">
+					<a href="_app_module_conf_hooks_.hookconf.html#error" class="tsd-kind-icon">error</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
 					<a href="_app_module_conf_hooks_.hookconf.html#init" class="tsd-kind-icon">init</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
+					<a href="_app_module_conf_hooks_.hookconf.html#internalerror" class="tsd-kind-icon">internal<wbr>Error</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
+					<a href="_app_module_conf_hooks_.hookconf.html#notfound" class="tsd-kind-icon">not<wbr>Found</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-interface">
 					<a href="_app_module_conf_hooks_.hookconf.html#started" class="tsd-kind-icon">started</a>
@@ -2779,7 +2788,10 @@ img {
 						<h3>Properties</h3>
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_module_conf_hooks_.hookconf.html#connected" class="tsd-kind-icon">connected</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_module_conf_hooks_.hookconf.html#error" class="tsd-kind-icon">error</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_module_conf_hooks_.hookconf.html#init" class="tsd-kind-icon">init</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_module_conf_hooks_.hookconf.html#internalerror" class="tsd-kind-icon">internal<wbr>Error</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_module_conf_hooks_.hookconf.html#notfound" class="tsd-kind-icon">not<wbr>Found</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_module_conf_hooks_.hookconf.html#started" class="tsd-kind-icon">started</a></li>
 						</ul>
 					</section>
@@ -2794,7 +2806,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">connected<span class="tsd-signature-symbol">:</span> <a href="../modules/_app_module_conf_hooks_.html#connected" class="tsd-signature-type">Connected</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="../modules/_app_module_conf_hooks_.html#connected" class="tsd-signature-type">Connected</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/868e1dd/lib/app/module/conf/hooks.ts#L33">lib/app/module/conf/hooks.ts:33</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/45709b7/lib/app/module/conf/hooks.ts#L36">lib/app/module/conf/hooks.ts:36</a></li>
 					</ul>
 				</aside>
 				<div class="tsd-comment tsd-typography">
@@ -2804,12 +2816,27 @@ img {
 				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+				<a name="error" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagOptional">Optional</span> error</h3>
+				<div class="tsd-signature tsd-kind-icon">error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>e<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Error</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/45709b7/lib/app/module/conf/hooks.ts#L46">lib/app/module/conf/hooks.ts:46</a></li>
+					</ul>
+				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>error is invoked when an error occurs during boot.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="init" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagOptional">Optional</span> init</h3>
 				<div class="tsd-signature tsd-kind-icon">init<span class="tsd-signature-symbol">:</span> <a href="../modules/_app_module_conf_hooks_.html#init" class="tsd-signature-type">Init</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="../modules/_app_module_conf_hooks_.html#init" class="tsd-signature-type">Init</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/868e1dd/lib/app/module/conf/hooks.ts#L28">lib/app/module/conf/hooks.ts:28</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/45709b7/lib/app/module/conf/hooks.ts#L31">lib/app/module/conf/hooks.ts:31</a></li>
 					</ul>
 				</aside>
 				<div class="tsd-comment tsd-typography">
@@ -2819,12 +2846,44 @@ img {
 				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+				<a name="internalerror" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagOptional">Optional</span> internal<wbr>Error</h3>
+				<div class="tsd-signature tsd-kind-icon">internal<wbr>Error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">filters.ErrorFilter</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/45709b7/lib/app/module/conf/hooks.ts#L58">lib/app/module/conf/hooks.ts:58</a></li>
+					</ul>
+				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>internalError is invoked when an error occurs while handling a request
+						for a configured module.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+				<a name="notfound" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagOptional">Optional</span> not<wbr>Found</h3>
+				<div class="tsd-signature tsd-kind-icon">not<wbr>Found<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">filters.Filter</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/45709b7/lib/app/module/conf/hooks.ts#L52">lib/app/module/conf/hooks.ts:52</a></li>
+					</ul>
+				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>notFound is invoked when the configured module finds no routes to execute
+						for a request.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="started" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagOptional">Optional</span> started</h3>
 				<div class="tsd-signature tsd-kind-icon">started<span class="tsd-signature-symbol">:</span> <a href="../modules/_app_module_conf_hooks_.html#start" class="tsd-signature-type">Start</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="../modules/_app_module_conf_hooks_.html#start" class="tsd-signature-type">Start</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">S</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/868e1dd/lib/app/module/conf/hooks.ts#L38">lib/app/module/conf/hooks.ts:38</a></li>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/45709b7/lib/app/module/conf/hooks.ts#L41">lib/app/module/conf/hooks.ts:41</a></li>
 					</ul>
 				</aside>
 				<div class="tsd-comment tsd-typography">
