@@ -9,7 +9,11 @@
 
 import * as path from '@quenk/noni/lib/data/record/path';
 
-import { Future, pure, fromCallback } from '@quenk/noni/lib/control/monad/future';
+import {
+    Future,
+    pure,
+    fromCallback
+} from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
@@ -18,13 +22,16 @@ import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
 
 import { Action, Api, Context } from '../';
 
+export const SESSION_STORAGE_KEY = 'tendril';
+
 /**
  * Get
  * @private
  */
 export class Get<A> extends Api<A> {
 
-    constructor(public key: path.Path,
+    constructor(
+        public key: path.Path,
         public next: (v: Type) => A) { super(next); }
 
     map<B>(f: (n: A) => B): Get<B> {
@@ -36,8 +43,60 @@ export class Get<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
+        let key = `${SESSION_STORAGE_KEY}.${this.key}`;
 
-        return pure(this.next(fromNullable(session[this.key])));
+        return pure(this.next(path.get(key, session)));
+
+    }
+
+}
+
+/**
+ * GetString
+ * @private
+ */
+export class GetString<A> extends Get<A> {
+
+    map<B>(f: (n: A) => B): Get<B> {
+
+        return new GetString(this.key, compose(this.next, f));
+
+    }
+
+    exec(ctx: Context<A>): Future<A> {
+
+        let session: Object = ctx.request.session || {};
+        let key = `${SESSION_STORAGE_KEY}.${this.key}`;
+
+        return pure(this.next(path.getString(key, session)));
+
+    }
+
+}
+
+/**
+ * GetOrElse
+ * @private
+ */
+export class GetOrElse<A> extends Api<A> {
+
+    constructor(
+        public key: path.Path,
+        public value: Value,
+        public next: (v: Type) => A) { super(next); }
+
+    map<B>(f: (n: A) => B): GetOrElse<B> {
+
+        return new GetOrElse(this.key, this.value, compose(this.next, f));
+
+    }
+
+    exec(ctx: Context<A>): Future<A> {
+
+        let session: Object = ctx.request.session || {};
+        let key = `${SESSION_STORAGE_KEY}.${this.key}`;
+
+        return pure(this.next(path.getDefault(key, session, this.value)));
 
     }
 
@@ -63,8 +122,9 @@ export class Set<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
+        let store = <Object>(session[SESSION_STORAGE_KEY] || {});
 
-        session[this.key] = this.value;
+        session[SESSION_STORAGE_KEY] = path.set(this.key, this.value, store);
 
         return pure(this.next);
 
@@ -91,8 +151,11 @@ export class Remove<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
+        let store = <Object>(session[SESSION_STORAGE_KEY] || {});
 
-        delete session[this.key];
+        //TODO: actually remove the key once noni supports it.
+        session[SESSION_STORAGE_KEY] =
+            path.set(this.key, <Value>undefined, store);
 
         return pure(this.next);
 
@@ -228,6 +291,22 @@ export class Save<A> extends Api<A> {
  */
 export const get = (key: path.Path): Action<Maybe<Value>> =>
     liftF(new Get(key, identity));
+
+/**
+ * getString from session storage.
+ *
+ * Retrieves a value that is cast to string via String(). If the value does
+ * not exist, an empty string is returned.
+ */
+export const getString = (key: path.Path): Action<string> =>
+    liftF(new GetString(key, identity));
+
+/**
+ * getOrElse provides a value from session storage or an alternative
+ * if it is == null.
+ */
+export const getOrElse = (key: path.Path, value: Value): Action<string> =>
+    liftF(new GetOrElse(key, value, identity));
 
 /**
  * set a value for a key in the session.

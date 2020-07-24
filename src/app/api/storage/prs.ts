@@ -12,7 +12,7 @@ import * as path from '@quenk/noni/lib/data/record/path';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
-import { Value  } from '@quenk/noni/lib/data/jsonx';
+import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 
@@ -36,6 +36,51 @@ export class Get<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         return pure(this.next(path.get(this.key, ctx.prs)));
+
+    }
+
+}
+
+/**
+ * GetString
+ * @private
+ */
+export class GetString<A> extends Get<A> {
+
+    map<B>(f: (n: A) => B): GetString<B> {
+
+        return new GetString(this.key, compose(this.next, f));
+
+    }
+
+    exec(ctx: Context<A>): Future<A> {
+
+        return pure(this.next(path.getString(this.key, ctx.prs)));
+
+    }
+
+}
+
+/**
+ * GetOrElse
+ * @private
+ */
+export class GetOrElse<A> extends Api<A> {
+
+    constructor(
+        public key: path.Path,
+        public value: Value,
+        public next: (v: Type) => A) { super(next); }
+
+    map<B>(f: (n: A) => B): GetOrElse<B> {
+
+        return new GetOrElse(this.key, this.value, compose(this.next, f));
+
+    }
+
+    exec(ctx: Context<A>): Future<A> {
+
+        return pure(this.next(path.getDefault(this.key, ctx.prs, this.value)));
 
     }
 
@@ -103,7 +148,8 @@ export class Remove<A> extends Api<A> {
  */
 export class Exists<A> extends Api<A> {
 
-    constructor(public key: path.Path,
+    constructor(
+        public key: path.Path,
         public next: (v: Type) => A) { super(next); }
 
     map<B>(f: (n: A) => B): Exists<B> {
@@ -127,6 +173,21 @@ export class Exists<A> extends Api<A> {
  */
 export const get = (key: path.Path): Action<Maybe<Value>> =>
     liftF(new Get(key, identity));
+
+/**
+ * getString from PRS.
+ *
+ * Retrieves a value that is cast to string via String(). If the value does
+ * not exist, an empty string is returned.
+ */
+export const getString = (key: path.Path): Action<string> =>
+    liftF(new GetString(key, identity));
+
+/**
+ * getOrElse provides a value from PRS or an alternative if it is == null.
+ */
+export const getOrElse = (key: path.Path, value: Value): Action<string> =>
+    liftF(new GetOrElse(key, value, identity));
 
 /**
  * set will store a value in the PRS that can be later
