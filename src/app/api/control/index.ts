@@ -7,17 +7,14 @@ import { Request } from '../request';
 import { Action, Api, Context } from '../';
 
 /**
- * Forkable is an argument valid for the fork function.
- */
-export type Forkable<A> = () => Future<A> | Future<A>;
-
-/**
  * Value
  * @private
  */
 export class Value<A> extends Api<A> {
 
-    constructor(public value: Type, public next: (a: Type) => A) { super(next); }
+    constructor(
+      public value: Type,
+      public next: (a: Type) => A) { super(next); }
 
     map<B>(f: (a: A) => B): Value<B> {
 
@@ -40,7 +37,7 @@ export class Value<A> extends Api<A> {
 export class Fork<A> extends Api<A>{
 
     constructor(
-        public f: Forkable<Type>,
+        public f: Future<Type>,
         public next: (a: Type) => A) { super(next); }
 
     map<B>(f: (a: A) => B): Fork<B> {
@@ -52,9 +49,8 @@ export class Fork<A> extends Api<A>{
     exec(_: Context<A>): Future<A> {
 
         let { f, next } = this;
-        let fut: Future<A> = (typeof f === 'function') ? f() : <Future<A>>f;
 
-        return fut.map(next);
+        return f.map(next);
 
     }
 
@@ -103,5 +99,5 @@ export const value = <A>(value: A): Action<A> =>
 /**
  * fork suspends execution for a Future to execute and provide a value.
  */
-export const fork = <A>(f: Forkable<A>): Action<A> =>
+export const fork = <A>(f: Future<A>): Action<A> =>
     liftF(new Fork(f, identity));

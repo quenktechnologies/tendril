@@ -3,10 +3,6 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { Request } from '../request';
 import { Action, Api, Context } from '../';
 /**
- * Forkable is an argument valid for the fork function.
- */
-export declare type Forkable<A> = () => Future<A> | Future<A>;
-/**
  * Value
  * @private
  */
@@ -22,9 +18,9 @@ export declare class Value<A> extends Api<A> {
  * @private
  */
 export declare class Fork<A> extends Api<A> {
-    f: Forkable<Type>;
+    f: Future<Type>;
     next: (a: Type) => A;
-    constructor(f: Forkable<Type>, next: (a: Type) => A);
+    constructor(f: Future<Type>, next: (a: Type) => A);
     map<B>(f: (a: A) => B): Fork<B>;
     exec(_: Context<A>): Future<A>;
 }
@@ -55,4 +51,4 @@ export declare const value: <A>(value: A) => Action<A>;
 /**
  * fork suspends execution for a Future to execute and provide a value.
  */
-export declare const fork: <A>(f: Forkable<A>) => Action<A>;
+export declare const fork: <A>(f: Future<A>) => Action<A>;
