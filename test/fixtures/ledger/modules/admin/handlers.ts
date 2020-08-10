@@ -39,7 +39,7 @@ export const xheaders = (_: Request): Action<undefined> =>
         .chain(() => ok());
 
 export const crash = (_: Request): Action<undefined> =>
-    fork(() => raise(Error('crashed!')));
+    fork(raise(Error('crashed!')));
 
 export const saveNum = (r: Request): Action<undefined> => {
 

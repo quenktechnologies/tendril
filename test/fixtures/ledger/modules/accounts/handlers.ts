@@ -12,7 +12,7 @@ import { Memgo } from '../../../memgodb';
 export const create = (r: Request): Action<undefined> =>
     (pool
         .checkout<Memgo>('main')
-        .chain(m => fork(() => doCreate('account', r.body, m)))
+        .chain(m => fork(doCreate('account', r.body, m)))
         .chain(id => value(created({ id })))
         .chain(r => r));
 
