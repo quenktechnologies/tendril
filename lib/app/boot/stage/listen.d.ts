@@ -1,5 +1,4 @@
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Server } from '../../../net/http/server';
 import { ModuleData } from '../../module/data';
 import { Dispatcher } from '../../hooks';
@@ -13,8 +12,8 @@ import { Stage } from './';
 export declare class ListenStage implements Stage {
     server: Server;
     hooks: Dispatcher<App>;
-    mainProvider: () => Maybe<ModuleData>;
-    constructor(server: Server, hooks: Dispatcher<App>, mainProvider: () => Maybe<ModuleData>);
+    mainProvider: () => ModuleData;
+    constructor(server: Server, hooks: Dispatcher<App>, mainProvider: () => ModuleData);
     name: string;
     execute(): Future<void>;
 }

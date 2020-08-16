@@ -42,6 +42,7 @@ import { CookieParserStage } from './boot/stage/cookie-parser';
 import { BodyParserStage } from './boot/stage/body-parser';
 import { MiddlewareStage } from './boot/stage/middleware';
 import { RoutingStage } from './boot/stage/routing';
+import { StaticStage } from './boot/stage/static';
 import { ListenStage } from './boot/stage/listen';
 import { Dispatcher } from './hooks';
 
@@ -88,6 +89,9 @@ export class App implements System {
      */
     static createDefaultStageBundle(app: App): StageBundle {
 
+        let provideMain = () => 
+        getModule(app.modules, mainPath(app.main.id)).get();
+
         return new StageBundle([
             new InitStage(app.hooks),
             new ConnectionsStage(app.pool, app.modules, app.hooks),
@@ -98,8 +102,8 @@ export class App implements System {
             new BodyParserStage(app.modules),
             new MiddlewareStage(app, app.modules),
             new RoutingStage(app.modules),
-            new ListenStage(app.server, app.hooks, () =>
-                getModule(app.modules, mainPath(app.main.id)))
+            new StaticStage(provideMain, app.modules),
+            new ListenStage(app.server, app.hooks, provideMain)
         ]);
 
     }

@@ -1,11 +1,9 @@
 import {
     Future,
-    raise,
     pure,
     parallel
 } from '@quenk/noni/lib/control/monad/future';
 import { DoFn, doN } from '@quenk/noni/lib/control/monad';
-import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Server } from '../../../net/http/server';
 import { ModuleData } from '../../module/data';
@@ -22,8 +20,8 @@ export class ListenStage implements Stage {
 
     constructor(
         public server: Server,
-public hooks: Dispatcher<App>,
-        public mainProvider: () => Maybe<ModuleData>        ) { }
+        public hooks: Dispatcher<App>,
+        public mainProvider: () => ModuleData) { }
 
     name = 'listen';
 
@@ -33,15 +31,12 @@ public hooks: Dispatcher<App>,
 
         return doN(<DoFn<void, Future<void>>>function*() {
 
-            let mmodule = mainProvider();
+            let module = mainProvider();
 
-            if (mmodule.isJust())
                 yield parallel([
-                    server.listen(mmodule.get().app).map(() => { }),
+                    server.listen(module.app).map(() => { }),
                     hooks.started()
                 ]);
-            else
-                yield raise(new Error('Server not initialized!'));
 
             return pure(undefined);
 

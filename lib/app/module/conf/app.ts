@@ -11,6 +11,7 @@ import * as log from '../../boot/stage/log';
 import * as csrf from '../../boot/stage/csrf-token';
 import * as bodyParser from '../../boot/stage/body-parser';
 import * as cookieParser from '../../boot/stage/cookie-parser';
+import * as statics from '../../boot/stage/static';
 
 import { App } from '../../';
 
@@ -55,6 +56,17 @@ export interface AppConf<S extends App> {
     routes?: routes.Routes,
 
     views?: show.ShowConf,
+
+    dirs?: {
+
+        public?: statics.StaticConf
+
+        /**
+         * self is the absolute path to the module.
+         */
+        self?: string 
+
+    },
 
     modules?: mod.ModulesConf<S>
 
