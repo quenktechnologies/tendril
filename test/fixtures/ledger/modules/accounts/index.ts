@@ -23,6 +23,22 @@ export const template = (): Template<App> => ({
 
         ],
 
+        dirs: {
+
+          self: __dirname,
+
+          public: {
+
+            files: {
+
+              dir: 'public4'
+
+            }
+
+          }
+
+        },
+
         modules: {
 
             reports: reports.template

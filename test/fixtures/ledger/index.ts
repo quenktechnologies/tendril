@@ -101,6 +101,14 @@ export const template = (): Template<App> => ({
 
         },
 
+        dirs: {
+
+            self: __dirname,
+
+            public: 'public1'
+
+        },
+
         modules: {
 
             accounts: accounts.template,

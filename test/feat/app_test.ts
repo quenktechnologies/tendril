@@ -20,6 +20,11 @@ const ROUTE_ADMIN_NUM = `${ROUTE_ADMIN}/num`;
 const ROUTE_ADMIN_PRS = `${ROUTE_ADMIN}/prs`;
 const ROUTE_ADMIN_SESSION = `${ROUTE_ADMIN}/session`;
 const ROUTE_ANALYTICS = `${URL}/analytics`;
+const ROUTE_PUBLIC_ZERO = `${URL}/0.txt`;
+const ROUTE_PUBLIC_ONE = `${URL}/1.txt`;
+const ROUTE_PUBLIC_TWO = `${URL}/2.txt`;
+const ROUTE_PUBLIC_THREE = `${URL}/3.txt`;
+const ROUTE_PUBLIC_FOUR = `${URL}/4.txt`;
 
 const agent = request.agent();
 
@@ -259,6 +264,28 @@ describe('tendril', () => {
                 .catch(e => assert(e.response.status).equal(404))
                 .then(() => agent.get(ROUTE_ADMIN_SESSION))
                 .then(r => assert(r.body.value).equal(undefined)));
+
+        it('should serve folders named "public" by default', () =>
+            agent
+                .get(ROUTE_PUBLIC_ZERO)
+                .then(r => assert(r.text.trim()).equal("zero")));
+
+        it('should serve when app.dirs.public is a string', () =>
+            agent
+                .get(ROUTE_PUBLIC_ONE)
+                .then(r => assert(r.text.trim()).equal("one")));
+
+        it('should serve when app.dirs.public is an array', () =>
+            agent
+                .get(ROUTE_PUBLIC_TWO)
+                .then(r => assert(r.text.trim()).equal("two"))
+                .then(() => agent.get(ROUTE_PUBLIC_THREE))
+                .then(r => assert(r.text.trim()).equal("three")));
+
+        it('should serve when app.dirs.public is an object', () =>
+            agent
+                .get(ROUTE_PUBLIC_FOUR)
+                .then(r => assert(r.text.trim()).equal("four")));
 
     });
 

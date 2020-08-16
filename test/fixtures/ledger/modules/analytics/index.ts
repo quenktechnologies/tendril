@@ -21,7 +21,15 @@ export const template = (): Template<App> => ({
 
             filters: [() => (show('analytics'))]
 
-        }]
+        }],
+
+        dirs: {
+
+            self: __dirname,
+
+            public: ['../../public2', { dir: '../../public3' }]
+
+        }
 
     }
 
