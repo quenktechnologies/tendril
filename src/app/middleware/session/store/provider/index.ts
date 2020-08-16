@@ -1,6 +1,15 @@
+import * as express from 'express';
 import * as session from 'express-session';
 
 import { Future } from '@quenk/noni/lib/control/monad/future';
+
+/**
+ * SessionFunc is used by some session middleware so that the underlying
+ * library uses the same bindings as the app.
+ */
+export type SessionFunc
+    = (options?: session.SessionOptions) => express.RequestHandler
+    ;
 
 /**
  * SessionStoreProvider is responsible for providing the 
@@ -19,7 +28,7 @@ export interface SessionStoreProvider {
      * @param options        - Options provided for the store (if any).
      */
     create<O extends object>(
-        expressSession: Function,
+        expressSession: SessionFunc,
         options?: O
     ): Future<session.Store>
 
