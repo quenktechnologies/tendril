@@ -1,7 +1,7 @@
 import * as parser from 'body-parser';
 
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
-import { map } from '@quenk/noni/lib/data/record';
+import { map,merge } from '@quenk/noni/lib/data/record';
 
 import { ModuleDatas } from '../../module/data';
 import { Stage } from './';
@@ -82,6 +82,12 @@ export interface BodyParserConf {
 
 }
 
+const defaults = {
+
+  urlencoded: { enable: true }
+
+}
+
 /**
  * BodyParserStage configures middleware for parsing request bodies into desired
  * values.
@@ -105,7 +111,7 @@ export class BodyParserStage implements Stage {
                 m.template.app.parsers &&
                 m.template.app.parsers.body) {
 
-                let { body } = m.template.app.parsers;
+                let body = merge (defaults, m.template.app.parsers.body);
 
                 if (body.json && body.json.enable)
                     app.use(parser.json(body.json.options));
