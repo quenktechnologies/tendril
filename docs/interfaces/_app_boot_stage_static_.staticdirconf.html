@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MemoryStoreProvider | @quenk/tendril</title>
+	<title>StaticDirConf | @quenk/tendril</title>
 	<meta name="description" content="Documentation for @quenk/tendril">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style type="text/css">/*! normalize.css v1.1.3 | MIT License | git.io/normalize */
@@ -2720,13 +2720,28 @@ img {
 </header>
 <nav class="tsd-navigation secondary">
 	<ul>
-		<li class="current tsd-kind-class tsd-parent-kind-module">
-			<a href="_app_middleware_session_store_provider_memory_.memorystoreprovider.html" class="tsd-kind-icon">Memory<wbr>Store<wbr>Provider</a>
+		<li class=" tsd-kind-class tsd-parent-kind-module">
+			<a href="../classes/_app_boot_stage_static_.staticstage.html" class="tsd-kind-icon">Static<wbr>Stage</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="_app_boot_stage_static_.staticconfmap.html" class="tsd-kind-icon">Static<wbr>Conf<wbr>Map</a>
+		</li>
+		<li class="current tsd-kind-interface tsd-parent-kind-module">
+			<a href="_app_boot_stage_static_.staticdirconf.html" class="tsd-kind-icon">Static<wbr>Dir<wbr>Conf</a>
 			<ul>
-				<li class=" tsd-kind-method tsd-parent-kind-class">
-					<a href="_app_middleware_session_store_provider_memory_.memorystoreprovider.html#create" class="tsd-kind-icon">create</a>
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
+					<a href="_app_boot_stage_static_.staticdirconf.html#dir" class="tsd-kind-icon">dir</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
+					<a href="_app_boot_stage_static_.staticdirconf.html#options" class="tsd-kind-icon">options</a>
 				</li>
 			</ul>
+		</li>
+		<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+			<a href="../modules/_app_boot_stage_static_.html#dirpath" class="tsd-kind-icon">Dir<wbr>Path</a>
+		</li>
+		<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+			<a href="../modules/_app_boot_stage_static_.html#staticconf" class="tsd-kind-icon">Static<wbr>Conf</a>
 		</li>
 	</ul>
 </nav>
@@ -2735,23 +2750,16 @@ img {
 		<section class="tsd-panel tsd-comment">
 			<div class="tsd-comment tsd-typography">
 				<div class="lead">
-					<p>MemoryStoreProvider provides the express-session#MemoryStore Store.</p>
+					<p>StaticDirConf is the configuration for a single static directory.</p>
 				</div>
-				<p>Note: This should only be used during development.</p>
 			</div>
 		</section>
 		<section class="tsd-panel tsd-hierarchy">
 			<h3>Hierarchy</h3>
 			<ul class="tsd-hierarchy">
 				<li>
-					<span class="target">MemoryStoreProvider</span>
+					<span class="target">StaticDirConf</span>
 				</li>
-			</ul>
-		</section>
-		<section class="tsd-panel">
-			<h3>Implements</h3>
-			<ul class="tsd-hierarchy">
-				<li><a href="../interfaces/_app_middleware_session_store_provider_index_.sessionstoreprovider.html" class="tsd-signature-type">SessionStoreProvider</a></li>
 			</ul>
 		</section>
 		<section class="tsd-panel-group tsd-index-group">
@@ -2759,32 +2767,46 @@ img {
 			<section class="tsd-panel tsd-index-panel">
 				<div class="tsd-index-content">
 					<section class="tsd-index-section ">
-						<h3>Methods</h3>
+						<h3>Properties</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-method tsd-parent-kind-class"><a href="_app_middleware_session_store_provider_memory_.memorystoreprovider.html#create" class="tsd-kind-icon">create</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_boot_stage_static_.staticdirconf.html#dir" class="tsd-kind-icon">dir</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_app_boot_stage_static_.staticdirconf.html#options" class="tsd-kind-icon">options</a></li>
 						</ul>
 					</section>
 				</div>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
-			<h2>Methods</h2>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-				<a name="create" class="tsd-anchor"></a>
-				<h3>create</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">create<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Store</span><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/e792bb0/lib/app/middleware/session/store/provider/memory.ts#L14">lib/app/middleware/session/store/provider/memory.ts:14</a></li>
-							</ul>
-						</aside>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Future</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Store</span><span class="tsd-signature-symbol">&gt;</span></h4>
-					</li>
-				</ul>
+			<h2>Properties</h2>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+				<a name="dir" class="tsd-anchor"></a>
+				<h3>dir</h3>
+				<div class="tsd-signature tsd-kind-icon">dir<span class="tsd-signature-symbol">:</span> <a href="../modules/_app_boot_stage_static_.html#dirpath" class="tsd-signature-type">DirPath</a></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/e792bb0/lib/app/boot/stage/static.ts#L34">lib/app/boot/stage/static.ts:34</a></li>
+					</ul>
+				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>dir path to serve.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+				<a name="options" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagOptional">Optional</span> options</h3>
+				<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/quenktechnologies/tendril/blob/e792bb0/lib/app/boot/stage/static.ts#L39">lib/app/boot/stage/static.ts:39</a></li>
+					</ul>
+				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>options passed directly to the serve-static middleware.</p>
+					</div>
+				</div>
 			</section>
 		</section>
 		<footer class="with-border-bottom">
@@ -2799,13 +2821,13 @@ img {
 						<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 					</ul>
 					<ul class="tsd-legend">
-						<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-						<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-						<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-					</ul>
-					<ul class="tsd-legend">
 						<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
 						<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+						<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+					</ul>
+					<ul class="tsd-legend">
+						<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+						<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
 					</ul>
 				</div>
 			</div>
