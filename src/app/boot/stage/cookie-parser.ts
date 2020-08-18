@@ -1,6 +1,6 @@
 import * as parser from 'cookie-parser';
 
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map } from '@quenk/noni/lib/data/record';
 
 import { ModuleDatas } from '../../module/data';
@@ -54,7 +54,9 @@ export class CookieParserStage implements Stage {
 
         let { modules } = this;
 
-        map(modules, m => {
+        return fromCallback(cb => {
+
+          map(modules, m => {
 
             if (m.template &&
                 m.template.app &&
@@ -78,7 +80,10 @@ export class CookieParserStage implements Stage {
 
         });
 
-        return pure(<void>undefined);
+          cb(null);
+
+        });
+
     }
 }
 

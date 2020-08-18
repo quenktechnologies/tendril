@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as csurf from 'csurf';
 
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map, merge } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 
@@ -86,59 +86,64 @@ export class CSRFTokenStage implements Stage {
 
         let { modules } = this;
 
-        map(modules, m => {
+        return fromCallback(cb => {
 
-            if (m.template &&
-                m.template.app &&
-                m.template.app.csrf &&
-                m.template.app.csrf.token &&
-                m.template.app.csrf.token.enable) {
+            map(modules, m => {
 
-                let conf = merge(defaultOptions, m.template.app.csrf.token);
+                if (m.template &&
+                    m.template.app &&
+                    m.template.app.csrf &&
+                    m.template.app.csrf.token &&
+                    m.template.app.csrf.token.enable) {
 
-                m.app.use(csurf(conf.options));
+                    let conf = merge(defaultOptions, m.template.app.csrf.token);
 
-                if (conf.send_cookie) {
+                    m.app.use(csurf(conf.options));
 
-                    m.app.all('*', (req, res, next) => {
+                    if (conf.send_cookie) {
 
-                        if (readMethods.indexOf(req.method) > -1)
-                            res.cookie(conf.send_cookie_name, req.csrfToken());
+                        m.app.all('*', (req, res, next) => {
 
-                        next();
+                            if (readMethods.indexOf(req.method) > -1)
+                                res.cookie(conf.send_cookie_name, req.csrfToken());
 
-                    });
+                            next();
+
+                        });
+
+                    }
+
+                    if (conf.on && conf.on.failure) {
+
+                        let filters = [conf.on.failure];
+
+                        //XXX:The casts to Type are used here because @types/express
+                        //has gone wacky. I don't have time for these shenanigans.
+                        //See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/40138
+                        let handler: Type = (
+                            err: Error,
+                            req: express.RequestHandler,
+                            res: express.Response,
+                            next: express.NextFunction) => {
+
+                            if ((<Type>err).code !== ERROR_TOKEN_INVALID)
+                                return next();
+
+                            m.module.runInContext(filters)(<Type>req, res, next);
+
+                        };
+
+                        m.app.use(handler);
+
+                    }
 
                 }
 
-                if (conf.on && conf.on.failure) {
+            });
 
-                    let filters = [conf.on.failure];
-
-                  //XXX:The casts to Type are used here because @types/express
-                  //has gone wacky. I don't have time for these shenanigans.
-                  //See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/40138
-                    let handler: Type = (
-                        err: Error,
-                        req: express.RequestHandler,
-                        res: express.Response,
-                        next: express.NextFunction) => {
-
-                        if ((<Type>err).code !== ERROR_TOKEN_INVALID)
-                            return next();
-
-                        m.module.runInContext(filters)(<Type>req, res, next);
-
-                    };
-
-                    m.app.use(handler);
-
-                }
-
-            }
+            return cb(null);
 
         });
 
-        return pure(<void>undefined);
     }
 }

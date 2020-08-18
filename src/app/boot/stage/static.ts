@@ -2,7 +2,7 @@ import * as express from 'express';
 
 import { isAbsolute, resolve } from 'path';
 
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { Record, map, merge } from '@quenk/noni/lib/data/record';
 import { isObject, isString } from '@quenk/noni/lib/data/type';
 
@@ -83,6 +83,8 @@ export class StaticStage implements Stage {
         let { mainProvider, modules } = this;
         let main = mainProvider();
 
+      return fromCallback(cb => {
+
         map(modules, m => {
 
             let mconfs: FlatStaticConfMap = { 'public': { dir: 'public' } };
@@ -106,7 +108,10 @@ export class StaticStage implements Stage {
 
         });
 
-        return pure(<void>undefined);
+        cb(null);
+
+      });
+
     }
 }
 

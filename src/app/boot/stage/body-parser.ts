@@ -1,6 +1,6 @@
 import * as parser from 'body-parser';
 
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map,merge } from '@quenk/noni/lib/data/record';
 
 import { ModuleDatas } from '../../module/data';
@@ -102,6 +102,8 @@ export class BodyParserStage implements Stage {
 
         let { modules } = this;
 
+      return fromCallback(cb => {
+
         map(modules, m => {
 
             let { app } = m;
@@ -129,6 +131,9 @@ export class BodyParserStage implements Stage {
 
         });
 
-        return pure(<void>undefined);
+        cb(null);
+
+      });
+
     }
 }
