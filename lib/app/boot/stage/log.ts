@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as morgan from 'morgan';
 
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { merge, map } from '@quenk/noni/lib/data/record';
 
 import { ModuleDatas } from '../../module/data';
@@ -49,6 +49,8 @@ export class LogStage implements Stage {
 
         let { modules } = this;
 
+      return fromCallback(cb => {
+
         map(modules, m => {
 
             if (m.template &&
@@ -64,7 +66,9 @@ export class LogStage implements Stage {
 
         });
 
-        return pure(<void>undefined);
+        cb(null);
+
+      });
 
     }
 }
