@@ -1,14 +1,23 @@
 import * as session from 'express-session';
+import * as express from 'express';
 
 import { Future, pure, sequential } from '@quenk/noni/lib/control/monad/future';
 import { doN, DoFn } from '@quenk/noni/lib/control/monad';
-import { merge, mapTo } from '@quenk/noni/lib/data/record';
+import { merge, map, mapTo } from '@quenk/noni/lib/data/record';
 import { noop } from '@quenk/noni/lib/data/function';
+import { isObject, isNumber } from '@quenk/noni/lib/data/type';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 
 import { SessionStoreProvider } from '../../middleware/session/store/provider';
 import {
     MemoryStoreProvider
 } from '../../middleware/session/store/provider/memory';
+import {
+    Descriptor,
+    SESSION_DESCRIPTORS,
+    SESSION_DATA,
+    deleteSessionKey
+} from '../../api/storage/session';
 import { ModuleDatas } from '../../module/data';
 import { randomSecret } from './cookie-parser';
 import { Stage } from './';
@@ -128,6 +137,7 @@ export class SessionStage implements Stage {
                         console.warn(WARN_NO_SECRET);
                         conf.options.secret = randomSecret;
                     }
+
                 }
 
                 let store =
@@ -135,6 +145,7 @@ export class SessionStage implements Stage {
                         conf.store.options);
 
                 m.app.use(session(merge(conf.options, { store })));
+                m.app.use(handleSessionTTL);
 
             }
 
@@ -143,3 +154,46 @@ export class SessionStage implements Stage {
         }))).map(noop);
     }
 }
+
+/**
+ * handleSessionTTL is responsible for:
+ * 1. Removing session values that have reached TTL 0.
+ * 2. Decrementing session values that have their TTL set.
+ * @private
+ */
+export const handleSessionTTL =
+    (req: express.Request, _: express.Response, next: express.NextFunction) => {
+        if (req.session &&
+            isObject(req.session[SESSION_DATA]) &&
+            isObject(req.session[SESSION_DESCRIPTORS])) {
+
+            let session = <Object>req.session;
+            let descs = req.session[SESSION_DESCRIPTORS];
+
+            descs = map(descs, (d: Descriptor, k: string) => {
+
+                if ((d.ttl != null) && isNumber(d.ttl)) {
+
+                    if (d.ttl === 0) {
+
+                        deleteSessionKey(session, k);
+
+                    } else {
+
+                        d.ttl = d.ttl - 1;
+
+                    }
+
+                }
+
+                return d;
+
+            });
+
+            session[SESSION_DESCRIPTORS] = descs;
+
+        }
+
+        next();
+
+    }
