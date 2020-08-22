@@ -1,4 +1,5 @@
 import * as session from 'express-session';
+import * as express from 'express';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { SessionStoreProvider } from '../../middleware/session/store/provider';
 import { ModuleDatas } from '../../module/data';
@@ -54,3 +55,10 @@ export declare class SessionStage implements Stage {
     name: string;
     execute(): Future<void>;
 }
+/**
+ * handleSessionTTL is responsible for:
+ * 1. Removing session values that have reached TTL 0.
+ * 2. Decrementing session values that have their TTL set.
+ * @private
+ */
+export declare const handleSessionTTL: (req: express.Request, _: express.Response, next: express.NextFunction) => void;

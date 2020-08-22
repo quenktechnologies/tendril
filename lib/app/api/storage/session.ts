@@ -19,10 +19,28 @@ import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
+import { rcompact } from '@quenk/noni/lib/data/record';
 
 import { Action, Api, Context } from '../';
 
-export const SESSION_STORAGE_KEY = 'tendril';
+export const SESSION_DATA = 'tendril.$data';
+export const SESSION_DESCRIPTORS = 'tendril.$descriptors';
+
+/**
+ * Descriptor is the internal configuration of a session property.
+ *
+ * The settings specified here have an impact no the treatment of the session
+ * property.
+ */
+export interface Descriptor {
+
+    /**
+     * ttl if set is the number of requests a session value should be retained
+     * for. When this reaches zero the propety will be automatically removed.
+     */
+    ttl?: number
+
+}
 
 /**
  * Get
@@ -43,9 +61,7 @@ export class Get<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
-        let key = `${SESSION_STORAGE_KEY}.${this.key}`;
-
-        return pure(this.next(path.get(key, session)));
+        return pure(this.next(getSessionValue(session, this.key)));
 
     }
 
@@ -66,9 +82,7 @@ export class GetString<A> extends Get<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
-        let key = `${SESSION_STORAGE_KEY}.${this.key}`;
-
-        return pure(this.next(path.getString(key, session)));
+        return pure(this.next(getSessionValueAsString(session, this.key)));
 
     }
 
@@ -94,9 +108,8 @@ export class GetOrElse<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
-        let key = `${SESSION_STORAGE_KEY}.${this.key}`;
-
-        return pure(this.next(path.getDefault(key, session, this.value)));
+        let result = getSessionValueOrElse(session, this.key, this.value);
+        return pure(this.next(result));
 
     }
 
@@ -111,21 +124,19 @@ export class Set<A> extends Api<A> {
     constructor(
         public key: path.Path,
         public value: Value,
+        public desc: Descriptor,
         public next: A) { super(next); }
 
     map<B>(f: (n: A) => B): Set<B> {
 
-        return new Set(this.key, this.value, f(this.next));
+        return new Set(this.key, this.value, this.desc, f(this.next));
 
     }
 
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
-        let store = <Object>(session[SESSION_STORAGE_KEY] || {});
-
-        session[SESSION_STORAGE_KEY] = path.set(this.key, this.value, store);
-
+        setSessionValue(session, this.key, this.value, this.desc);
         return pure(this.next);
 
     }
@@ -151,12 +162,7 @@ export class Remove<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
-        let store = <Object>(session[SESSION_STORAGE_KEY] || {});
-
-        //TODO: actually remove the key once noni supports it.
-        session[SESSION_STORAGE_KEY] =
-            path.set(this.key, <Value>undefined, store);
-
+        deleteSessionKey(session, this.key);
         return pure(this.next);
 
     }
@@ -181,7 +187,6 @@ export class Exists<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         let session: Object = ctx.request.session || {};
-
         return pure(this.next(fromNullable(session[this.key]).isJust()));
 
     }
@@ -285,6 +290,70 @@ export class Save<A> extends Api<A> {
 }
 
 /**
+ * @private
+ */
+export const getSessionValue = (session: Object, key: string) => {
+
+    let data = <Object>(session[SESSION_DATA] || {});
+    return path.get(key, data);
+
+}
+
+/**
+ * @private
+ */
+export const getSessionValueAsString = (session: Object, key: string) => {
+
+    let data = <Object>(session[SESSION_DATA] || {});
+    return path.getString(key, data);
+
+}
+
+/**
+ * @private
+ */
+export const getSessionValueOrElse =
+    (session: Object, key: string, other: Value) => {
+
+        let data = <Object>(session[SESSION_DATA] || {});
+        return path.getDefault(key, data, other);
+
+    }
+
+/**
+ * @private
+ */
+export const setSessionValue =
+    (session: Object, key: string, value: Value, desc: Descriptor) => {
+
+        let data = <Object>(session[SESSION_DATA] || {});
+        let descs = <Object>(session[SESSION_DESCRIPTORS] || {});
+
+        session[SESSION_DATA] = path.set(key, value, data);
+
+        descs[key] = <Object>desc;
+        session[SESSION_DESCRIPTORS] = <Object>descs;
+
+    }
+
+/**
+ * @private
+ */
+export const deleteSessionKey = (session: Object, key: string) => {
+
+    let data = <Object>(session[SESSION_DATA] || {});
+    let descs = <Object>(session[SESSION_DESCRIPTORS] || {});
+
+    session[SESSION_DATA] =
+        rcompact(path.set(key, <Value>undefined, data));
+
+    delete descs[key];
+
+    session[SESSION_DESCRIPTORS] = descs;
+
+}
+
+/**
  * get a value from session by key.
  *
  * The value is is wrapped in a Maybe to promote safe access.
@@ -311,8 +380,9 @@ export const getOrElse = (key: path.Path, value: Value): Action<string> =>
 /**
  * set a value for a key in the session.
  */
-export const set = (key: path.Path, value: Value): Action<undefined> =>
-    liftF(new Set(key, value, undefined));
+export const set =
+    (key: path.Path, value: Value, desc: Descriptor = {}): Action<undefined> =>
+        liftF(new Set(key, value, desc, undefined));
 
 /**
  * remove a value from the session.

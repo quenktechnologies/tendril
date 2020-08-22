@@ -7,11 +7,25 @@
 /** imports */
 import * as path from '@quenk/noni/lib/data/record/path';
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Action, Api, Context } from '../';
-export declare const SESSION_STORAGE_KEY = "tendril";
+export declare const SESSION_DATA = "tendril.$data";
+export declare const SESSION_DESCRIPTORS = "tendril.$descriptors";
+/**
+ * Descriptor is the internal configuration of a session property.
+ *
+ * The settings specified here have an impact no the treatment of the session
+ * property.
+ */
+export interface Descriptor {
+    /**
+     * ttl if set is the number of requests a session value should be retained
+     * for. When this reaches zero the propety will be automatically removed.
+     */
+    ttl?: number;
+}
 /**
  * Get
  * @private
@@ -50,8 +64,9 @@ export declare class GetOrElse<A> extends Api<A> {
 export declare class Set<A> extends Api<A> {
     key: path.Path;
     value: Value;
+    desc: Descriptor;
     next: A;
-    constructor(key: path.Path, value: Value, next: A);
+    constructor(key: path.Path, value: Value, desc: Descriptor, next: A);
     map<B>(f: (n: A) => B): Set<B>;
     exec(ctx: Context<A>): Future<A>;
 }
@@ -108,6 +123,26 @@ export declare class Save<A> extends Api<A> {
     exec({ request }: Context<A>): Future<A>;
 }
 /**
+ * @private
+ */
+export declare const getSessionValue: (session: Object, key: string) => Maybe<Value>;
+/**
+ * @private
+ */
+export declare const getSessionValueAsString: (session: Object, key: string) => string;
+/**
+ * @private
+ */
+export declare const getSessionValueOrElse: (session: Object, key: string, other: Value) => Value;
+/**
+ * @private
+ */
+export declare const setSessionValue: (session: Object, key: string, value: Value, desc: Descriptor) => void;
+/**
+ * @private
+ */
+export declare const deleteSessionKey: (session: Object, key: string) => void;
+/**
  * get a value from session by key.
  *
  * The value is is wrapped in a Maybe to promote safe access.
@@ -128,7 +163,7 @@ export declare const getOrElse: (key: path.Path, value: Value) => Action<string>
 /**
  * set a value for a key in the session.
  */
-export declare const set: (key: path.Path, value: Value) => Action<undefined>;
+export declare const set: (key: path.Path, value: Value, desc?: Descriptor) => Action<undefined>;
 /**
  * remove a value from the session.
  */
