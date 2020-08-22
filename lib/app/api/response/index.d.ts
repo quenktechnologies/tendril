@@ -6,6 +6,7 @@ import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Api, Action, Context } from '../';
+export declare const PRS_VIEW_CONTEXT = "$view.context";
 /**
  * Headers map.
  */
@@ -129,7 +130,7 @@ export declare class Show<A, C> extends Api<A> {
     next: A;
     constructor(view: string, context: Maybe<C>, status: status.Status, next: A);
     map<B>(f: (a: A) => B): Show<B, C>;
-    exec({ response, module }: Context<A>): Future<A>;
+    exec({ response, module, prs }: Context<A>): Future<A>;
 }
 /**
  * header queues up on or more headers to send to the client.
