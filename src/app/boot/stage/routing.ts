@@ -23,17 +23,19 @@ export class RoutingStage implements Stage {
 
         let { modules } = this;
 
-        return <Future<void>>attempt(() => map(modules, m => {
+        return <Future<void>>attempt(() => map(modules, mconf => {
 
-            let mod = m.module;
-            let t: Template<App> = <Template<App>><Type>m.template;
-            let routes = m.routes(m.module);
+            let mod = mconf.module;
+            let exApp = mconf.app;
+            let routes = mconf.routes(mod);
+            let temp: Template<App> = <Template<App>><Type>mconf.template;
 
-            if (t.app && t.app.filters) {
+            if (temp.app && temp.app.filters) {
 
-                let filters = t.app.filters;
+                let filters = temp.app.filters;
 
-                mod.install(routes.map(r => ({
+                // Add the module level filters before each filter.
+                mod.addRoutes(routes.map(r => ({
 
                     method: r.method,
 
@@ -45,19 +47,26 @@ export class RoutingStage implements Stage {
 
             } else {
 
-                mod.install(routes);
+                mod.addRoutes(routes);
 
             }
 
-            if (t.app && t.app.on && t.app.on.notFound)
-                m.app.use(mod.runInContext([t.app.on.notFound]));
+            mod.installRoutes(exApp);
 
-            if (t.app && t.app.on && t.app.on.internalError)
-                m.app.use(mod.runInContextWithError(t.app.on.internalError));
+            if (temp.app && temp.app.on && temp.app.on.notFound)
+                exApp.use(mod.runInContext([temp.app.on.notFound]));
 
-            m.parent.map(p => p.app.use(join('/', m.path), m.app));
+            if (temp.app && temp.app.on && temp.app.on.internalError)
+                exApp.use(mod.runInContextWithError(temp.app.on.internalError));
 
-        }))            .map(() => undefined);
+            if (mconf.parent.isJust()) {
+
+                let parentExpApp = mconf.parent.get().app;
+                parentExpApp.use(join('/', mconf.path), exApp);
+
+            }
+
+        })).map(() => undefined);
 
     }
 

@@ -24,7 +24,7 @@ export type Messages<M>
 /**
  * RouteConf describes a route to be installed in the application.
  */
-export interface RouteConf<A> {
+export interface RouteConf {
 
     /**
      * method of the route.
@@ -39,7 +39,7 @@ export interface RouteConf<A> {
     /**
      * filters applied when the route is executed.
      */
-    filters: Filter<A>[]
+    filters: Filter<void>[]
 
 }
 
@@ -65,21 +65,21 @@ export class Redirect {
 }
 
 /**
- * Module of the application.
+ * Module of a tendril application.
  *
- * A tendril application breaks up it's routes and related code
- * into a series of modules. Each module is an actor with the
- * ability to send and receive messages.
+ * In tendril, an application is broken up into one more Modules that 
+ * represent the respective areas of concern. Modules are responsible
+ * for configuring and handling their assigned routes (endpoints) in the
+ * application and can communicate with each other via the actor API.
  *
- * Most actions of a Module are implemented using Api classes that
- * are executed by the App.
- *
- * This makes debugging slightly easier as we can review to some extent what
- * individual modules are doing via the op log.
+ * Think of all the routes of a Module as one big function that pattern
+ * matches incomming requests.
  */
 export class Module extends Immutable<Messages<any>, App> {
 
-    constructor(public system: App) { super(system); }
+    constructor(
+        public app: App,
+        public routes: RouteConf[] = []) { super(app); }
 
     receive: Case<Messages<void>>[] = <Case<Messages<void>>[]>[
 
@@ -121,29 +121,22 @@ export class Module extends Immutable<Messages<any>, App> {
         }
 
     /**
-     * install routes into the routing table for this module.
+     * addRoutes to the list of routes for this module.
+     *
+     * This method only adds the routes to the cache. To actually enable them,
+     * installRoutes() should be called.
      */
-    install<A>(routes: RouteConf<A>[]): void {
+    addRoutes(routes: RouteConf[]): Module {
 
-        let maybeModule = getModule(this.system.modules, this.self());
-
-        if (maybeModule.isJust()) {
-
-            let m = maybeModule.get();
-
-            routes.forEach(({ path, method, filters }) => {
-
-                (<Type>m.app)[method](path, this.runInContext(filters));
-
-            });
-
-        }
+        this.routes = this.routes.concat(routes);
+        return this;
 
     }
 
+
     disable() {
 
-        getModule(this.system.modules, this.self())
+        getModule(this.app.modules, this.self())
             .map(m => { m.disabled = true; })
             .orJust(() => console.warn(`${this.self()}: Cannot be disabled!`))
             .get();
@@ -152,7 +145,7 @@ export class Module extends Immutable<Messages<any>, App> {
 
     enable() {
 
-        getModule(this.system.modules, this.self())
+        getModule(this.app.modules, this.self())
             .map(m => { m.disabled = false; m.redirect = nothing() })
             .orJust(() => console.warn(`${this.self()}: Cannot be enabled!`))
             .get();
@@ -161,7 +154,7 @@ export class Module extends Immutable<Messages<any>, App> {
 
     redirect(location: string, status: number) {
 
-        getModule(this.system.modules, this.self())
+        getModule(this.app.modules, this.self())
             .map(m => { m.redirect = just({ location, status }) })
             .orJust(() => console.warn(`${this.self()}: Cannot be enabled!`))
             .get();
@@ -174,6 +167,16 @@ export class Module extends Immutable<Messages<any>, App> {
     show(name: string, ctx?: object): Filter<undefined> {
 
         return () => show(name, ctx);
+
+    }
+
+    /**
+     * installRoutes of the Module into an [[express.Application]] instance.
+     */
+    installRoutes(app: express.Application): void {
+
+        this.routes.forEach(({ path, method, filters }) =>
+            (<Type>app)[method](path, this.runInContext(filters)));
 
     }
 

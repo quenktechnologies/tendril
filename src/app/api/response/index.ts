@@ -4,6 +4,7 @@
 
 /** imports */
 import * as express from 'express';
+import * as path from '@quenk/noni/lib/data/record/path';
 import * as headers from '../../../net/http/headers';
 import * as status from './status';
 
@@ -11,14 +12,18 @@ import {
     Future,
     attempt,
     pure,
-    raise
+    raise,
+    doFuture
 } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
+import { merge } from '@quenk/noni/lib/data/record';
 
 import { getModule } from '../../module/data';
 import { Api, Action, Context } from '../';
+
+export const PRS_VIEW_CONTEXT = '$view.context';
 
 /**
  * Headers map.
@@ -281,25 +286,37 @@ export class Show<A, C> extends Api<A> {
 
     }
 
-    exec({ response, module }: Context<A>): Future<A> {
+    exec({ response, module, prs }: Context<A>): Future<A> {
 
-        return getModule(module.system.modules, module.self())
-            .chain(m => m.show)
-            .map(f =>
-                f(this.view, <any>this.context.orJust(() => ({})).get())
-                    .chain(c => {
+        let self = module.self();
+        let mModule = getModule(module.system.modules, self);
 
-                        response.set(headers.CONTENT_TYPE, c.type);
-                        response.status(this.status);
-                        response.write(c.content);
-                        response.end();
+        if (mModule.isNothing())
+            return raise<A>(new Error(`${self}: Module not found!`));
 
-                        return pure(this.next);
+        let mshow = mModule.get().show;
 
-                    }))
-            .orJust(() => raise<A>(new Error(`${module.self()}: ` +
-                `No view engine configured!`)))
-            .get();
+        if (mshow.isNothing())
+            return raise<A>(new Error(`${module.self()}: ` +
+                `No view engine configured!`));
+
+        let f = mshow.get();
+        let ctx0 = <object>path.getDefault(PRS_VIEW_CONTEXT, prs, {});
+        let ctx1 = this.context.orJust(() => ({})).get();
+
+      let {view, status, next } = this;
+
+      return doFuture(function * () { 
+
+        let c = yield f(view,  merge(ctx0, Object(ctx1)));
+        response.set(headers.CONTENT_TYPE, c.type);
+        response.status(status);
+        response.write(c.content);
+        response.end();
+
+        return pure(next);
+
+      });
 
     }
 

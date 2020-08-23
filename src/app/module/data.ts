@@ -97,4 +97,4 @@ export interface ModuleData {
  */
 export const getModule =
     (data: ModuleDatas, addr: Address): Maybe<ModuleData> =>
-        fromNullable(data[addr]);
+  fromNullable(data[addr]);
