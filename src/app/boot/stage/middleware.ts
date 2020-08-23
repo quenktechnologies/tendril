@@ -1,9 +1,9 @@
 import * as express from 'express';
 
-import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
+import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { reduce } from '@quenk/noni/lib/data/record';
 import { Either, left, right } from '@quenk/noni/lib/data/either';
-import { fromBoolean } from '@quenk/noni/lib/data/maybe';
+import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
 
 import { ModuleData, ModuleDatas } from '../../module/data';
 import { Middleware } from '../../middleware';
@@ -17,55 +17,103 @@ import { Stage } from './';
 export class MiddlewareStage implements Stage {
 
     constructor(
-      public app: App,
-      public modules: ModuleDatas) { }
+        public app: App,
+        public modules: ModuleDatas) { }
 
     name = 'middleware';
 
     execute(): Future<void> {
 
-        let { app, modules } = this;
+        let { modules } = this;
 
-        return <Future<void>>reduce(modules, pure(app),
-            (p, c) => applyMware(p, c))
-            .chain(() => pure(undefined));
+        return fromCallback(cb => {
+
+            let init: Either<Error, void> = right(undefined);
+
+            let result = reduce(modules, init, (prev, mData) => {
+
+                if (prev.isLeft()) return prev;
+
+                let exApp = mData.app;
+
+                exApp.use(beforeMiddleware(mData));
+
+                let emwares = getMiddlewareByNames(
+                    mData,
+                    mData.middleware.enabled
+                );
+
+                if (emwares.isLeft())
+                    return left(emwares.takeLeft());
+
+                emwares.takeRight().forEach(mware => exApp.use(mware));
+
+                return prev;
+
+            });
+
+            result.isLeft() ? cb(<Error>result.takeLeft()) : cb(null);
+
+        });
 
     }
 
 }
 
-const applyMware = (app: Future<App>, m: ModuleData): Future<App> =>
-    m
-        .middleware
-        .enabled
-        .reduce(swap(m), right([preroute(m)]))
-        .map(list => m.app.use.apply(m.app, <any>list))
-        .map(() => app)
-        .orRight(e => <Future<App>>raise(e))
-        .takeRight();
+// Ensures disabled and redirecting Modules are respected.
+const beforeMiddleware = (mData: ModuleData) =>
+    (_: express.Request, res: express.Response, next: express.NextFunction) => {
 
-const preroute = (module: ModuleData) =>
-    (_: express.Request, res: express.Response, next: express.NextFunction) =>
-        fromBoolean(module.disabled)
-            .map(() => res.status(404).end())
-            .orElse(() => module.redirect.map(r =>
-                res.redirect(r.status, r.location)))
-            .orJust(() => next());
+        if (mData.disabled === true) {
 
-const swap = (m: ModuleData) => (p: Either<Error, Middleware[]>, c: string)
-    : Either<Error, Middleware[]> =>
-    m.middleware.available.hasOwnProperty(c) ?
-        p
-            .map(concatMware(m, c)) :
-        m
-            .parent
-            .map(parent => swap(parent)(p, c))
-            .orJust(errMware(m.path, c))
-            .get();
+            // TODO: hook into app 404 handling
+            res.sendStatus(404);
 
-const concatMware = (m: ModuleData, key: string) => (list: Middleware[]) =>
-    list.concat(m.middleware.available[key])
+        } else if (mData.redirect.isJust()) {
 
-const errMware = (path: string, key: string) => ()
-    : Either<Error, Middleware[]> =>
-    left(new Error(`${path}: Unknown middleware "${key}"!`));
+            let r = mData.redirect.get();
+            res.redirect(r.status, r.location);
+
+        } else {
+
+            next();
+
+        }
+
+    }
+
+const getMiddlewareByNames =
+    (mData: ModuleData, names: string[]): Either<Error, Middleware[]> => {
+
+        let results = names.map(name => getMiddlewareByName(mData, name));
+
+        let allFound = results.map(r => r.isJust());
+
+        if (allFound)
+            return right(results.map(r => r.get()));
+
+        let missing = results.map((r, idx) => r.isNothing() ? names[idx] : '');
+
+        return left(namesNotFoundErr(mData.path, missing.filter(name => name)));
+
+    }
+
+// TODO: Migrate to App. See issue #45
+const getMiddlewareByName =
+    (mData: ModuleData, name: string): Maybe<Middleware> => {
+
+        let result = fromNullable(mData.middleware.available[name]);
+
+        if (result.isJust())
+            return result;
+        else if (mData.parent.isJust())
+            return getMiddlewareByName(mData.parent.get(), name)
+        else
+            return result;
+
+    }
+
+const namesNotFoundErr = (path: string, names: string[]) => new Error(
+    `${path}: The following middleware could not be found: ` +
+    `${names.join()}!`
+);
