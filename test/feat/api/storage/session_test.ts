@@ -1,4 +1,4 @@
-import * as session from '../../../lib/app/api/storage/session';
+import * as session from '../../../../lib/app/api/storage/session';
 
 import {
     toPromise,
@@ -8,13 +8,13 @@ import {
 } from '@quenk/noni/lib/control/monad/future';
 import { assert } from '@quenk/test/lib/assert';
 
-import { Template } from '../../../lib/app/module/template';
-import { Request } from '../../../lib/app/api/request';
-import { ok } from '../../../lib/app/api/response';
-import { Module } from '../../../lib/app/module';
-import { doAction } from '../../../lib/app/api';
-import { App } from '../../../lib/app';
-import { createAgent } from '../fixtures/agent';
+import { Template } from '../../../../lib/app/module/template';
+import { Request } from '../../../../lib/app/api/request';
+import { ok } from '../../../../lib/app/api/response';
+import { Module } from '../../../../lib/app/module';
+import { doAction } from '../../../../lib/app/api';
+import { App } from '../../../../lib/app';
+import { createAgent } from '../../fixtures/agent';
 
 process.env.PORT = '8888';
 
