@@ -1,4 +1,5 @@
 import * as express from 'express';
+import { Type } from '@quenk/noni/lib/data/type';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 import { Filter, ErrorFilter } from '../api/request';
@@ -8,21 +9,54 @@ import { App } from '../';
  */
 export declare type Messages<M> = Disable | Enable | Redirect | M;
 /**
+ * Path
+ */
+export declare type Path = string;
+/**
+ * Method
+ */
+export declare type Method = string;
+/**
  * RouteConf describes a route to be installed in the application.
  */
-export interface RouteConf<A> {
+export interface RouteConf {
     /**
      * method of the route.
      */
-    method: string;
+    method: Method;
     /**
      * path of the route.
      */
-    path: string;
+    path: Path;
     /**
      * filters applied when the route is executed.
      */
-    filters: Filter<A>[];
+    filters: Filter<void>[];
+}
+/**
+ * RoutingInfo holds all the Module's routing information.
+ */
+export interface RoutingInfo {
+    /**
+     * before is those Filters that will be executed before all others.
+     */
+    before: Filter<Type>[];
+    /**
+     * routes is the [[RoutingTable]] for those Filters that are executed based
+     * on the incomming request.
+     */
+    routes: RoutingTable;
+}
+/**
+ * RoutingTable contains route configuration for each path and supported method
+ * in the module.
+ *
+ * The structure here is path.method = Filter[].
+ */
+export interface RoutingTable {
+    [key: string]: {
+        [key: string]: Filter<Type>[];
+    };
 }
 /**
  * Disable a Module.
@@ -45,21 +79,20 @@ export declare class Redirect {
     constructor(status: number, location: string);
 }
 /**
- * Module of the application.
+ * Module of a tendril application.
  *
- * A tendril application breaks up it's routes and related code
- * into a series of modules. Each module is an actor with the
- * ability to send and receive messages.
+ * In tendril, an application is broken up into one more Modules that
+ * represent the respective areas of concern. Modules are responsible
+ * for configuring and handling their assigned routes (endpoints) in the
+ * application and can communicate with each other via the actor API.
  *
- * Most actions of a Module are implemented using Api classes that
- * are executed by the App.
- *
- * This makes debugging slightly easier as we can review to some extent what
- * individual modules are doing via the op log.
+ * Think of all the routes of a Module as one big function that pattern
+ * matches incomming requests.
  */
 export declare class Module extends Immutable<Messages<any>, App> {
-    system: App;
-    constructor(system: App);
+    app: App;
+    routeInfo: RoutingInfo;
+    constructor(app: App, routeInfo?: RoutingInfo);
     receive: Case<Messages<void>>[];
     /**
      * runInContext given a list of filters, produces an
@@ -73,9 +106,22 @@ export declare class Module extends Immutable<Messages<any>, App> {
      */
     runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler;
     /**
-     * install routes into the routing table for this module.
+     * addBefore adds filters to the RoutingInfo that will be executed
+     * before every route.
      */
-    install<A>(routes: RouteConf<A>[]): void;
+    addBefore(filter: Filter<Type>): Module;
+    /**
+     * addRoute to the internal routing table of this Module.
+     *
+     * The routing table is only a cache and must be installed to an
+     * [[express.Application]] in order to take effect.
+     */
+    addRoute(method: Method, path: Path, filters: Filter<Type>[]): Module;
+    /**
+     * addRoutes
+     * @deprecated
+     */
+    addRoutes(routes: RouteConf[]): Module;
     disable(): void;
     enable(): void;
     redirect(location: string, status: number): void;
@@ -83,5 +129,9 @@ export declare class Module extends Immutable<Messages<any>, App> {
      * show constructrs a Filter for displaying a view.
      */
     show(name: string, ctx?: object): Filter<undefined>;
+    /**
+     * getRouter provides the [[express.Router]] for the Module.
+     */
+    getRouter(): express.Router;
     run(): void;
 }

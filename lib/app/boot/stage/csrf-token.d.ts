@@ -1,10 +1,12 @@
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Type } from '@quenk/noni/lib/data/type';
-import { Filter } from '../../api/request';
 import { ModuleDatas } from '../../module/data';
+import { Filter } from '../../api/request';
 import { Stage } from './';
 export declare const DEFAULT_SEND_COOKIE_NAME = "xsrf-token";
 export declare const ERROR_TOKEN_INVALID = "EBADCSRFTOKEN";
+export declare const PRS_CSRF_TOKEN = "$csrf.token";
+export declare const PRS_VIEW_CSRF_TOKEN: string;
 /**
  * CSRFTokenConf can be configured to enabled cross-site request forgery
  * protection.
