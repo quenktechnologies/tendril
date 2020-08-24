@@ -1,16 +1,23 @@
 import * as express from 'express';
 import * as csurf from 'csurf';
+import * as prs from '../../api/storage/prs';
 
 import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map, merge } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { Filter } from '../../api/request';
 import { ModuleDatas } from '../../module/data';
+import { PRS_VIEW_CONTEXT } from '../../api/response';
+import { Filter, Request } from '../../api/request';
+import { next } from '../../api/control';
+import { getToken } from '../../api/csrf';
+import { Action, doAction } from '../../api';
 import { Stage } from './';
 
 export const DEFAULT_SEND_COOKIE_NAME = 'xsrf-token';
 export const ERROR_TOKEN_INVALID = 'EBADCSRFTOKEN';
+export const PRS_CSRF_TOKEN = '$csrf.token';
+export const PRS_VIEW_CSRF_TOKEN = `${PRS_VIEW_CONTEXT}.csrf.token`;
 
 const defaultOptions = {
 
@@ -105,7 +112,8 @@ export class CSRFTokenStage implements Stage {
                         m.app.all('*', (req, res, next) => {
 
                             if (readMethods.indexOf(req.method) > -1)
-                                res.cookie(conf.send_cookie_name, req.csrfToken());
+                                res.cookie(conf.send_cookie_name,
+                                    req.csrfToken());
 
                             next();
 
@@ -139,6 +147,8 @@ export class CSRFTokenStage implements Stage {
 
                 }
 
+                m.module.addBefore(setCSRFToken);
+
             });
 
             return cb(null);
@@ -147,3 +157,16 @@ export class CSRFTokenStage implements Stage {
 
     }
 }
+
+// Ensures the csrf token is available via prs and to views.
+const setCSRFToken = (r: Request): Action<undefined> =>
+    doAction<undefined>(function*() {
+
+        let token = yield getToken();
+
+        yield prs.set(PRS_CSRF_TOKEN, token);
+        yield prs.set(PRS_VIEW_CSRF_TOKEN, token);
+
+        return next(r);
+
+    });

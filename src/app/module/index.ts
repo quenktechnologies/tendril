@@ -2,6 +2,7 @@ import * as express from 'express';
 
 import { Type } from '@quenk/noni/lib/data/type';
 import { just, nothing } from '@quenk/noni/lib/data/maybe';
+import { map } from '@quenk/noni/lib/data/record';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 
@@ -22,6 +23,16 @@ export type Messages<M>
     ;
 
 /**
+ * Path
+ */
+export type Path = string;
+
+/**
+ * Method
+ */
+export type Method = string;
+
+/**
  * RouteConf describes a route to be installed in the application.
  */
 export interface RouteConf {
@@ -29,17 +40,51 @@ export interface RouteConf {
     /**
      * method of the route.
      */
-    method: string,
+    method: Method,
 
     /**
      * path of the route.
      */
-    path: string,
+    path: Path,
 
     /**
      * filters applied when the route is executed.
      */
     filters: Filter<void>[]
+
+}
+
+/**
+ * RoutingInfo holds all the Module's routing information.
+ */
+export interface RoutingInfo {
+
+    /**
+     * before is those Filters that will be executed before all others.
+     */
+    before: Filter<Type>[],
+
+    /**
+     * routes is the [[RoutingTable]] for those Filters that are executed based
+     * on the incomming request.
+     */
+    routes: RoutingTable
+
+}
+
+/**
+ * RoutingTable contains route configuration for each path and supported method
+ * in the module.
+ *
+ * The structure here is path.method = Filter[].
+ */
+export interface RoutingTable {
+
+    [key: string]: {
+
+        [key: string]: Filter<Type>[]
+
+    }
 
 }
 
@@ -64,6 +109,8 @@ export class Redirect {
 
 }
 
+const defaultRouteInfo = () => ({ before: [], routes: {} });
+
 /**
  * Module of a tendril application.
  *
@@ -79,7 +126,7 @@ export class Module extends Immutable<Messages<any>, App> {
 
     constructor(
         public app: App,
-        public routes: RouteConf[] = []) { super(app); }
+        public routeInfo: RoutingInfo = defaultRouteInfo()) { super(app); }
 
     receive: Case<Messages<void>>[] = <Case<Messages<void>>[]>[
 
@@ -121,18 +168,55 @@ export class Module extends Immutable<Messages<any>, App> {
         }
 
     /**
-     * addRoutes to the list of routes for this module.
-     *
-     * This method only adds the routes to the cache. To actually enable them,
-     * installRoutes() should be called.
+     * addBefore adds filters to the RoutingInfo that will be executed
+     * before every route.
      */
-    addRoutes(routes: RouteConf[]): Module {
+    addBefore(filter: Filter<Type>): Module {
 
-        this.routes = this.routes.concat(routes);
+        this.routeInfo.before.push(filter);
         return this;
 
     }
 
+    /**
+     * addRoute to the internal routing table of this Module.
+     *
+     * The routing table is only a cache and must be installed to an 
+     * [[express.Application]] in order to take effect.
+     */
+    addRoute(method: Method, path: Path, filters: Filter<Type>[]): Module {
+
+        let { routes } = this.routeInfo;
+
+        if (routes[path] != null) {
+
+            let route = routes[path];
+
+            if (route[method] != null)
+                route[method] = [...route[method], ...filters];
+            else
+                route[method] = filters;
+
+        } else {
+
+            routes[path] = { [method]: filters };
+
+        }
+
+        return this;
+
+    }
+
+    /**
+     * addRoutes
+     * @deprecated
+     */
+    addRoutes(routes: RouteConf[]): Module {
+
+        routes.forEach(r => this.addRoute(r.method, r.path, r.filters));
+        return this;
+
+    }
 
     disable() {
 
@@ -171,12 +255,25 @@ export class Module extends Immutable<Messages<any>, App> {
     }
 
     /**
-     * installRoutes of the Module into an [[express.Application]] instance.
+     * getRouter provides the [[express.Router]] for the Module.
      */
-    installRoutes(app: express.Application): void {
+    getRouter(): express.Router {
 
-        this.routes.forEach(({ path, method, filters }) =>
-            (<Type>app)[method](path, this.runInContext(filters)));
+        let router = express.Router();
+        let { before, routes } = this.routeInfo;
+
+        map(routes, (conf, path) => {
+
+            map(conf, (filters, method) => {
+
+                let allFilters = [...before, ...filters];
+                (<Type>router)[method](path, this.runInContext(allFilters));
+
+            });
+
+        });
+
+        return router;
 
     }
 

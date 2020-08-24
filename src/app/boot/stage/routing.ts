@@ -51,7 +51,7 @@ export class RoutingStage implements Stage {
 
             }
 
-            mod.installRoutes(exApp);
+            exApp.use(mod.getRouter());
 
             if (temp.app && temp.app.on && temp.app.on.notFound)
                 exApp.use(mod.runInContext([temp.app.on.notFound]));

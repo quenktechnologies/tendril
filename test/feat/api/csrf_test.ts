@@ -23,7 +23,6 @@ let token = '';
 const getCSRFToken = () => doAction<undefined>(function*() {
     let value = yield getToken();
     return ok(value);
-
 });
 
 const template = (): Template<App> => ({
