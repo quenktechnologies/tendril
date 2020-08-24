@@ -145,9 +145,10 @@ export class CSRFTokenStage implements Stage {
 
                     }
 
+                m.module.addBefore(setCSRFToken);
+
                 }
 
-                m.module.addBefore(setCSRFToken);
 
             });
 

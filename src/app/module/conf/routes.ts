@@ -1,4 +1,3 @@
-import { Type } from '@quenk/noni/lib/data/type';
 import { RouteConf, Module } from '../';
 
 /**
