@@ -110,14 +110,44 @@ const template = (): Template<App> => ({
                 path: '/prs',
                 filters: [fromPRS]
             },
-
             {
                 method: 'get',
                 path: '/view',
                 filters: [fromViewCtx]
             }
 
-        ]
+        ],
+
+        modules: {
+
+            child0: (): Template<App> => ({
+
+                id: 'child0',
+
+                create: (a: App) => new Module(a),
+
+                app: {
+
+                    routes: () => [
+
+                        {
+                            method: 'get',
+                            path: '/prs',
+                            filters: [fromPRS]
+                        },
+                        {
+                            method: 'get',
+                            path: '/view',
+                            filters: [fromViewCtx]
+                        }
+
+                    ]
+
+                }
+
+            })
+
+        }
 
     }
 
@@ -150,6 +180,34 @@ describe('csrf-token', () => {
 
             let agent = createAgent();
             let res = yield agent.get('/view', {});
+
+            yield attempt(() => {
+                assert(res.body.join('').trim()).equal(token);
+            });
+
+            return pure(undefined);
+
+        })));
+
+    it('should provide the PRS token if child does not enable csrf', () =>
+        toPromise(doFuture<undefined>(function*() {
+
+            let agent = createAgent();
+            let res = yield agent.get('/child0/prs', {});
+
+            yield attempt(() => {
+                assert(res.body.join('').trim()).equal(token);
+            });
+
+            return pure(undefined);
+
+        })));
+
+    it('should provide the view context token if child does not enable csrf', () =>
+        toPromise(doFuture<undefined>(function*() {
+
+            let agent = createAgent();
+            let res = yield agent.get('/child0/view', {});
 
             yield attempt(() => {
                 assert(res.body.join('').trim()).equal(token);
