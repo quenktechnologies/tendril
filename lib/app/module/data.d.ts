@@ -11,6 +11,15 @@ import { App } from '../';
 import { Module as M } from './';
 import { Template } from './template';
 /**
+ * LookupFunc is a function applied to a ModuleData to retrieve a desired
+ * value.
+ */
+export declare type LookupFunc<T> = (mData: ModuleData) => LookupResult<T>;
+/**
+ * LookupResult is either the value desired or undefined if not found.
+ */
+export declare type LookupResult<T> = T | undefined;
+/**
  * ModuleDatas map.
  */
 export interface ModuleDatas extends Record<ModuleData> {
@@ -84,3 +93,10 @@ export interface ModuleData {
  * getModule provides a module given an address.
  */
 export declare const getModule: (data: ModuleDatas, addr: Address) => Maybe<ModuleData>;
+/**
+ * getValue from a ModuleData looking up the value on the parent recursively
+ * if not found on first try.
+ *
+ * Think of this function as prototype inheritance for tendril ModuleDatas.
+ */
+export declare const getValue: <T>(mData: ModuleData, f: LookupFunc<T>) => LookupResult<T>;

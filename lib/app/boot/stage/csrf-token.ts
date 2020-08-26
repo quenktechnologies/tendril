@@ -6,7 +6,7 @@ import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map, merge } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { ModuleDatas } from '../../module/data';
+import { ModuleData, ModuleDatas, getValue } from '../../module/data';
 import { PRS_VIEW_CONTEXT } from '../../api/response';
 import { Filter, Request } from '../../api/request';
 import { next } from '../../api/control';
@@ -145,10 +145,10 @@ export class CSRFTokenStage implements Stage {
 
                     }
 
-                m.module.addBefore(setCSRFToken);
-
                 }
 
+                if (getValue(m, isEnabled) === true)
+                    m.module.addBefore(setCSRFToken);
 
             });
 
@@ -171,3 +171,10 @@ const setCSRFToken = (r: Request): Action<undefined> =>
         return next(r);
 
     });
+
+const isEnabled = (m: ModuleData) =>
+    m.template &&
+    m.template.app &&
+    m.template.app.csrf &&
+    m.template.app.csrf.token &&
+    m.template.app.csrf.token.enable
