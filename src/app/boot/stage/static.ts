@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import { isAbsolute, resolve } from 'path';
+import { isAbsolute, resolve, join } from 'path';
 
 import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { Record, map, merge } from '@quenk/noni/lib/data/record';
@@ -83,34 +83,35 @@ export class StaticStage implements Stage {
         let { mainProvider, modules } = this;
         let main = mainProvider();
 
-      return fromCallback(cb => {
+        return fromCallback(cb => {
 
-        map(modules, m => {
+            map(modules, m => {
 
-            let mconfs: FlatStaticConfMap = { 'public': { dir: 'public' } };
-            let prefix = '';
+                let mconfs: FlatStaticConfMap = { 'public': { dir: 'public' } };
+                let prefix = '';
 
+                if (m.template &&
+                    m.template.app &&
+                    m.template.app.dirs &&
+                    m.template.app.dirs.public) {
 
-            if (m.template &&
-                m.template.app &&
-                m.template.app.dirs &&
-                m.template.app.dirs.public) {
+                    let { dirs } = m.template.app;
 
-                let { dirs } = m.template.app;
+                    prefix = getPrefix(dirs.self);
 
-                prefix = isString(dirs.self) ? dirs.self : prefix;
-                mconfs = merge(mconfs, normalizeConf(<StaticConf>dirs.public));
+                    mconfs = merge(mconfs,
+                        normalizeConf(<StaticConf>dirs.public));
 
-            }
+                }
 
-            map(normalizeDirs(prefix, mconfs), c =>
-                main.app.use(express.static(c.dir, c.options)));
+                map(normalizeDirs(prefix, mconfs), c => 
+                    main.app.use(express.static(c.dir, c.options)));
+
+            });
+
+            cb(null);
 
         });
-
-        cb(null);
-
-      });
 
     }
 }
@@ -144,3 +145,6 @@ const normalizeDirs =
         map(confs, c => isAbsolute(c.dir) ? c : merge(c, {
             dir: resolve(prefix, c.dir)
         }));
+
+const getPrefix = (prefix?: string) =>
+    isString(prefix) ? join(process.cwd(), prefix) : '';
