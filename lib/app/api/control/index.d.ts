@@ -36,6 +36,16 @@ export declare class Next<A> extends Api<A> {
     exec(ctx: Context<A>): Future<Action<A>>;
 }
 /**
+ * Noop
+ * @private
+ */
+export declare class Noop<A> extends Api<A> {
+    next: A;
+    constructor(next: A);
+    map<B>(f: (n: A) => B): Noop<B>;
+    exec(_: Context<A>): Future<A>;
+}
+/**
  * next gives the go ahead to interpret the
  * actions of the next Filter chain.
  *
@@ -43,6 +53,10 @@ export declare class Next<A> extends Api<A> {
  * short-circuits the current chain.
  */
 export declare const next: (r: Request) => Action<undefined>;
+/**
+ * noop (does nothing).
+ */
+export declare const noop: () => Action<void>;
 /**
  * value wraps a value so that it is available to the next value in the
  * chain.

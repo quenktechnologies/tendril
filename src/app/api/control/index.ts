@@ -13,8 +13,8 @@ import { Action, Api, Context } from '../';
 export class Value<A> extends Api<A> {
 
     constructor(
-      public value: Type,
-      public next: (a: Type) => A) { super(next); }
+        public value: Type,
+        public next: (a: Type) => A) { super(next); }
 
     map<B>(f: (a: A) => B): Value<B> {
 
@@ -80,6 +80,28 @@ export class Next<A> extends Api<A> {
 }
 
 /**
+ * Noop
+ * @private
+ */
+export class Noop<A> extends Api<A> {
+
+    constructor(public next: A) { super(next); }
+
+    map<B>(f: (n: A) => B): Noop<B> {
+
+        return new Noop(f(this.next));
+
+    }
+
+    exec(_: Context<A>): Future<A> {
+
+        return pure(this.next);
+
+    }
+
+}
+
+/**
  * next gives the go ahead to interpret the 
  * actions of the next Filter chain.
  *
@@ -88,6 +110,12 @@ export class Next<A> extends Api<A> {
  */
 export const next = (r: Request): Action<undefined> =>
     liftF(new Next(r, undefined));
+
+/**
+ * noop (does nothing).
+ */
+export const noop = (): Action<void> =>
+    liftF(new Noop(undefined));
 
 /**
  * value wraps a value so that it is available to the next value in the 
