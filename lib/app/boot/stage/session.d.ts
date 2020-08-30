@@ -1,10 +1,12 @@
 import * as session from 'express-session';
 import * as express from 'express';
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { SessionStoreProvider } from '../../middleware/session/store/provider';
+import { Provider } from '../../middleware/session/store/connection';
 import { ModuleDatas } from '../../module/data';
+import { Pool } from '../../connection';
 import { Stage } from './';
 export declare const SESSION_COOKIE_NAME = "tendril.session.id";
+export declare const POOL_KEY_SESSION = "$tendril-session-store-connection";
 export declare const WARN_NO_SECRET = "[SessionStage]: Warning! No app.session.options.secret configured! A random string will be generated and used however this means user sessionswill not be valid if the application restarts!";
 /**
  * SessionConf contains settings for configuring session usage.
@@ -25,13 +27,13 @@ export interface SessionConf {
      */
     store?: {
         /**
-         * provider used to create the underlying Store object.
+         * provider used to create the SessionStoreConnection object.
          *
-         * If unspecified, the inefficient memory store will be used.
+         * If unspecified, the inefficient in memory store will be used.
          */
-        provider?: SessionStoreProvider;
+        provider: Provider;
         /**
-         * options passed to the SessionStoreProvider
+         * options passed to the Provider
          */
         options?: object;
     };
@@ -51,7 +53,8 @@ export interface SessionConf {
  */
 export declare class SessionStage implements Stage {
     modules: ModuleDatas;
-    constructor(modules: ModuleDatas);
+    pool: Pool;
+    constructor(modules: ModuleDatas, pool: Pool);
     name: string;
     execute(): Future<void>;
 }

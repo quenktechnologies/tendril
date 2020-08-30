@@ -7,16 +7,16 @@ export interface Connections {
     [key: string]: Connection;
 }
 /**
- * Store of connections.
+ * ConnectionStore
  */
-export interface Store {
+export interface ConnectionStore {
     [key: string]: Connection;
 }
 /**
  * Connection interface.
  *
  * This interface is used to abstract various data stores and
- * third party services the app may maintain persistenta open connections
+ * third party services the app may maintain persistent open connections
  * to.
  */
 export interface Connection {
@@ -26,7 +26,7 @@ export interface Connection {
      * When called this method can initialize a new connection/pool or
      * simply lie for connections that are not meant to be kept open.
      */
-    open(): Future<Connection>;
+    open(): Future<void>;
     /**
      * checkout the actual underlying implementation.
      *
@@ -53,22 +53,17 @@ export interface Connection {
  * some low level resource the application uses.
  *
  * The Pool class itself does not actually implement connection
- * pooling, instead the implementation of such is left up to
- * the implementors of the Connection interface.
+ * pooling, instead implementation is left up to the Connections.
  *
  * What this class really provides is a way to open and close
  * a group of connections at once, as well as retrieve
- * indivdiual ones when needed.
- *
- * TODO: In the future we may add a way for connections to be re-established,
- * lazily started and more. This would be subject to whether we decide to make
- * connections actors or not.
+ * individual ones when needed. Tendril relies on this to cleanly shutdown.
  */
 export declare class Pool {
-    store: Store;
-    constructor(store: Store);
+    conns: ConnectionStore;
+    constructor(conns: ConnectionStore);
     /**
-     * add a new Conneciton to the pool.
+     * add a new Connection to the pool.
      */
     add(key: string, conn: Connection): Pool;
     /**
