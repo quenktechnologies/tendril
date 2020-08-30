@@ -90,21 +90,18 @@ export class StaticStage implements Stage {
                 let mconfs: FlatStaticConfMap = { 'public': { dir: 'public' } };
                 let prefix = '';
 
-                if (m.template &&
-                    m.template.app &&
-                    m.template.app.dirs &&
-                    m.template.app.dirs.public) {
+                if (m.template) {
 
-                    let { dirs } = m.template.app;
+                    let dirs = m.template.app && m.template.app.dirs || {};
 
                     prefix = getPrefix(dirs.self);
 
                     mconfs = merge(mconfs,
-                        normalizeConf(<StaticConf>dirs.public));
+                        normalizeConf(<StaticConf>dirs.public || {}));
 
                 }
 
-                map(normalizeDirs(prefix, mconfs), c => 
+                map(normalizeDirs(prefix, mconfs), c =>
                     main.app.use(express.static(c.dir, c.options)));
 
             });
