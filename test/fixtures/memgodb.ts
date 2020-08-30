@@ -16,9 +16,9 @@ export class Memgo implements Connection {
 
     openned: boolean = false;
 
-    open(): Future<Memgo> {
+    open(): Future<void> {
 
-        return delay(() => { this.openned = true; return <Memgo>this; });
+        return delay(() => { this.openned = true; });
 
     }
 

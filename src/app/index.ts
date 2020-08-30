@@ -89,14 +89,14 @@ export class App implements System {
      */
     static createDefaultStageBundle(app: App): StageBundle {
 
-        let provideMain = () => 
-        getModule(app.modules, mainPath(app.main.id)).get();
+        let provideMain = () =>
+            getModule(app.modules, mainPath(app.main.id)).get();
 
         return new StageBundle([
             new InitStage(app.hooks),
             new ConnectionsStage(app.pool, app.modules, app.hooks),
             new LogStage(app.modules),
-            new SessionStage(app.modules),
+            new SessionStage(app.modules, app.pool),
             new CookieParserStage(app.modules),
             new BodyParserStage(app.modules),
             new CSRFTokenStage(app.modules),
@@ -226,12 +226,7 @@ export class App implements System {
             .server
             .stop()
             .chain(() => this.pool.close())
-            .chain(() => this.vm.stop())
-            .map(() => {
-
-                this.pool.store = {};
-
-            });
+            .chain(() => this.vm.stop());
 
     }
 

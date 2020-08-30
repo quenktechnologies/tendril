@@ -8,10 +8,10 @@ import { noop } from '@quenk/noni/lib/data/function';
 import { isObject, isNumber } from '@quenk/noni/lib/data/type';
 import { Object } from '@quenk/noni/lib/data/jsonx';
 
-import { SessionStoreProvider } from '../../middleware/session/store/provider';
+import { Provider } from '../../middleware/session/store/connection';
 import {
-    MemoryStoreProvider
-} from '../../middleware/session/store/provider/memory';
+    MemoryConnection
+} from '../../middleware/session/store/connection/memory';
 import {
     Descriptor,
     SESSION_DESCRIPTORS,
@@ -19,12 +19,14 @@ import {
     deleteSessionKey
 } from '../../api/storage/session';
 import { ModuleDatas } from '../../module/data';
+import { Pool } from '../../connection';
 import { randomSecret } from './cookie-parser';
 import { Stage } from './';
 
 type Work = DoFn<void, Future<void>>;
 
 export const SESSION_COOKIE_NAME = 'tendril.session.id';
+export const POOL_KEY_SESSION = '$tendril-session-store-connection';
 
 export const WARN_NO_SECRET =
     '[SessionStage]: Warning! No app.session.options.secret configured! \
@@ -47,7 +49,7 @@ const defaultOptions = {
 
     store: {
 
-        provider: new MemoryStoreProvider,
+        provider: () => new MemoryConnection(),
 
         options: {}
 
@@ -78,14 +80,14 @@ export interface SessionConf {
     store?: {
 
         /**
-         * provider used to create the underlying Store object.
+         * provider used to create the SessionStoreConnection object.
          *
-         * If unspecified, the inefficient memory store will be used.
+         * If unspecified, the inefficient in memory store will be used.
          */
-        provider?: SessionStoreProvider,
+        provider: Provider,
 
         /**
-         * options passed to the SessionStoreProvider
+         * options passed to the Provider
          */
         options?: object
 
@@ -108,13 +110,13 @@ export interface SessionConf {
  */
 export class SessionStage implements Stage {
 
-    constructor(public modules: ModuleDatas) { }
+    constructor(public modules: ModuleDatas, public pool: Pool) { }
 
     name = 'session';
 
     execute(): Future<void> {
 
-        let { modules } = this;
+        let { modules, pool } = this;
 
         return sequential(mapTo(modules, m => doN(<Work>function*() {
 
@@ -140,9 +142,11 @@ export class SessionStage implements Stage {
 
                 }
 
-                let store =
-                    yield conf.store.provider.create(session,
-                        conf.store.options);
+                let conn = conf.store.provider(session, conf.store.options);
+                yield conn.open();
+
+                let store = yield conn.checkout();
+                pool.add(POOL_KEY_SESSION, conn);
 
                 m.app.use(session(merge(conf.options, { store })));
                 m.app.use(handleSessionTTL);

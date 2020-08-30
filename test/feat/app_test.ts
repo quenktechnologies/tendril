@@ -54,7 +54,7 @@ describe('tendril', () => {
             () => assert(process.env.APP_START).equal('true'));
 
         it('should have connections',
-            () => assert(app.pool.store['main']).not.be.undefined());
+            () => assert(app.pool.conns['main']).not.be.undefined());
 
         it('should show views', () =>
             agent
