@@ -2,9 +2,16 @@ import * as express from 'express';
 
 import { isAbsolute, resolve, join } from 'path';
 
-import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
-import { Record, map, merge } from '@quenk/noni/lib/data/record';
+import {
+    Future,
+    doFuture,
+    pure,
+    sequential,
+    parallel
+} from '@quenk/noni/lib/control/monad/future';
+import { Record, map, mapTo, merge } from '@quenk/noni/lib/data/record';
 import { isObject, isString } from '@quenk/noni/lib/data/type';
+import { isDirectory } from '@quenk/noni/lib/io/file';
 
 import { ModuleDatas, ModuleData } from '../../module/data';
 import { Stage } from './';
@@ -62,13 +69,15 @@ interface FlatStaticConfMap {
  * All configured dirs are served as one virtual directory.
  * The configuration of static paths can be a [[StaticDirConf]] or a string
  * for a single path. Multiple paths can be configured by using an array of
- * strings or StaticDirConfs or a map of StaticDirConfs.
+ * strings or StaticDirConfs or a map object of StaticDirConfs.
  *
- * They will all be expanded to a StaticDirConf before installed.
- * By default, any folder named "public" in a module will be served.
+ * They will all be expanded to a StaticDirConf before being installed.
+ * By default, any folder named "public" in a module will be used to serve
+ * static files.
  *
  * Note: If "app.dirs.self" is configured, all static paths will be relative
- * to its value. This is usually the path to the module on the filesystem.
+ * to its value. This is usually the path for the main module from the root
+ * of the working directory.
  */
 export class StaticStage implements Stage {
 
@@ -80,15 +89,16 @@ export class StaticStage implements Stage {
 
     execute(): Future<void> {
 
-        let { mainProvider, modules } = this;
+        let { mainProvider, modules, name } = this;
+
         let main = mainProvider();
 
-        return fromCallback(cb => {
+        return doFuture<void>(function*() {
 
-            map(modules, m => {
+            yield sequential(mapTo(modules, m => doFuture(function*() {
 
-                let mconfs: FlatStaticConfMap = { 'public': { dir: 'public' } };
                 let prefix = '';
+                let mconfs: FlatStaticConfMap = { 'public': { dir: 'public' } };
 
                 if (m.template) {
 
@@ -101,16 +111,44 @@ export class StaticStage implements Stage {
 
                 }
 
-                map(normalizeDirs(prefix, mconfs), c =>
-                    main.app.use(express.static(c.dir, c.options)));
+                let normalizedConfs = normalizeDirs(prefix, mconfs);
 
-            });
+                if (process.env.TENDRIL_STATIC_WARN_MISSING) {
 
-            cb(null);
+                    // Check that the specified directory actually exists.
+                  
+                    yield parallel(mapTo(normalizedConfs, conf =>
+                        doFuture(function*() {
+
+                            let yes = yield isDirectory(conf.dir);
+
+                            if (!yes)
+                                console.warn(`${name}: The directory ` +
+                                    `"${conf.dir}" does not exist!`);
+
+                            main.app.use(express.static(conf.dir, conf.options));
+
+                            return pure(undefined);
+
+                        })));
+
+                } else {
+
+                    map(normalizedConfs, conf =>
+                        main.app.use(express.static(conf.dir, conf.options)));
+
+
+                }
+
+                return pure(undefined);
+
+            })));
+
+            return pure(<void>undefined);
 
         });
-
     }
+
 }
 
 const normalizeConf = (conf: StaticConf): FlatStaticConfMap => {

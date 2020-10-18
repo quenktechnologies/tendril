@@ -35,13 +35,15 @@ export interface StaticConfMap {
  * All configured dirs are served as one virtual directory.
  * The configuration of static paths can be a [[StaticDirConf]] or a string
  * for a single path. Multiple paths can be configured by using an array of
- * strings or StaticDirConfs or a map of StaticDirConfs.
+ * strings or StaticDirConfs or a map object of StaticDirConfs.
  *
- * They will all be expanded to a StaticDirConf before installed.
- * By default, any folder named "public" in a module will be served.
+ * They will all be expanded to a StaticDirConf before being installed.
+ * By default, any folder named "public" in a module will be used to serve
+ * static files.
  *
  * Note: If "app.dirs.self" is configured, all static paths will be relative
- * to its value. This is usually the path to the module on the filesystem.
+ * to its value. This is usually the path for the main module from the root
+ * of the working directory.
  */
 export declare class StaticStage implements Stage {
     mainProvider: () => ModuleData;
