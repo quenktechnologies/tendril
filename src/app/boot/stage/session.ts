@@ -3,7 +3,7 @@ import * as express from 'express';
 
 import { Future, pure, sequential } from '@quenk/noni/lib/control/monad/future';
 import { doN, DoFn } from '@quenk/noni/lib/control/monad';
-import { merge, map, mapTo } from '@quenk/noni/lib/data/record';
+import { Record, merge, map, mapTo } from '@quenk/noni/lib/data/record';
 import { noop } from '@quenk/noni/lib/data/function';
 import { isObject, isNumber } from '@quenk/noni/lib/data/type';
 import { Object } from '@quenk/noni/lib/data/jsonx';
@@ -168,11 +168,11 @@ export class SessionStage implements Stage {
 export const handleSessionTTL =
     (req: express.Request, _: express.Response, next: express.NextFunction) => {
         if (req.session &&
-            isObject(req.session[SESSION_DATA]) &&
-            isObject(req.session[SESSION_DESCRIPTORS])) {
+            isObject((<Object><object>req.session)[SESSION_DATA]) &&
+            isObject((<Object><object>req.session)[SESSION_DESCRIPTORS])) {
 
-            let session = <Object>req.session;
-            let descs = req.session[SESSION_DESCRIPTORS];
+            let session = <Object><object>req.session;
+            let descs = <Record<Descriptor>>session[SESSION_DESCRIPTORS];
 
             descs = map(descs, (d: Descriptor, k: string) => {
 
@@ -194,7 +194,7 @@ export const handleSessionTTL =
 
             });
 
-            session[SESSION_DESCRIPTORS] = descs;
+            (<Record<Descriptor>>session[SESSION_DESCRIPTORS]) = descs;
 
         }
 

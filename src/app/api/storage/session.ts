@@ -60,7 +60,7 @@ export class Get<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let session: Object = ctx.request.session || {};
+        let session = <Object><object>(ctx.request.session || {});
         return pure(this.next(getSessionValue(session, this.key)));
 
     }
@@ -81,7 +81,7 @@ export class GetString<A> extends Get<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let session: Object = ctx.request.session || {};
+        let session = <Object><object>ctx.request.session || {};
         return pure(this.next(getSessionValueAsString(session, this.key)));
 
     }
@@ -107,7 +107,7 @@ export class GetOrElse<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let session: Object = ctx.request.session || {};
+        let session = <Object><object>ctx.request.session || {};
         let result = getSessionValueOrElse(session, this.key, this.value);
         return pure(this.next(result));
 
@@ -135,7 +135,7 @@ export class Set<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let session: Object = ctx.request.session || {};
+        let session = <Object><object>ctx.request.session || {};
         setSessionValue(session, this.key, this.value, this.desc);
         return pure(this.next);
 
@@ -161,7 +161,7 @@ export class Remove<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let session: Object = ctx.request.session || {};
+        let session = <Object><object>(ctx.request.session || {});
         deleteSessionKey(session, this.key);
         return pure(this.next);
 
@@ -186,7 +186,7 @@ export class Exists<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let session: Object = ctx.request.session || {};
+        let session = <Object><object>(ctx.request.session || {});
         return pure(this.next(fromNullable(session[this.key]).isJust()));
 
     }
