@@ -21,7 +21,7 @@ export class GetToken<A> extends Api<A> {
 
     exec({ request }: Context<A>): Future<A> {
 
-        let token = request.csrfToken();
+        let token = request.toExpress().csrfToken();
         return pure(this.next(token));
 
     }

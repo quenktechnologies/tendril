@@ -5,12 +5,14 @@
  * they fail silently otherwise.
  */
 /** imports */
+import * as express from 'express';
 import * as path from '@quenk/noni/lib/data/record/path';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Action, Api, Context } from '../';
+import { Storage } from './';
 export declare const SESSION_DATA = "tendril.$data";
 export declare const SESSION_DESCRIPTORS = "tendril.$descriptors";
 /**
@@ -27,6 +29,41 @@ export interface Descriptor {
     ttl?: number;
 }
 /**
+ * SessionStorage acts as a bridge between the tendril applications and
+ * the underlying express session store API.
+ */
+export interface SessionStorage extends Storage {
+    /**
+     * isEnabled returns true if session storage is enabled, false otherwise.
+     */
+    isEnabled(): boolean;
+    /**
+     * setWithDescriptor sets the value of a key in session storage along with
+     * a descriptor.
+     */
+    setWithDescriptor(key: string, value: Value, desc: Descriptor): SessionStorage;
+    /**
+     * save the session data.
+     *
+     * Call this method to immediately persist any data written to the session.
+     */
+    save(): Future<void>;
+    /**
+     * regenerate the session.
+     *
+     * This hooks into the lower level API to invalidate the current session id
+     * supplied by the client and issue a new one. All data stored in the
+     * session will be lost, including data not set through this API.
+     */
+    regenerate(): Future<void>;
+    /**
+     * destroy the session.
+     *
+     * Everything comes to an end here.
+     */
+    destroy(): Future<void>;
+}
+/**
  * Get
  * @private
  */
@@ -34,14 +71,6 @@ export declare class Get<A> extends Api<A> {
     key: path.Path;
     next: (v: Type) => A;
     constructor(key: path.Path, next: (v: Type) => A);
-    map<B>(f: (n: A) => B): Get<B>;
-    exec(ctx: Context<A>): Future<A>;
-}
-/**
- * GetString
- * @private
- */
-export declare class GetString<A> extends Get<A> {
     map<B>(f: (n: A) => B): Get<B>;
     exec(ctx: Context<A>): Future<A>;
 }
@@ -100,7 +129,7 @@ export declare class Regenerate<A> extends Api<A> {
     next: A;
     constructor(next: A);
     map<B>(f: (n: A) => B): Regenerate<B>;
-    exec({ request }: Context<A>): Future<A>;
+    exec(ctx: Context<A>): Future<A>;
 }
 /**
  * Destroy
@@ -110,7 +139,7 @@ export declare class Destroy<A> extends Api<A> {
     next: A;
     constructor(next: A);
     map<B>(f: (n: A) => B): Destroy<B>;
-    exec({ request }: Context<A>): Future<A>;
+    exec(ctx: Context<A>): Future<A>;
 }
 /**
  * Save
@@ -120,7 +149,61 @@ export declare class Save<A> extends Api<A> {
     next: A;
     constructor(next: A);
     map<B>(f: (n: A) => B): Save<B>;
-    exec({ request }: Context<A>): Future<A>;
+    exec(ctx: Context<A>): Future<A>;
+}
+/**
+ * @private
+ */
+export declare class DisabledSessionStorage implements SessionStorage {
+    warn(method: string): void;
+    isEnabled(): boolean;
+    get(_key: string): Maybe<Value>;
+    getOrElse(_key: string, alt: Value): Value;
+    exists(_key: string): boolean;
+    set(_key: string, _value: Value): DisabledSessionStorage;
+    setWithDescriptor(_key: string, _value: Value, _desc: Descriptor): DisabledSessionStorage;
+    remove(_: string): DisabledSessionStorage;
+    reset(): DisabledSessionStorage;
+    save(): Future<void>;
+    regenerate(): Future<void>;
+    destroy(): Future<void>;
+}
+/**
+ * EnabledSessionStorage class.
+ */
+export declare class EnabledSessionStorage implements SessionStorage {
+    data: Object;
+    /**
+     * @private
+     */
+    constructor(data: Object);
+    /**
+     * fromExpress constructs a SessionStorage instance from an express
+     * Request.
+     *
+     * If session support is not enabled, a DisabledSessionStorage will be
+     * provided instead.
+     */
+    static fromExpress(r: express.Request): SessionStorage;
+    /**
+     * @private
+     */
+    target(): Object;
+    /**
+     * @private
+     */
+    descriptors(): Object;
+    isEnabled(): boolean;
+    get(key: string): Maybe<Value>;
+    getOrElse(key: string, alt: Value): Value;
+    exists(key: string): boolean;
+    set(key: string, value: Value): EnabledSessionStorage;
+    setWithDescriptor(key: string, value: Value, desc: Descriptor): EnabledSessionStorage;
+    remove(key: string): EnabledSessionStorage;
+    reset(): EnabledSessionStorage;
+    save(): Future<void>;
+    regenerate(): Future<void>;
+    destroy(): Future<void>;
 }
 /**
  * @private
@@ -148,13 +231,6 @@ export declare const deleteSessionKey: (session: Object, key: string) => void;
  * The value is is wrapped in a Maybe to promote safe access.
  */
 export declare const get: (key: path.Path) => Action<Maybe<Value>>;
-/**
- * getString from session storage.
- *
- * Retrieves a value that is cast to string via String(). If the value does
- * not exist, an empty string is returned.
- */
-export declare const getString: (key: path.Path) => Action<string>;
 /**
  * getOrElse provides a value from session storage or an alternative
  * if it is == null.

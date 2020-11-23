@@ -8,10 +8,11 @@
 /** imports */
 import * as path from '@quenk/noni/lib/data/record/path';
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Action, Api, Context } from '../';
+import { Storage } from './';
 /**
  * Get
  * @private
@@ -21,14 +22,6 @@ export declare class Get<A> extends Api<A> {
     next: (v: Type) => A;
     constructor(key: path.Path, next: (v: Type) => A);
     map<B>(f: (n: A) => B): Get<B>;
-    exec(ctx: Context<A>): Future<A>;
-}
-/**
- * GetString
- * @private
- */
-export declare class GetString<A> extends Get<A> {
-    map<B>(f: (n: A) => B): GetString<B>;
     exec(ctx: Context<A>): Future<A>;
 }
 /**
@@ -78,18 +71,26 @@ export declare class Exists<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A>;
 }
 /**
+ * PRSStorage class.
+ *
+ * This is used behind the scens to provide the prs api.
+ */
+export declare class PRSStorage implements Storage {
+    data: Object;
+    constructor(data?: Object);
+    get(key: string): Maybe<Value>;
+    getOrElse(key: string, alt: Value): Value;
+    exists(key: string): boolean;
+    set(key: string, value: Value): PRSStorage;
+    remove(key: string): PRSStorage;
+    reset(): PRSStorage;
+}
+/**
  * get a value from PRS.
  *
  * The value is is wrapped in a Maybe to promote safe access.
  */
 export declare const get: (key: path.Path) => Action<Maybe<Value>>;
-/**
- * getString from PRS.
- *
- * Retrieves a value that is cast to string via String(). If the value does
- * not exist, an empty string is returned.
- */
-export declare const getString: (key: path.Path) => Action<string>;
 /**
  * getOrElse provides a value from PRS or an alternative if it is == null.
  */

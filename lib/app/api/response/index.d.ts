@@ -130,7 +130,7 @@ export declare class Show<A, C> extends Api<A> {
     next: A;
     constructor(view: string, context: Maybe<C>, status: status.Status, next: A);
     map<B>(f: (a: A) => B): Show<B, C>;
-    exec({ response, module, prs }: Context<A>): Future<A>;
+    exec({ response, module, request }: Context<A>): Future<A>;
 }
 /**
  * header queues up on or more headers to send to the client.

@@ -7,7 +7,7 @@ import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident';
 
 import { getModule } from '../module/data';
-import { Request, Filter, ErrorFilter } from '../api/request';
+import { Request, Filter, ErrorFilter, ClientRequest } from '../api/request';
 import { show } from '../api/response';
 import { Context as RequestContext } from '../api';
 import { App } from '../';
@@ -148,7 +148,13 @@ export class Module extends Immutable<Messages<any>, App> {
         res: express.Response,
         next: express.NextFunction) => {
 
-        new RequestContext(this, req, res, next, filters.slice()).run()
+        new RequestContext(
+          this,
+          ClientRequest.fromExpress(req),
+          res,
+          next,
+          filters.slice()
+        ).run()
 
     }
 
@@ -162,8 +168,13 @@ export class Module extends Immutable<Messages<any>, App> {
             res: express.Response,
             next: express.NextFunction) => {
 
-            new RequestContext(this, req, res, next,
-                [(r: Request) => filter(err, r)]).run();
+            new RequestContext(
+              this,
+              ClientRequest.fromExpress(req),
+              res,
+              next,
+                [(r: Request) => filter(err, r)]
+            ).run();
 
         }
 

@@ -12,11 +12,12 @@ import * as path from '@quenk/noni/lib/data/record/path';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Action, Api, Context } from '../';
+import { Storage } from './';
 
 /**
  * Get
@@ -35,27 +36,7 @@ export class Get<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        return pure(this.next(path.get(this.key, ctx.prs)));
-
-    }
-
-}
-
-/**
- * GetString
- * @private
- */
-export class GetString<A> extends Get<A> {
-
-    map<B>(f: (n: A) => B): GetString<B> {
-
-        return new GetString(this.key, compose(this.next, f));
-
-    }
-
-    exec(ctx: Context<A>): Future<A> {
-
-        return pure(this.next(path.getString(this.key, ctx.prs)));
+        return pure(this.next(ctx.request.prs.get(this.key)));
 
     }
 
@@ -80,7 +61,10 @@ export class GetOrElse<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        return pure(this.next(path.getDefault(this.key, ctx.prs, this.value)));
+        return pure(this.next(ctx.request.prs.getOrElse(
+          this.key, 
+          this.value
+            )));
 
     }
 
@@ -105,7 +89,7 @@ export class Set<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        ctx.prs = path.set(this.key, this.value, ctx.prs);
+        ctx.request.prs.set(this.key, this.value);
         return pure(this.next);
 
     }
@@ -130,12 +114,7 @@ export class Remove<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        let prs = path.flatten(ctx.prs);
-
-        delete prs[this.key];
-
-        ctx.prs = path.unflatten(prs);
-
+        ctx.request.prs.remove(this.key);
         return pure(this.next);
 
     }
@@ -160,7 +139,61 @@ export class Exists<A> extends Api<A> {
 
     exec(ctx: Context<A>): Future<A> {
 
-        return pure(this.next(path.get(this.key, ctx.prs).isJust()));
+        return pure(this.next(ctx.request.prs.exists(this.key)));
+
+    }
+
+}
+
+/**
+ * PRSStorage class.
+ *
+ * This is used behind the scens to provide the prs api.
+ */
+export class PRSStorage implements Storage {
+
+    constructor(public data: Object = {}) { }
+
+    get(key: string): Maybe<Value> {
+
+        return path.get(key, this.data);
+    }
+
+    getOrElse(key: string, alt: Value): Value {
+
+        return path.getDefault(key, this.data, alt);
+
+    }
+
+    exists(key: string): boolean {
+
+        return path.get(key, this.data).isJust();
+
+    }
+
+    set(key: string, value: Value): PRSStorage {
+
+        this.data = path.set(key, value, this.data);
+        return this;
+
+    }
+
+    remove(key: string): PRSStorage {
+
+        let prs = path.flatten(this.data);
+
+        delete prs[key];
+
+        this.data = path.unflatten(prs);
+
+        return this;
+
+    }
+
+    reset(): PRSStorage {
+
+        this.data = {};
+        return this;
 
     }
 
@@ -173,15 +206,6 @@ export class Exists<A> extends Api<A> {
  */
 export const get = (key: path.Path): Action<Maybe<Value>> =>
     liftF(new Get(key, identity));
-
-/**
- * getString from PRS.
- *
- * Retrieves a value that is cast to string via String(). If the value does
- * not exist, an empty string is returned.
- */
-export const getString = (key: path.Path): Action<string> =>
-    liftF(new GetString(key, identity));
 
 /**
  * getOrElse provides a value from PRS or an alternative if it is == null.
