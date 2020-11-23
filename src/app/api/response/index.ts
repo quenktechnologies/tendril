@@ -4,7 +4,6 @@
 
 /** imports */
 import * as express from 'express';
-import * as path from '@quenk/noni/lib/data/record/path';
 import * as headers from '../../../net/http/headers';
 import * as status from './status';
 
@@ -286,7 +285,7 @@ export class Show<A, C> extends Api<A> {
 
     }
 
-    exec({ response, module, prs }: Context<A>): Future<A> {
+    exec({ response, module, request }: Context<A>): Future<A> {
 
         let self = module.self();
         let mModule = getModule(module.system.modules, self);
@@ -301,22 +300,22 @@ export class Show<A, C> extends Api<A> {
                 `No view engine configured!`));
 
         let f = mshow.get();
-        let ctx0 = <object>path.getDefault(PRS_VIEW_CONTEXT, prs, {});
+        let ctx0 = <object>request.prs.getOrElse(PRS_VIEW_CONTEXT, {});
         let ctx1 = this.context.orJust(() => ({})).get();
 
-      let {view, status, next } = this;
+        let { view, status, next } = this;
 
-      return doFuture(function * () { 
+        return doFuture(function*() {
 
-        let c = yield f(view,  merge(ctx0, Object(ctx1)));
-        response.set(headers.CONTENT_TYPE, c.type);
-        response.status(status);
-        response.write(c.content);
-        response.end();
+            let c = yield f(view, merge(ctx0, Object(ctx1)));
+            response.set(headers.CONTENT_TYPE, c.type);
+            response.status(status);
+            response.write(c.content);
+            response.end();
 
-        return pure(next);
+            return pure(next);
 
-      });
+        });
 
     }
 

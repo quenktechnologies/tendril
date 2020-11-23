@@ -28,8 +28,8 @@ const setTTLValue = (value: string, ttl: number) => (_: Request) =>
 
 const getTTLValue = () => doAction<undefined>(function*() {
 
-    let value = yield session.getString('value');
-    return ok(value);
+    let value = yield session.get('value');
+    return ok(value.orJust(()=>'').get());
 
 });
 

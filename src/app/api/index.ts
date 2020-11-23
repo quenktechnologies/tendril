@@ -1,56 +1,39 @@
 /**
  * In tendril, web requests are handled by executing a sequence of one or more 
- * operations called `Api`. This is implemented in such a way that users
+ * operations called actions. This is implemented in such a way that users
  * of the framework do not directly respond to requests but rather give 
- * instructions to the framework on what steps to carry out.
- *
- * Think of this approach as an interpreter executing our Apis as its source
- * code.
+ * instructions to the framework on what to do which the framework will
+ * figure out by interpreting the API results.
  *
  * The flexibility of this approach allows us to introduce new features and 
  * APIs to tendril without having to modify the Request object or drastically
- * changing the design of the framework.
+ * changing the design of the framework. Actions are returned from handler
+ * functions which are executed based on the routing configuration of
+ * the application.
  *
- * In tendril, a handler for a web request is simply a function in the Math 
- * sense. The signature of that function may look like:
+ * The signature of those functions usually look like:
  *
  * ```
- * handler :: Request -> Api
+ * handler :: Request -> Action<void>
  * ```
- *
- * However the "Apis" here are actually wrapped in a Free monad to allow 
- * them to be chained together (thus allowing multiple Apis per request)
- * 
- * This definition of handler looks like:
- * 
- * ```
- * handler :: Request -> Free<Api, T>
- * ```
- * Where the generic type T is a placeholder for additional Apis in the chain
- * to be executed.
- *
- * Apis are usually created using API functions that automatically wrap the
- * Api in a Free on behalf of the user. They can be chained together using
- * the `chain` method or via yield expressions in a `doAction` block.
  */
 import * as express from 'express';
 
 import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free } from '@quenk/noni/lib/control/monad/free';
 import { noop } from '@quenk/noni/lib/data/function';
-import {Object} from '@quenk/noni/lib/data/jsonx';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { doN, DoFn } from '@quenk/noni/lib/control/monad';
 import { Type } from '@quenk/noni/lib/data/type';
 
 import { Module } from '../module';
-import { Filter } from './request';
+import { Request, Filter } from './request';
 
 /**
  * Action represents a sequence of actions the app takes
  * in response to a client request.
  *
- * Actions are implemented as an Api wrapped in a Free monad.
+ * Actions are implemented as an [[Api]] wrapped in a Free monad.
  */
 export type Action<A> = Free<Api<Type>, A>;
 
@@ -58,18 +41,17 @@ export type Action<A> = Free<Api<Type>, A>;
  * Context represents the context of the http request.
  * 
  * This is an internal API not directly exposed to request handlers. It
- * stores lower level APIs used to execute the work of the higher level Api
+ * stores lower level APIs used to execute the work of the higher level [[Api]]
  * objects.
  */
 export class Context<A> {
 
     constructor(
         public module: Module,
-        public request: express.Request,
+        public request: Request,
         public response: express.Response,
         public onError: express.NextFunction,
-        public filters: Filter<A>[],
-        public prs: Object = {}) { }
+        public filters: Filter<A>[]) { }
 
     /**
      * next provides the next Action to be interpreted.

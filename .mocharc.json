@@ -1,0 +1,7 @@
+{
+  "recursive": true,
+  "growl": true,
+  "reporter": "list", 
+  "require": "./test/register",
+  "timeout": 10000
+}

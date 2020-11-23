@@ -1,5 +1,0 @@
---recursive
---growl
---reporter list
---require ./test/register
---timeout 10000

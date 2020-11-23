@@ -1,6 +1,6 @@
 import * as pool from '../../../../../src/app/api/pool';
 
-import { Object } from '@quenk/noni/lib/data/json';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 
 import { Request } from '../../../../../src/app/api/request';
@@ -12,7 +12,7 @@ import { Memgo } from '../../../memgodb';
 export const create = (r: Request): Action<undefined> =>
     (pool
         .checkout<Memgo>('main')
-        .chain(m => fork(doCreate('account', r.body, m)))
+        .chain(m => fork(doCreate('account', <Object>r.body, m)))
         .chain(id => value(created({ id })))
         .chain(r => r));
 

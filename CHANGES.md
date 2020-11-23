@@ -1,5 +1,12 @@
 # Tendril Changelog
 
+## [0.42.0] - 2020-11-22
+
+## Changed
+- `app.api.Request` is no longer an alias for ExpressJS's Request object.
+- Request object now has APIs for PRS and session storage. The Action based 
+  APIs may be removed in the future.
+
 ## [0.41.6] - 2020-10-18
 
 ### Changed

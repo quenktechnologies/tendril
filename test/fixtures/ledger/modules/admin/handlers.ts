@@ -1,6 +1,7 @@
 import * as prs from '../../../../../lib/app/api/storage/prs';
 import * as session from '../../../../../lib/app/api/storage/session';
 
+import {Object} from '@quenk/noni/lib/data/jsonx';
 import { raise } from '@quenk/noni/lib/control/monad/future';
 
 import {
@@ -43,10 +44,9 @@ export const crash = (_: Request): Action<undefined> =>
 
 export const saveNum = (r: Request): Action<undefined> => {
 
-    if (r.session) {
+    if (r.session.isEnabled()) {
 
-        r.session.num = r.body.num;
-        console.error('saving ', r.session.num);
+        r.session.set('num', (<Object>r.body).num);
         return ok();
 
     } else {
@@ -59,8 +59,8 @@ export const saveNum = (r: Request): Action<undefined> => {
 
 export const getNum = (r: Request): Action<undefined> => {
 
-    if (r.session)
-        return ok({ num: r.session.num || 0 });
+    if (r.session.isEnabled())
+        return ok({ num: r.session.getOrElse('num', 0) });
     else
         return forbidden();
 
@@ -89,7 +89,7 @@ export const prsRemove = (_: Request): Action<undefined> =>
 
 export const sessionSet = (r: Request): Action<undefined> =>
     session
-        .set('value', r.body.value)
+        .set('value', (<Object>r.body).value)
         .chain(() => ok());
 
 export const sessionGet = (_: Request): Action<undefined> =>

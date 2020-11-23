@@ -26,8 +26,8 @@ process.env.PORT = '8888';
 let token = '';
 
 const fromPRS = () => doAction<undefined>(function*() {
-    let value = yield prs.getString(PRS_CSRF_TOKEN);
-    return ok(value);
+    let value = yield prs.get(PRS_CSRF_TOKEN);
+    return ok(value.get());
 });
 
 const fromViewCtx = () => doAction<undefined>(function*() {
