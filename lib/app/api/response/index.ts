@@ -3,7 +3,6 @@
  */
 
 /** imports */
-import * as express from 'express';
 import * as headers from '../../../net/http/headers';
 import * as status from './status';
 
@@ -48,19 +47,24 @@ export abstract class Response<B, A> extends Api<A> {
 
     exec({ response }: Context<A>): Future<A> {
 
-        return attempt(() => response.status(this.status))
-            .map(() => send(this.body, response))
-            .map(() => this.next);
+        let { status, body, next } = this;
+
+        return doFuture(function*() {
+
+            yield attempt(() => response.status(status));
+
+            if (body.isJust())
+                response.send(body.get());
+
+            response.end();
+
+            return pure(next);
+
+        });
 
     }
 
 }
-
-const send = <B>(body: Maybe<B>, res: express.Response): void =>
-    body
-        .map(b => { res.send(b) })
-        .orJust(() => { res.end() })
-        .get();
 
 /**
  * Header sets header values to send out.
