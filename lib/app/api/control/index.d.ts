@@ -46,6 +46,16 @@ export declare class Noop<A> extends Api<A> {
     exec(_: Context<A>): Future<A>;
 }
 /**
+ * Abort
+ * @private
+ */
+export declare class Abort<A> extends Api<A> {
+    next: A;
+    constructor(next: A);
+    map<B>(f: (n: A) => B): Abort<B>;
+    exec(c: Context<A>): Future<Action<A>>;
+}
+/**
  * next gives the go ahead to interpret the
  * actions of the next Filter chain.
  *
@@ -66,3 +76,11 @@ export declare const value: <A>(value: A) => Action<A>;
  * fork suspends execution for a Future to execute and provide a value.
  */
 export declare const fork: <A>(f: Future<A>) => Action<A>;
+/**
+ * abort ends the processing of the current filter chain.
+ *
+ * This halts the Context's chain and any chain it is directly part of.
+ * Note: If this API is used, then a response should be sent to the client
+ * first to avoid the browser waiting for a response.
+ */
+export declare const abort: () => Action<undefined>;

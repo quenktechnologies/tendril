@@ -1,5 +1,9 @@
 # Tendril Changelog
 
+## [0.42.1] - 2020-11-28
+## Added
+- Added the `abort()` function to the control API so chains can be exited early.
+
 ## [0.42.0] - 2020-11-22
 
 ## Changed

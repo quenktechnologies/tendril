@@ -21,7 +21,6 @@ import * as express from 'express';
 
 import { Functor } from '@quenk/noni/lib/data/functor';
 import { Free } from '@quenk/noni/lib/control/monad/free';
-import { noop } from '@quenk/noni/lib/data/function';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { doN, DoFn } from '@quenk/noni/lib/control/monad';
 import { Type } from '@quenk/noni/lib/data/type';
@@ -71,7 +70,7 @@ export class Context<A> {
 
         this
             .next()
-            .chain(n => n.foldM(() => pure<any>(noop()), n => n.exec(this)))
+            .chain(n => n.foldM(() => pure(<Type>undefined), n => n.exec(this)))
             .fork(this.onError, () => { });
 
     }

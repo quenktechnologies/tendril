@@ -1,4 +1,4 @@
-import { liftF } from '@quenk/noni/lib/control/monad/free';
+import { liftF, pure as freePure } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Type } from '@quenk/noni/lib/data/type';
@@ -102,6 +102,29 @@ export class Noop<A> extends Api<A> {
 }
 
 /**
+ * Abort
+ * @private
+ */
+export class Abort<A> extends Api<A> {
+
+    constructor(public next: A) { super(next); }
+
+    map<B>(f: (n: A) => B): Abort<B> {
+
+        return new Abort(f(this.next));
+
+    }
+
+    exec(c: Context<A>): Future<Action<A>> {
+
+        c.filters = [];
+        return pure(freePure(<Type>undefined));
+
+    }
+
+}
+
+/**
  * next gives the go ahead to interpret the 
  * actions of the next Filter chain.
  *
@@ -129,3 +152,13 @@ export const value = <A>(value: A): Action<A> =>
  */
 export const fork = <A>(f: Future<A>): Action<A> =>
     liftF(new Fork(f, identity));
+
+/**
+ * abort ends the processing of the current filter chain.
+ *
+ * This halts the Context's chain and any chain it is directly part of.
+ * Note: If this API is used, then a response should be sent to the client 
+ * first to avoid the browser waiting for a response.
+ */
+export const abort = (): Action<undefined> =>
+    liftF(new Abort(undefined));

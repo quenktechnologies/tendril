@@ -1,5 +1,4 @@
 import { assert } from '@quenk/test/lib/assert';
-import { Type } from '@quenk/noni/lib/data/type';
 
 import {
     PRSStorage
