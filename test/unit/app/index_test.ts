@@ -24,7 +24,7 @@ describe('app', () => {
 
             let app: App = new App(template);
 
-            app.spawn({ id: 'act', create: s => new Act(s) });
+            app.spawn({ id: 'act', create: s => new Act(<App>s) });
 
             setTimeout(() => {
 
@@ -43,7 +43,7 @@ describe('app', () => {
 
             try {
 
-                app.spawn({ id: '$theme', create: s => new Act(s) });
+                app.spawn({ id: '$theme', create: s => new Act(<App>s) });
 
             } catch (_) {
 

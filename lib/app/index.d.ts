@@ -24,7 +24,7 @@ export declare class App implements System {
     provider: (s: App) => Template<App>;
     constructor(provider: (s: App) => Template<App>);
     main: Template<App>;
-    vm: PVM<this>;
+    vm: PVM;
     modules: ModuleDatas;
     server: Server;
     pool: import("./connection").Pool;
@@ -45,7 +45,7 @@ export declare class App implements System {
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<this>): App;
+    spawn(tmpl: PotooTemplate<System>): App;
     /**
      * spawnModule (not a generic actor) from a template.
      *

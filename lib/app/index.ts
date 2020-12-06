@@ -125,7 +125,7 @@ export class App implements System {
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<this>): App {
+    spawn(tmpl: PotooTemplate<System>): App {
 
         this.vm.spawn(tmpl);
 
@@ -148,7 +148,7 @@ export class App implements System {
         let t = merge(tmpl, { create: () => module });
 
         let address = parent.isNothing() ?
-            this.vm.spawn(<Template<this>>t) :
+            this.vm.spawn(<PotooTemplate<System>>t) :
             parent.get().module.spawn(t);
 
         let app = express();
