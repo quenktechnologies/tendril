@@ -45,6 +45,7 @@ import { RoutingStage } from './boot/stage/routing';
 import { StaticStage } from './boot/stage/static';
 import { ListenStage } from './boot/stage/listen';
 import { Dispatcher } from './hooks';
+import { Module } from './module';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
@@ -59,9 +60,9 @@ const dconf = { log: { level: 3 } }
  */
 export class App implements System {
 
-    constructor(public provider: (s: App) => Template<App>) { }
+    constructor(public provider: (s: App) => Template) { }
 
-    main = <Template<App>>this.provider(this);
+    main = <Template>this.provider(this);
 
     vm = PVM.create(this, this.main.app && this.main.app.system || dconf);
 
@@ -78,7 +79,7 @@ export class App implements System {
     /**
      * create a new Application instance.
      */
-    static create(provider: (s: App) => Template<App>): App {
+    static create(provider: (s: App) => Template): App {
 
         return new App(provider);
 
@@ -125,7 +126,7 @@ export class App implements System {
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<System>): App {
+    spawn(tmpl: PotooTemplate): App {
 
         this.vm.spawn(tmpl);
 
@@ -141,14 +142,14 @@ export class App implements System {
     spawnModule(
         path: string,
         parent: Maybe<ModuleData>,
-        tmpl: Template<App>): Future<Address> {
+        tmpl: Template): Future<Address> {
 
-        let module = tmpl.create(this);
+        let module = <Module>tmpl.create(this, tmpl);
 
         let t = merge(tmpl, { create: () => module });
 
         let address = parent.isNothing() ?
-            this.vm.spawn(<PotooTemplate<System>>t) :
+            this.vm.spawn(<PotooTemplate>t) :
             parent.get().module.spawn(t);
 
         let app = express();

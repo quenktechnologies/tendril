@@ -10,25 +10,16 @@ import { merge, map, reduce } from '@quenk/noni/lib/data/record';
 import { ModuleData } from '../module/data';
 import { Middlewares } from '../middleware';
 import { Connections } from '../connection';
-import { Module } from '../module';
-import { App } from '../';
 
 /**
  * Template for spawning a Module.
  */
-export interface Template<S extends App> extends T.Template<S> {
+export interface Template extends T.Template {
 
     /**
      * disabled indicates whether the module should be disabled or not.
      */
     disabled?: boolean,
-
-    /**
-     * create a Module.
-     *
-     * Overrides the base function to specifically provide a module.
-     */
-    create: (s: S) => Module,
 
     /**
      * server configuration settings.
@@ -43,7 +34,7 @@ export interface Template<S extends App> extends T.Template<S> {
     /**
      * app configuration settings.
      */
-    app?: app.AppConf<S>,
+    app?: app.AppConf,
 
 }
 
@@ -51,7 +42,7 @@ export interface Template<S extends App> extends T.Template<S> {
  * getAvailableMiddleware extracts a map of available middleware
  * from a Template.
  */
-export const getAvailableMiddleware = (t: Template<App>): Middlewares =>
+export const getAvailableMiddleware = (t: Template): Middlewares =>
     (t.app && t.app.middleware && t.app.middleware.available) ?
         map(t.app.middleware.available, m =>
             m.provider.apply(null, m.options || [])) : {};
@@ -59,14 +50,14 @@ export const getAvailableMiddleware = (t: Template<App>): Middlewares =>
 /**
  * getEnabledMiddleware extracts the list of enabled middleware.
  */
-export const getEnabledMiddleware = (t: Template<App>) =>
+export const getEnabledMiddleware = (t: Template) =>
     (t.app && t.app.middleware && t.app.middleware.enabled) ?
         t.app.middleware.enabled : [];
 
 /**
  * getRoutes provides the route function from a Template.
  */
-export const getRoutes = (t: Template<App>) =>
+export const getRoutes = (t: Template) =>
     (t.app && t.app.routes) ? t.app.routes : () => [];
 
 /**
@@ -74,7 +65,7 @@ export const getRoutes = (t: Template<App>) =>
  *
  * If not specified, the parent show function is used.
  */
-export const getShowFun = (t: Template<App>, parent: Maybe<ModuleData>)
+export const getShowFun = (t: Template, parent: Maybe<ModuleData>)
     : Maybe<show.Show> =>
     (t.app && t.app.views) ?
         just(t.app.views.provider.apply(null, t.app.views.options || [])) :
@@ -84,19 +75,19 @@ export const getShowFun = (t: Template<App>, parent: Maybe<ModuleData>)
  * getServerConf provides the server configuration for the app.
  */
 export const getServerConf =
-    (t: Template<App>, defaults: server.Configuration): server.Configuration =>
+    (t: Template, defaults: server.Configuration): server.Configuration =>
         merge(defaults, (t.server == null) ? {} : t.server);
 
 /**
  * getHooks provides the hook handlers configuration from a template.
  */
-export const getHooks = (t: Template<App>) =>
+export const getHooks = (t: Template) =>
     (t.app && t.app.on) ? t.app.on : {};
 
 /**
  * getConnections provides the connections from a template.
  */
-export const getConnections = (t: Template<App>): Connections => {
+export const getConnections = (t: Template): Connections => {
 
     if (t.connections == null) return {};
 

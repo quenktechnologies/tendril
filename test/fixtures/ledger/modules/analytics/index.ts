@@ -3,13 +3,13 @@ import { Module } from '../../../../../src/app/module';
 import { show } from '../../../../../src/app/api/response';
 import { App } from '../../../../../src/app';
 
-export const template = (): Template<App> => ({
+export const template = (): Template => ({
 
     id: 'analytics',
 
     disabled: true,
 
-    create: (a: App) => new Module(a),
+    create: s => new Module(<App>s),
 
     app: {
 

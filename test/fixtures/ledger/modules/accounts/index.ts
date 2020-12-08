@@ -5,11 +5,11 @@ import { Template } from '../../../../../src/app/module/template';
 import { Module } from '../../../../../src/app/module';
 import { App } from '../../../../../src/app';
 
-export const template = (): Template<App> => ({
+export const template = (): Template => ({
 
     id: 'accounts',
 
-    create: (a: App) => new Module(a),
+    create: s=> new Module(<App>s),
 
     app: {
 

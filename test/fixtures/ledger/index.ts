@@ -15,11 +15,11 @@ import { Child } from '../child';
 import { Pong } from '../pong';
 import { show } from './show';
 
-export const template = (): Template<App> => ({
+export const template = (): Template => ({
 
     id: '/',
 
-    create: (a: App) => new Module(a),
+    create: s => new Module(<App>s),
 
     server: {
 
@@ -123,9 +123,9 @@ export const template = (): Template<App> => ({
 
     children: [
 
-        { id: 'child', create: (app: App) => new Child(app) },
+        { id: 'child', create: s  => new Child(<App>s) },
 
-        { id: 'pong', create: (app: App) => new Pong(app) }
+        { id: 'pong', create: s => new Pong(<App>s) }
 
     ]
 

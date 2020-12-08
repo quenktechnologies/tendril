@@ -7,7 +7,6 @@ import { map } from '@quenk/noni/lib/data/record';
 import { Template } from '../../module/template';
 import { Filter } from '../../api/request';
 import { ModuleDatas } from '../../module/data';
-import { App } from '../../';
 import { Stage } from './';
 
 /**
@@ -28,7 +27,7 @@ export class RoutingStage implements Stage {
             let mod = mconf.module;
             let exApp = mconf.app;
             let routes = mconf.routes(mod);
-            let temp: Template<App> = <Template<App>><Type>mconf.template;
+            let temp: Template = <Template><Type>mconf.template;
 
             if (temp.app && temp.app.filters) {
 

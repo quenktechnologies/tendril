@@ -129,7 +129,7 @@ export class Ask<N, A> extends Api<A> {
 
             ctx.module.spawn({
                 id,
-                create: a => new Callback(Response, cb, a)
+                create: a => new Callback(Response, cb, <App>a)
             });
 
             ctx.module.tell(to,

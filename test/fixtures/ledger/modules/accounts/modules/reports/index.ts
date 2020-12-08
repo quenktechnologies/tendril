@@ -4,11 +4,11 @@ import { Module } from '../../../../../../../src/app/module';
 import { App } from '../../../../../../../src/app';
 import { show } from '../../../../../../../src/app/api/response';
 
-export const template = (): Template<App> => ({
+export const template = (): Template => ({
 
     id: 'reports',
 
-    create: (a: App) => new Module(a),
+    create: s => new Module(<App>s),
 
     app: {
 

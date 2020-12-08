@@ -25,11 +25,11 @@ const getCSRFToken = () => doAction<undefined>(function*() {
     return ok(value);
 });
 
-const template = (): Template<App> => ({
+const template = (): Template => ({
 
     id: '/',
 
-    create: (a: App) => new Module(a),
+    create: s=> new Module(<App>s),
 
     server: {
 

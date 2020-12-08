@@ -4,8 +4,8 @@ import { App } from '../../';
 /**
  * ModulesConf declares the sub-modules to be loaded for a module.
  */
-export interface ModulesConf<S extends App> {
+export interface ModulesConf {
 
-    [key: string]: (s: S) => template.Template<S>
+    [key: string]: (app: App) => template.Template
 
 }

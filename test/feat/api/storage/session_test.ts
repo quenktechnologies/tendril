@@ -35,11 +35,11 @@ const getTTLValue = () => doAction<undefined>(function*() {
 
 const alwaysOk = () => ok();
 
-const template = (): Template<App> => ({
+const template = (): Template => ({
 
     id: '/',
 
-    create: (a: App) => new Module(a),
+    create: s => new Module(<App>s),
 
     server: {
 

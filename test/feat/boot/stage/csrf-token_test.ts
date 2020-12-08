@@ -40,11 +40,11 @@ const showFunc = (_: string, ctx: any): Future<Content> =>
         content: ctx.csrf.token
     });
 
-const template = (): Template<App> => ({
+const template = (): Template => ({
 
     id: '/',
 
-    create: (a: App) => new Module(a),
+    create: s => new Module(<App>s),
 
     server: {
 
@@ -120,11 +120,11 @@ const template = (): Template<App> => ({
 
         modules: {
 
-            child0: (): Template<App> => ({
+            child0: (): Template => ({
 
                 id: 'child0',
 
-                create: (a: App) => new Module(a),
+                create: s => new Module(<App>s),
 
                 app: {
 

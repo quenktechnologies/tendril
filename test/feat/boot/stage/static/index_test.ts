@@ -13,11 +13,11 @@ import { createAgent } from '../../../fixtures/agent';
 
 process.env.PORT = '8888';
 
-const template = (): Template<App> => ({
+const template = (): Template => ({
 
     id: '/',
 
-    create: (a: App) => new Module(a),
+    create: s => new Module(<App>s),
 
     server: {
 
@@ -37,11 +37,11 @@ const template = (): Template<App> => ({
 
         modules: {
 
-            one: (): Template<App> => ({
+            one: (): Template => ({
 
                 id: 'one',
 
-                create: (a: App) => new Module(a),
+                create: s  => new Module(<App>s),
 
                 app: {
 
@@ -55,11 +55,11 @@ const template = (): Template<App> => ({
 
                     modules: {
 
-                        two: (): Template<App> => ({
+                        two: (): Template => ({
 
                             id: 'two',
 
-                            create: (a: App) => new Module(a),
+                            create: s => new Module(<App>s),
 
                             app: {
 
@@ -81,11 +81,11 @@ const template = (): Template<App> => ({
 
             }),
 
-            three: (): Template<App> => ({
+            three: (): Template => ({
 
                 id: 'three',
 
-                create: (a: App) => new Module(a),
+                create: s => new Module(<App>s),
 
                 app: {
 
