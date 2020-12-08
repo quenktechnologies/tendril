@@ -89,7 +89,7 @@ export declare class Redirect {
  * Think of all the routes of a Module as one big function that pattern
  * matches incomming requests.
  */
-export declare class Module extends Immutable<Messages<any>, App> {
+export declare class Module extends Immutable<Messages<any>> {
     app: App;
     routeInfo: RoutingInfo;
     constructor(app: App, routeInfo?: RoutingInfo);

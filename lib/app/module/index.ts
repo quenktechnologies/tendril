@@ -122,7 +122,7 @@ const defaultRouteInfo = () => ({ before: [], routes: {} });
  * Think of all the routes of a Module as one big function that pattern
  * matches incomming requests.
  */
-export class Module extends Immutable<Messages<any>, App> {
+export class Module extends Immutable<Messages<any>> {
 
     constructor(
         public app: App,

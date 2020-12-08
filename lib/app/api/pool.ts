@@ -25,7 +25,7 @@ export class Checkout<A> extends Api<A> {
 
     exec({ module }: Context<A>): Future<A> {
 
-        return <Future<A>>module.system.pool
+        return <Future<A>>module.app.pool
             .get(this.name)
             .map(c => c.checkout().map(this.next))
             .orJust(() => raise(new Error(`Unknown connection:"${this.name}"!`)))

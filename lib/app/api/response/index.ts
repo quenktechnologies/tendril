@@ -292,7 +292,7 @@ export class Show<A, C> extends Api<A> {
     exec({ response, module, request }: Context<A>): Future<A> {
 
         let self = module.self();
-        let mModule = getModule(module.system.modules, self);
+        let mModule = getModule(module.app.modules, self);
 
         if (mModule.isNothing())
             return raise<A>(new Error(`${self}: Module not found!`));
