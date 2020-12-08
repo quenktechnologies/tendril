@@ -21,9 +21,9 @@ import { Dispatcher } from './hooks';
  * the user desires available via child actors.
  */
 export declare class App implements System {
-    provider: (s: App) => Template<App>;
-    constructor(provider: (s: App) => Template<App>);
-    main: Template<App>;
+    provider: (s: App) => Template;
+    constructor(provider: (s: App) => Template);
+    main: Template;
     vm: PVM;
     modules: ModuleDatas;
     server: Server;
@@ -33,7 +33,7 @@ export declare class App implements System {
     /**
      * create a new Application instance.
      */
-    static create(provider: (s: App) => Template<App>): App;
+    static create(provider: (s: App) => Template): App;
     /**
      * createDefaultStageBundle produces a StageBundle
      */
@@ -45,13 +45,13 @@ export declare class App implements System {
      *
      * This actor must use the same Context type as the App.
      */
-    spawn(tmpl: PotooTemplate<System>): App;
+    spawn(tmpl: PotooTemplate): App;
     /**
      * spawnModule (not a generic actor) from a template.
      *
      * A module must have a parent unless it is the root module of the app.
      */
-    spawnModule(path: string, parent: Maybe<ModuleData>, tmpl: Template<App>): Future<Address>;
+    spawnModule(path: string, parent: Maybe<ModuleData>, tmpl: Template): Future<Address>;
     /**
      * installMiddleware at the specified mount point.
      *

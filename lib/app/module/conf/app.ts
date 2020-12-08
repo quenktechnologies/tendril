@@ -13,19 +13,17 @@ import * as bodyParser from '../../boot/stage/body-parser';
 import * as cookieParser from '../../boot/stage/cookie-parser';
 import * as statics from '../../boot/stage/static';
 
-import { App } from '../../';
-
 /**
  * AppConf is the type of the configuration object for tendril apps and modules.
  *
  * It is based on the Potoo template with additional optional sections 
  * for configuring tendril modules.
  */
-export interface AppConf<S extends App> {
+export interface AppConf {
 
     system?: conf.Conf,
 
-    on?: hooks.HookConf<S>,
+    on?: hooks.HookConf,
 
     log?: log.LogConf,
 
@@ -68,7 +66,7 @@ export interface AppConf<S extends App> {
 
     },
 
-    modules?: mod.ModulesConf<S>
+    modules?: mod.ModulesConf
 
     filters?: filters.Filter<void>[]
 

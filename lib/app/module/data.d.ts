@@ -7,9 +7,8 @@ import { Routes } from '../module/conf/routes';
 import { Show } from '../show';
 import { Connections } from '../connection';
 import { Middlewares } from '../middleware';
-import { App } from '../';
-import { Module as M } from './';
 import { Template } from './template';
+import { Module as M } from './';
 /**
  * LookupFunc is a function applied to a ModuleData to retrieve a desired
  * value.
@@ -47,7 +46,7 @@ export interface ModuleData {
     /**
      * template used to spawn the module.
      */
-    template: Template<App>;
+    template: Template;
     /**
      * app (express) for the module.
      */
@@ -55,7 +54,7 @@ export interface ModuleData {
     /**
      * hooks installed for the module.
      */
-    hooks: HookConf<App>;
+    hooks: HookConf;
     /**
      * middleware configuration for the module.
      */

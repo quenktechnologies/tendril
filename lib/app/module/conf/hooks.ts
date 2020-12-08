@@ -7,38 +7,38 @@ import { App } from '../../';
 /**
  * Init function type.
  */
-export type Init<S extends App> = (app: S) => Future<void>;
+export type Init = (app: App) => Future<void>;
 
 /**
  * Connected function type.
  */
-export type Connected<S extends App> = (app: S) => Future<void>;
+export type Connected = (app: App) => Future<void>;
 
 /**
  * Start function type.
  */
-export type Start<S extends App> = (app: S) => Future<void>;
+export type Start = (app: App) => Future<void>;
 
 /**
  * HookConf is used to configure handlers for events at various stages
  * of boot up.
  */
-export interface HookConf<S extends App> {
+export interface HookConf {
 
     /**
      * init is invoked before the application is configured.
      */
-    init?: Init<S> | Init<S>[],
+    init?: Init | Init[],
 
     /**
      * connected is invoked when all connections have been established.
      */
-    connected?: Connected<S> | Connected<S>[],
+    connected?: Connected | Connected[],
 
     /**
      * started is invoked when the application is ready to serve requests.
      */
-    started?: Start<S> | Start<S>[],
+    started?: Start | Start[],
 
     /**
      * error is invoked when an error occurs during boot.
