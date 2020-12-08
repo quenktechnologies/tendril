@@ -61,7 +61,7 @@ export class Tell<N, A> extends Api<A>{
 
 }
 
-class Callback<A> extends Temp<A, App> {
+class Callback<A> extends Temp<A> {
 
     constructor(
         public pattern: Constructor<A>,

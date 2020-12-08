@@ -6,7 +6,7 @@ import { template } from '../../fixtures/ledger';
 
 let ran = false;
 
-class Act extends Mutable<App> {
+class Act extends Mutable {
 
     run() {
 
