@@ -1,1 +1,1 @@
-require('ts-node').register({ baseUrl: __dirname + '/test' });
+require('ts-node').register({ baseUrl: __dirname  });

@@ -1,5 +1,9 @@
 # Tendril Changelog
 
+## [0.42.3] - 2021-12-01
+## Changed
+- Filters declared at the conf level are now inherited by child modules.
+
 ## [0.42.2] - 2020-11-28
 ## Added
 - Added the `abort()` function to the control API so chains can be exited early.

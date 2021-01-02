@@ -3,10 +3,11 @@ import { join } from 'path';
 import { Future, attempt } from '@quenk/noni/lib/control/monad/future';
 import { Type } from '@quenk/noni/lib/data/type';
 import { map } from '@quenk/noni/lib/data/record';
+import { just, Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Template } from '../../module/template';
 import { Filter } from '../../api/request';
-import { ModuleDatas } from '../../module/data';
+import { ModuleData, ModuleDatas } from '../../module/data';
 import { Stage } from './';
 
 /**
@@ -29,9 +30,8 @@ export class RoutingStage implements Stage {
             let routes = mconf.routes(mod);
             let temp: Template = <Template><Type>mconf.template;
 
-            if (temp.app && temp.app.filters) {
-
-                let filters = temp.app.filters;
+            let filters = getConfFilters(just(mconf));
+            if (filters.length > 0) {
 
                 // Add the module level filters before each filter.
                 mod.addRoutes(routes.map(r => ({
@@ -68,5 +68,32 @@ export class RoutingStage implements Stage {
         })).map(() => undefined);
 
     }
+
+}
+
+/**
+ * getConfFilters provides all the filters declared at the configuration 
+ * level. 
+ *
+ * Filters from parent modules are inherited and are first in the list.
+ */
+const getConfFilters = (mdata: Maybe<ModuleData>): Filter<void>[] => {
+
+    let filters = <Filter<void>[]>[];
+    let current = mdata;
+
+    while (current.isJust()) {
+
+        let target = current.get();
+        let temp: Template = <Template><Type>target.template;
+
+        if (temp.app && temp.app.filters)
+            filters.push.apply(filters, temp.app.filters);
+
+        current = target.parent;
+
+    }
+
+    return filters.reverse();
 
 }
