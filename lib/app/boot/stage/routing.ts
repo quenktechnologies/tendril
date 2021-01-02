@@ -2,7 +2,7 @@ import { join } from 'path';
 
 import { Future, attempt } from '@quenk/noni/lib/control/monad/future';
 import { Type } from '@quenk/noni/lib/data/type';
-import { map } from '@quenk/noni/lib/data/record';
+import { empty, map } from '@quenk/noni/lib/data/record';
 import { just, Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Template } from '../../module/template';
@@ -29,9 +29,9 @@ export class RoutingStage implements Stage {
             let exApp = mconf.app;
             let routes = mconf.routes(mod);
             let temp: Template = <Template><Type>mconf.template;
-
             let filters = getConfFilters(just(mconf));
-            if (filters.length > 0) {
+
+            if (!empty(filters)) {
 
                 // Add the module level filters before each filter.
                 mod.addRoutes(routes.map(r => ({
@@ -88,12 +88,12 @@ const getConfFilters = (mdata: Maybe<ModuleData>): Filter<void>[] => {
         let temp: Template = <Template><Type>target.template;
 
         if (temp.app && temp.app.filters)
-            filters.push.apply(filters, temp.app.filters);
+            filters = [...temp.app.filters, ...filters];
 
         current = target.parent;
 
     }
 
-    return filters.reverse();
+    return filters;
 
 }
