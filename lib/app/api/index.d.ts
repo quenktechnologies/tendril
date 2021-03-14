@@ -47,6 +47,10 @@ export declare class Context<A> {
     filters: Filter<A>[];
     constructor(module: Module, request: Request, response: express.Response, onError: express.NextFunction, filters: Filter<A>[]);
     /**
+     * abort the processing of filters for this Context.
+     */
+    abort(): Future<Action<A>>;
+    /**
      * next provides the next Action to be interpreted.
      */
     next(): Future<Action<A>>;

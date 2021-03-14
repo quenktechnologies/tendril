@@ -18,11 +18,12 @@ export interface Headers {
  */
 export declare abstract class Response<B, A> extends Api<A> {
     body: Maybe<B>;
+    abort: boolean;
     next: A;
-    constructor(body: Maybe<B>, next: A);
+    constructor(body: Maybe<B>, abort: boolean, next: A);
     abstract status: status.Status;
     abstract map<AA>(f: (a: A) => AA): Response<B, AA>;
-    exec({ response }: Context<A>): Future<A>;
+    exec(ctx: Context<A>): Future<A>;
 }
 /**
  * Header sets header values to send out.
@@ -67,8 +68,9 @@ export declare class Created<B, A> extends Response<B, A> {
  */
 export declare class InternalServerError<A> extends Response<Err, A> {
     error: Maybe<Err>;
+    abort: boolean;
     next: A;
-    constructor(error: Maybe<Err>, next: A);
+    constructor(error: Maybe<Err>, abort: boolean, next: A);
     status: number;
     map<B>(f: (a: A) => B): InternalServerError<B>;
 }
@@ -83,8 +85,9 @@ export declare class Forbidden<B, A> extends Response<B, A> {
  * NoContent response.
  */
 export declare class NoContent<A> extends Response<void, A> {
+    abort: boolean;
     next: A;
-    constructor(next: A);
+    constructor(abort: boolean, next: A);
     status: number;
     map<B>(f: (a: A) => B): NoContent<B>;
 }
@@ -108,10 +111,11 @@ export declare class Ok<B, A> extends Response<B, A> {
 export declare class Redirect<A> extends Api<A> {
     url: string;
     code: number;
+    abort: boolean;
     next: A;
-    constructor(url: string, code: number, next: A);
+    constructor(url: string, code: number, abort: boolean, next: A);
     map<B>(f: (a: A) => B): Redirect<B>;
-    exec({ response }: Context<A>): Future<A>;
+    exec(ctx: Context<A>): Future<A>;
 }
 /**
  * Unauthorized response.
@@ -127,61 +131,107 @@ export declare class Show<A, C> extends Api<A> {
     view: string;
     context: Maybe<C>;
     status: status.Status;
+    abort: boolean;
     next: A;
-    constructor(view: string, context: Maybe<C>, status: status.Status, next: A);
+    constructor(view: string, context: Maybe<C>, status: status.Status, abort: boolean, next: A);
     map<B>(f: (a: A) => B): Show<B, C>;
-    exec({ response, module, request }: Context<A>): Future<A>;
+    exec(ctx: Context<A>): Future<A>;
 }
 /**
  * header queues up on or more headers to send to the client.
  */
 export declare const header: (list: Headers) => Action<undefined>;
 /**
- * show the client some content.
+ * show triggers the view engine to display the content of the view referenced
+ * by the parameter "view".
+ *
+ * @param view        - The template to generate content from.
+ * @param context     - The context used when generating the view.
+ * @param status      - The HTTP status to send with the response.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const show: <C>(view: string, context?: C | undefined, status?: number) => Action<undefined>;
+export declare const show: <C>(view: string, context?: C | undefined, status?: number, abort?: boolean) => Action<undefined>;
 /**
  * accepted sends the "ACCEPTED" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const accepted: <A>(body: A) => Action<undefined>;
+export declare const accepted: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * badRequest sends the "BAD REQUEST" status to the client with optional body.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const badRequest: <A>(body?: A | undefined) => Action<undefined>;
+export declare const badRequest: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * conflict sends the "CONFLICT" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const conflict: <A>(body?: A | undefined) => Action<undefined>;
+export declare const conflict: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * created sends the "CREATED" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const created: <A>(body?: A | undefined) => Action<undefined>;
+export declare const created: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const unauthorized: <A>(body?: A | undefined) => Action<undefined>;
+export declare const unauthorized: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * error sends the "INTERNAL SERVER ERROR" status and can optionally log
  * the error to console.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const error: (err?: Err | undefined) => Action<undefined>;
+export declare const error: (err?: Err | undefined, abort?: boolean) => Action<undefined>;
 /**
  * forbidden sends the "FORBIDDEN" status to the client with optional body.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const forbidden: <A>(body?: A | undefined) => Action<undefined>;
+export declare const forbidden: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * noContent sends the "NO CONTENT" status to the client.
+ * @param abort      - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const noContent: () => Action<undefined>;
+export declare const noContent: (abort?: boolean) => Action<undefined>;
 /**
  * notFound sends the "NOT FOUND" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const notFound: <A>(body?: A | undefined) => Action<undefined>;
+export declare const notFound: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * ok sends the "OK" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const ok: <A>(body?: A | undefined) => Action<undefined>;
+export declare const ok: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
  * redirect the client to a new resource.
+ *
+ * @param url         - The URL to redirect to.
+ * @param code        - The HTTP status code to redirect with.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export declare const redirect: (url: string, code: number) => Action<undefined>;
+export declare const redirect: (url: string, code: number, abort?: boolean) => Action<undefined>;

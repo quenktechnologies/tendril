@@ -20,7 +20,7 @@
 import * as express from 'express';
 
 import { Functor } from '@quenk/noni/lib/data/functor';
-import { Free } from '@quenk/noni/lib/control/monad/free';
+import { Free, pure as freePure } from '@quenk/noni/lib/control/monad/free';
 import { Future, pure, raise } from '@quenk/noni/lib/control/monad/future';
 import { doN, DoFn } from '@quenk/noni/lib/control/monad';
 import { Type } from '@quenk/noni/lib/data/type';
@@ -51,6 +51,16 @@ export class Context<A> {
         public response: express.Response,
         public onError: express.NextFunction,
         public filters: Filter<A>[]) { }
+
+  /**
+   * abort the processing of filters for this Context.
+   */
+  abort() : Future<Action<A>>{
+
+        this.filters = [];
+        return pure(freePure(<Type>undefined));
+
+  }
 
     /**
      * next provides the next Action to be interpreted.
