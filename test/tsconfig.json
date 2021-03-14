@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "baseUrl": "src",
-        "lib": ["ES2015", "DOM"],
+        "lib": ["es5", "ES2015", "DOM"],
         "module": "commonjs",
-        "target": "es5",
+        "target": "es6",
         "rootDir": ".",
         "moduleResolution": "node",
         "allowUnreachableCode": true,

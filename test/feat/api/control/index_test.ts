@@ -1,5 +1,6 @@
-import { liftF } from '@quenk/noni/lib/control/monad/free';
+import { assert } from '@quenk/test/lib/assert';
 
+import { liftF } from '@quenk/noni/lib/control/monad/free';
 import {
     toPromise,
     doFuture,
@@ -7,11 +8,10 @@ import {
     pure,
     Future
 } from '@quenk/noni/lib/control/monad/future';
-import { assert } from '@quenk/test/lib/assert';
 
 import { ok } from '../../../../lib/app/api/response';
 import { Module } from '../../../../lib/app/module';
-import { doAction, Api, Context, Action } from '../../../../src/app/api';
+import { doAction, Api, Context, Action } from '../../../../lib/app/api';
 import { abort } from '../../../../lib/app/api/control';
 import { App } from '../../../../lib/app';
 import { createAgent } from '../../fixtures/agent';
@@ -31,7 +31,6 @@ class Inc<A> extends Api<A> {
     exec(_: Context<A>): Future<A> {
 
         this.list.push(1);
-
         return pure(this.next);
 
     }

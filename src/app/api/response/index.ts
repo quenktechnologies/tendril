@@ -39,26 +39,28 @@ export abstract class Response<B, A> extends Api<A> {
 
     constructor(
         public body: Maybe<B>,
+        public abort: boolean,
         public next: A) { super(next); }
 
     abstract status: status.Status;
 
     abstract map<AA>(f: (a: A) => AA): Response<B, AA>;
 
-    exec({ response }: Context<A>): Future<A> {
+    exec(ctx: Context<A>): Future<A> {
 
-        let { status, body, next } = this;
+        let that = this;
+        let { status, body, next } = that;
 
         return doFuture(function*() {
 
-            yield attempt(() => response.status(status));
+            yield attempt(() => ctx.response.status(status));
 
             if (body.isJust())
-                response.send(body.get());
+                ctx.response.send(body.get());
 
-            response.end();
+            ctx.response.end();
 
-            return pure(next);
+            return <Future<A>>(that.abort ? ctx.abort : pure(next));
 
         });
 
@@ -82,7 +84,6 @@ export class Header<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         ctx.response.set(this.headers);
-
         return pure(this.next);
 
     }
@@ -98,7 +99,7 @@ export class Accepted<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): Accepted<B, AA> {
 
-        return new Accepted(this.body, f(this.next));
+        return new Accepted(this.body, this.abort, f(this.next));
 
     }
 
@@ -113,7 +114,7 @@ export class BadRequest<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): BadRequest<B, AA> {
 
-        return new BadRequest(this.body, f(this.next));
+        return new BadRequest(this.body, this.abort, f(this.next));
 
     }
 
@@ -128,7 +129,7 @@ export class Conflict<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): Conflict<B, AA> {
 
-        return new Conflict(this.body, f(this.next));
+        return new Conflict(this.body, this.abort, f(this.next));
 
     }
 
@@ -143,7 +144,7 @@ export class Created<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): Created<B, AA> {
 
-        return new Created(this.body, f(this.next));
+        return new Created(this.body, this.abort, f(this.next));
 
     }
 
@@ -154,9 +155,12 @@ export class Created<B, A> extends Response<B, A> {
  */
 export class InternalServerError<A> extends Response<Err, A> {
 
-    constructor(public error: Maybe<Err>, public next: A) {
+    constructor(
+        public error: Maybe<Err>,
+        public abort: boolean,
+        public next: A) {
 
-        super(nothing(), next);
+        super(nothing(), abort, next);
 
     }
 
@@ -164,7 +168,7 @@ export class InternalServerError<A> extends Response<Err, A> {
 
     map<B>(f: (a: A) => B): InternalServerError<B> {
 
-        return new InternalServerError(this.body, f(this.next));
+        return new InternalServerError(this.body, this.abort, f(this.next));
 
     }
 
@@ -179,7 +183,7 @@ export class Forbidden<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): Forbidden<B, AA> {
 
-        return new Forbidden(this.body, f(this.next));
+        return new Forbidden(this.body, this.abort, f(this.next));
 
     }
 
@@ -190,13 +194,15 @@ export class Forbidden<B, A> extends Response<B, A> {
  */
 export class NoContent<A> extends Response<void, A> {
 
-    constructor(public next: A) { super(nothing(), next); }
+    constructor(
+        public abort: boolean,
+        public next: A) { super(nothing(), abort, next); }
 
     status = status.NO_CONTENT;
 
     map<B>(f: (a: A) => B): NoContent<B> {
 
-        return new NoContent(f(this.next));
+        return new NoContent(this.abort, f(this.next));
 
     }
 
@@ -211,7 +217,7 @@ export class NotFound<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): NotFound<B, AA> {
 
-        return new NotFound(this.body, f(this.next));
+        return new NotFound(this.body, this.abort, f(this.next));
 
     }
 
@@ -226,7 +232,7 @@ export class Ok<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): Ok<B, AA> {
 
-        return new Ok(this.body, f(this.next));
+        return new Ok(this.body, this.abort, f(this.next));
 
     }
 
@@ -240,18 +246,19 @@ export class Redirect<A> extends Api<A> {
     constructor(
         public url: string,
         public code: number,
+        public abort: boolean,
         public next: A) { super(next); }
 
     map<B>(f: (a: A) => B): Redirect<B> {
 
-        return new Redirect(this.url, this.code, f(this.next));
+        return new Redirect(this.url, this.code, this.abort, f(this.next));
 
     }
 
-    exec({ response }: Context<A>): Future<A> {
+    exec(ctx: Context<A>): Future<A> {
 
-        return attempt(() => response.redirect(this.url, this.code))
-            .chain(() => pure(this.next));
+        return attempt(() => ctx.response.redirect(this.url, this.code))
+            .chain(() => <Future<A>>(this.abort ? ctx.abort() : pure(this.next)));
 
     }
 
@@ -266,7 +273,7 @@ export class Unauthorized<B, A> extends Response<B, A> {
 
     map<AA>(f: (a: A) => AA): Unauthorized<B, AA> {
 
-        return new Unauthorized(this.body, f(this.next));
+        return new Unauthorized(this.body, this.abort, f(this.next));
 
     }
 
@@ -281,16 +288,20 @@ export class Show<A, C> extends Api<A> {
         public view: string,
         public context: Maybe<C>,
         public status: status.Status,
+        public abort: boolean,
         public next: A) { super(next); }
 
     map<B>(f: (a: A) => B): Show<B, C> {
 
-        return new Show(this.view, this.context, this.status, f(this.next));
+        return new Show(this.view, this.context, this.status, this.abort,
+            f(this.next));
 
     }
 
-    exec({ response, module, request }: Context<A>): Future<A> {
+    exec(ctx: Context<A>): Future<A> {
 
+        let that = this;
+        let { response, module, request } = ctx;
         let self = module.self();
         let mModule = getModule(module.app.modules, self);
 
@@ -316,8 +327,7 @@ export class Show<A, C> extends Api<A> {
             response.status(status);
             response.write(c.content);
             response.end();
-
-            return pure(next);
+            return <Future<A>>(that.abort ? ctx.abort() : pure(next));
 
         });
 
@@ -332,75 +342,126 @@ export const header = (list: Headers): Action<undefined> =>
     liftF(new Header(list, undefined));
 
 /**
- * show the client some content.
+ * show triggers the view engine to display the content of the view referenced
+ * by the parameter "view".
+ *
+ * @param view        - The template to generate content from.
+ * @param context     - The context used when generating the view.
+ * @param status      - The HTTP status to send with the response.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const show = <C>
-    (view: string, context?: C, status = 200): Action<undefined> =>
-    liftF(new Show(view, fromNullable(context), status, undefined));
+export const show = <C>(
+    view: string,
+    context?: C,
+    status = 200,
+    abort = true): Action<undefined> =>
+    liftF(new Show(view, fromNullable(context), status, abort, undefined));
 
 /**
  * accepted sends the "ACCEPTED" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const accepted = <A>(body: A): Action<undefined> =>
-    liftF(new Accepted(fromNullable(body), undefined));
+export const accepted = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new Accepted(fromNullable(body), abort, undefined));
 
 /**
  * badRequest sends the "BAD REQUEST" status to the client with optional body.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const badRequest = <A>(body?: A): Action<undefined> =>
-    liftF(new BadRequest(fromNullable(body), undefined));
+export const badRequest = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new BadRequest(fromNullable(body), abort, undefined));
 
 /**
  * conflict sends the "CONFLICT" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const conflict = <A>(body?: A): Action<undefined> =>
-    liftF(new Conflict(fromNullable(body), undefined));
+export const conflict = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new Conflict(fromNullable(body), abort, undefined));
 
 /**
  * created sends the "CREATED" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const created = <A>(body?: A): Action<undefined> =>
-    liftF(new Created(fromNullable(body), undefined));
+export const created = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new Created(fromNullable(body), abort, undefined));
 
 /**
  * unauthorized sends the "UNAUTHORIZED" status to the client with optional body.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const unauthorized = <A>(body?: A): Action<undefined> =>
-    liftF(new Unauthorized(fromNullable(body), undefined));
+export const unauthorized = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new Unauthorized(fromNullable(body), abort, undefined));
 
 /**
  * error sends the "INTERNAL SERVER ERROR" status and can optionally log
  * the error to console.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const error = (err?: Err): Action<undefined> =>
-    liftF(new InternalServerError(fromNullable(err), undefined));
+export const error = (err?: Err, abort = true): Action<undefined> =>
+    liftF(new InternalServerError(fromNullable(err), abort, undefined));
 
 /**
  * forbidden sends the "FORBIDDEN" status to the client with optional body.
+ *
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const forbidden = <A>(body?: A): Action<undefined> =>
-    liftF(new Forbidden(fromNullable(body), undefined));
+export const forbidden = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new Forbidden(fromNullable(body), abort, undefined));
 
 /**
  * noContent sends the "NO CONTENT" status to the client.
+ * @param abort      - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const noContent = (): Action<undefined> =>
-    liftF(new NoContent(undefined));
+export const noContent = (abort = true): Action<undefined> =>
+    liftF(new NoContent(abort, undefined));
 
 /**
  * notFound sends the "NOT FOUND" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const notFound = <A>(body?: A): Action<undefined> =>
-    liftF(new NotFound(fromNullable(body), undefined));
+export const notFound = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new NotFound(fromNullable(body), abort, undefined));
 
 /**
- * ok sends the "OK" status to the client with optional body. 
+ * ok sends the "OK" status to the client with optional body.
+ * @param body        - Serializable data to be used as the response body.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const ok = <A>(body?: A): Action<undefined> =>
-    liftF(new Ok(fromNullable(body), undefined));
+export const ok = <A>(body?: A, abort = true): Action<undefined> =>
+    liftF(new Ok(fromNullable(body), abort, undefined));
 
 /**
  * redirect the client to a new resource.
+ *
+ * @param url         - The URL to redirect to.
+ * @param code        - The HTTP status code to redirect with.
+ * @param abort       - Flag indicating whether the response filter chain should
+ *                      be terminated or not.
  */
-export const redirect = (url: string, code: number): Action<undefined> =>
-    liftF(new Redirect(url, code, undefined));
+export const redirect = (
+    url: string,
+    code: number,
+    abort = true): Action<undefined> =>
+    liftF(new Redirect(url, code, abort, undefined));
