@@ -1,8 +1,12 @@
 import * as session from 'express-session';
 import * as express from 'express';
 
-import { Future, pure, sequential } from '@quenk/noni/lib/control/monad/future';
-import { doN, DoFn } from '@quenk/noni/lib/control/monad';
+import {
+    Future,
+    pure,
+    sequential,
+    doFuture
+} from '@quenk/noni/lib/control/monad/future';
 import { Record, merge, map, mapTo } from '@quenk/noni/lib/data/record';
 import { noop } from '@quenk/noni/lib/data/function';
 import { isObject, isNumber } from '@quenk/noni/lib/data/type';
@@ -22,8 +26,6 @@ import { ModuleDatas } from '../../module/data';
 import { Pool } from '../../connection';
 import { randomSecret } from './cookie-parser';
 import { Stage } from './';
-
-type Work = DoFn<void, Future<void>>;
 
 export const SESSION_COOKIE_NAME = 'tendril.session.id';
 export const POOL_KEY_SESSION = '$tendril-session-store-connection';
@@ -118,7 +120,7 @@ export class SessionStage implements Stage {
 
         let { modules, pool } = this;
 
-        return sequential(mapTo(modules, m => doN(<Work>function*() {
+        return sequential(mapTo(modules, m => doFuture(function*() {
 
             if (m.template &&
                 m.template.app &&

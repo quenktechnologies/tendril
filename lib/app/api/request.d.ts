@@ -121,5 +121,5 @@ export declare class ClientRequest implements Request {
      * Request object.
      */
     static fromExpress(r: express.Request): ClientRequest;
-    toExpress(): express.Request<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs>;
+    toExpress(): express.Request<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, globalThis.Record<string, any>>;
 }
