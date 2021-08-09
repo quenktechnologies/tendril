@@ -83,3 +83,14 @@ export declare class Pool {
  * getInstance provides the singleton instance of the connection pool.
  */
 export declare const getInstance: () => Pool;
+/**
+ * getUserConnection provides the underlying user connection by name if found.
+ */
+export declare const getUserConnection: <T>(name: string) => Future<Maybe<T>>;
+/**
+ * unsafeGetUserConnection is like getUserConnection but assumes the connection
+ * exists.
+ *
+ * If the the connection does not exist, the Future will raise an exception.
+ */
+export declare const unsafeGetUserConnection: <T>(name: string) => Future<T>;

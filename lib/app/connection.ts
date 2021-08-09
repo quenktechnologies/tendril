@@ -1,6 +1,11 @@
 import { mapTo } from '@quenk/noni/lib/data/record';
-import { Future, parallel } from '@quenk/noni/lib/control/monad/future';
-import { Maybe, fromNullable } from '@quenk/noni/lib/data/maybe';
+import {
+    Future,
+    parallel,
+    doFuture,
+    pure
+} from '@quenk/noni/lib/control/monad/future';
+import { Maybe, fromNullable, just } from '@quenk/noni/lib/data/maybe';
 import { noop } from '@quenk/noni/lib/data/function';
 
 /**
@@ -125,3 +130,29 @@ const pool = new Pool({});
  * getInstance provides the singleton instance of the connection pool.
  */
 export const getInstance = (): Pool => pool;
+
+/**
+ * getUserConnection provides the underlying user connection by name if found.
+ */
+export const getUserConnection = <T>(name: string): Future<Maybe<T>> =>
+    doFuture(function*() {
+
+        let mConn = pool.get(name);
+
+        if (mConn.isNothing())
+            return pure(mConn);
+
+        let conn = yield mConn.get().checkout();
+
+        return pure(just(conn));
+
+    });
+
+/**
+ * unsafeGetUserConnection is like getUserConnection but assumes the connection
+ * exists. 
+ *
+ * If the the connection does not exist, the Future will raise an exception.
+ */
+export const unsafeGetUserConnection = <T>(name:string) : Future<T> =>
+  getUserConnection(name).map(m => <T>m.get());
