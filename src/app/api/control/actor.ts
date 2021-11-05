@@ -122,10 +122,10 @@ export class Ask<N, A> extends Api<A> {
 
         let { to, message, next } = this;
 
-        return (<Future<A>>new Run<Message>(s => {
+        return (<Future<A>>new Run<Message>((_,onSuccess) => {
 
             let id = uuid.v4();
-            let cb = (t: Message) => s.onSuccess(t.value);
+            let cb = (t: Message) => onSuccess(t.value);
 
             ctx.module.spawn({
                 id,
