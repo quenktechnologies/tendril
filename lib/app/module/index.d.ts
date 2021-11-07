@@ -93,7 +93,7 @@ export declare class Module extends Immutable<Messages<any>> {
     app: App;
     routeInfo: RoutingInfo;
     constructor(app: App, routeInfo?: RoutingInfo);
-    receive: Case<Messages<void>>[];
+    receive(): Case<Messages<void>>[];
     /**
      * runInContext given a list of filters, produces an
      * express request handler where the action is the

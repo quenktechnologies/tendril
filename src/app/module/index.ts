@@ -128,7 +128,9 @@ export class Module extends Immutable<Messages<any>> {
         public app: App,
         public routeInfo: RoutingInfo = defaultRouteInfo()) { super(app); }
 
-    receive: Case<Messages<void>>[] = <Case<Messages<void>>[]>[
+    receive(): Case<Messages<void>>[] {
+
+      return <Case<Messages<void>>[]>[
 
         new Case(Disable, () => this.disable()),
 
@@ -137,6 +139,8 @@ export class Module extends Immutable<Messages<any>> {
         new Case(Redirect, (r: Redirect) => this.redirect(r.location, r.status))
 
     ];
+
+    }
 
     /**
      * runInContext given a list of filters, produces an

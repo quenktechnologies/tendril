@@ -68,11 +68,11 @@ class Callback<A> extends Temp<A> {
         public f: (a: A) => void,
         public app: App) { super(app); }
 
-    receive = [
+    receive() {
 
-        new Case(this.pattern, (a: A) => { this.f(a); })
+        return [new Case(this.pattern, (a: A) => { this.f(a); })        ];
 
-    ];
+    }
 
     run() {
 
@@ -122,7 +122,7 @@ export class Ask<N, A> extends Api<A> {
 
         let { to, message, next } = this;
 
-        return (<Future<A>>new Run<Message>((_,onSuccess) => {
+        return (<Future<A>>new Run<Message>((_, onSuccess) => {
 
             let id = uuid.v4();
             let cb = (t: Message) => onSuccess(t.value);
