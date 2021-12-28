@@ -1,8 +1,6 @@
-import { Immutable } from '@quenk/potoo/lib/actor/resident';
+import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
 
 export class Child extends Immutable<void> {
-
-    receive = [];
 
     stop() {
 

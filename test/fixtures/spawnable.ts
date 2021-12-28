@@ -1,10 +1,6 @@
-import { Immutable } from '@quenk/potoo/lib/actor/resident';
+import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
 
-import { App } from '../../src/app';
-
-export class Spawnable extends Immutable<void,  App> {
-
-    receive = [];
+export class Spawnable extends Immutable<void> {
 
     stop() {
 

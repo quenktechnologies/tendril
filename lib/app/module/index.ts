@@ -4,7 +4,7 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { just, nothing } from '@quenk/noni/lib/data/maybe';
 import { map } from '@quenk/noni/lib/data/record';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
-import { Immutable } from '@quenk/potoo/lib/actor/resident';
+import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
 
 import { getModule } from '../module/data';
 import { Request, Filter, ErrorFilter, ClientRequest } from '../api/request';

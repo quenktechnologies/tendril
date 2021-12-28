@@ -3,11 +3,8 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Future } from '@quenk/noni/lib/control/monad/future';
 import { PVM } from '@quenk/potoo/lib/actor/system/vm';
 import { System } from '@quenk/potoo/lib/actor/system';
-import { Instance } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { PTValue } from '@quenk/potoo/lib/actor/system/vm/type';
-import { Script } from '@quenk/potoo/lib/actor/system/vm/script';
 import { Server } from '../net/http/server';
 import { Template } from './module/template';
 import { ModuleData, ModuleDatas } from './module/data';
@@ -38,8 +35,7 @@ export declare class App implements System {
      * createDefaultStageBundle produces a StageBundle
      */
     static createDefaultStageBundle(app: App): StageBundle;
-    exec(i: Instance, s: Script): void;
-    execNow(i: Instance, s: Script): Maybe<PTValue>;
+    getPlatform(): PVM;
     /**
      * spawn a regular actor from a template.
      *

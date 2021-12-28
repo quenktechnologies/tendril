@@ -5,7 +5,9 @@ import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Constructor } from '@quenk/noni/lib/data/type/constructor';
-import { Temp } from '@quenk/potoo/lib/actor/resident';
+import { 
+  Callback as ResidentCallback 
+} from '@quenk/potoo/lib/actor/resident/immutable/callback';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { Message } from '@quenk/potoo/lib/actor/message';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
@@ -61,7 +63,7 @@ export class Tell<N, A> extends Api<A>{
 
 }
 
-class Callback<A> extends Temp<A> {
+class Callback<A> extends ResidentCallback<A> {
 
     constructor(
         public pattern: Constructor<A>,

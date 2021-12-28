@@ -13,11 +13,8 @@ import {
 } from '@quenk/noni/lib/control/monad/future';
 import { PVM } from '@quenk/potoo/lib/actor/system/vm';
 import { System } from '@quenk/potoo/lib/actor/system';
-import { Instance } from '@quenk/potoo/lib/actor';
 import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { PTValue } from '@quenk/potoo/lib/actor/system/vm/type';
-import { Script } from '@quenk/potoo/lib/actor/system/vm/script';
 
 import { Server } from '../net/http/server';
 import { getInstance } from './connection';
@@ -64,7 +61,7 @@ export class App implements System {
 
     main = <Template>this.provider(this);
 
-    vm = PVM.create(this, this.main.app && this.main.app.system || dconf);
+    vm: PVM = PVM.create(this, this.main.app && this.main.app.system || dconf);
 
     modules = <ModuleDatas>{};
 
@@ -109,15 +106,9 @@ export class App implements System {
 
     }
 
-    exec(i: Instance, s: Script): void {
+    getPlatform() {
 
-        return this.vm.exec(i, s);
-
-    }
-
-    execNow(i: Instance, s: Script): Maybe<PTValue> {
-
-        return this.vm.execNow(i, s);
+        return this.vm;
 
     }
 
@@ -128,7 +119,7 @@ export class App implements System {
      */
     spawn(tmpl: PotooTemplate): App {
 
-        this.vm.spawn(tmpl);
+        this.vm.spawn(this.vm,tmpl);
 
         return this;
 
@@ -149,7 +140,7 @@ export class App implements System {
         let t = merge(tmpl, { create: () => module });
 
         let address = parent.isNothing() ?
-            this.vm.spawn(<PotooTemplate>t) :
+            this.vm.spawn(this.vm,<PotooTemplate>t) :
             parent.get().module.spawn(t);
 
         let app = express();

@@ -81,7 +81,7 @@ describe('control', () => {
 
                     id: '/',
 
-                    create: (a: App) => new Module(a),
+                    create: () => new Module(app),
 
                     server: {
 
@@ -130,7 +130,7 @@ describe('control', () => {
 
                     id: '/',
 
-                    create: (a: App) => new Module(a),
+                    create: () => new Module(app),
 
                     server: {
 

@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
-import { Immutable } from '@quenk/potoo/lib/actor/resident';
+import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
 import { Filter, ErrorFilter } from '../api/request';
 import { App } from '../';
 /**

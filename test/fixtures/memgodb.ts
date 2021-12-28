@@ -3,7 +3,7 @@ import { Maybe, fromArray } from '@quenk/noni/lib/data/maybe';
 import { Object } from '@quenk/noni/lib/data/jsonx';
 import { reduce } from '@quenk/noni/lib/data/record';
 
-import { Connection } from '../../src/app/connection';
+import { Connection } from '../../lib/app/connection';
 
 export interface Db {
 

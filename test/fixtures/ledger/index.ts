@@ -97,7 +97,7 @@ export const template = (): Template => ({
 
         views: {
 
-            provider: () => show
+            provider: () => <any>show
 
         },
 
