@@ -60,7 +60,7 @@ export abstract class Response<B, A> extends Api<A> {
 
             ctx.response.end();
 
-            return <Future<A>>(that.abort ? ctx.abort : pure(next));
+            return <Future<A>>(that.abort ? ctx.abort() : pure(next));
 
         });
 
