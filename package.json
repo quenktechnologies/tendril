@@ -21,9 +21,9 @@
     "@types/express-session": "^1.17.3",
     "@types/mocha": "^8.2.1",
     "@types/morgan": "^1.9.2",
-    "@types/node": "^14.14.34",
+    "@types/node": "^14.18.5",
     "@types/superagent": "^4.1.4",
-    "@types/uuid": "^8.3.0",
+    "@types/uuid": "^8.3.4",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.0",
     "mocha": "^8.3.2",
@@ -34,8 +34,8 @@
     "uuid": "^8.3.2"
   },
   "dependencies": {
-    "@quenk/noni": "^1.41.1",
-    "@quenk/potoo": "^3.1.0-0",
+    "@quenk/noni": "^1.41.2",
+    "@quenk/potoo": "^3.1.1-0",
     "@types/body-parser": "^1.19.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.9.36",
