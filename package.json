@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@quenk/noni": "^1.41.2",
-    "@quenk/potoo": "^3.1.2-0",
+    "@quenk/potoo": "^3.1.3-0",
     "@types/body-parser": "^1.19.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.9.36",
