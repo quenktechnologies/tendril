@@ -17,9 +17,9 @@ export const template = (): Template => ({
 
         routes: (m: Module) => [
 
-            { method: 'get', path: '/', filters: [m.show('accounts')] },
-            { method: 'post', path: '/', filters: [handlers.create] },
-            { method: 'get', path: '/balance', filters: [m.show('balance')] }
+            { method: 'get', path: '/', filters: [m.show('accounts')],tags:{} },
+            { method: 'post', path: '/', filters: [handlers.create],tags:{} },
+            { method: 'get', path: '/balance', filters: [m.show('balance')],tags:{} }
 
         ],
 

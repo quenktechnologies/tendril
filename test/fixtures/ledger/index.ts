@@ -91,7 +91,7 @@ export const template = (): Template => ({
 
         routes: (m: Module) => [
 
-            { method: 'get', path: '/', filters: [m.show('index')] }
+            { method: 'get', path: '/', filters: [m.show('index')], tags:{} }
 
         ],
 

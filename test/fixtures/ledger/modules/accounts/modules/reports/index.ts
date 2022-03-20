@@ -14,7 +14,7 @@ export const template = (): Template => ({
 
         routes: (_: Module) => [
 
-            { method: 'get', path: '/', filters: [() => (show('reports'))] },
+            { method: 'get', path: '/', filters: [() => (show('reports'))],tags:{} },
 
             {
                 method: 'get',
@@ -22,7 +22,8 @@ export const template = (): Template => ({
                 filters: [
                     () => show('custom', { content: 'Custom' })
 
-                ]
+                ],
+              tags:{}
             },
             {
                 method: 'get', path: '/:report', filters: [
@@ -31,7 +32,8 @@ export const template = (): Template => ({
                     filters.quickShow,
                     () => (show('reports'))
 
-                ]
+                ],
+              tags:{}
             }]
 
     }

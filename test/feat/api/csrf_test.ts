@@ -95,7 +95,8 @@ const template = (): Template => ({
             {
                 method: 'get',
                 path: '/token',
-                filters: [getCSRFToken]
+                filters: [getCSRFToken],
+              tags:{}
             }
 
         ]

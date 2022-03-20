@@ -36,11 +36,9 @@ export class RoutingStage implements Stage {
                 // Add the module level filters before each filter.
                 mod.addRoutes(routes.map(r => ({
 
-                    method: r.method,
+                  ...r,
 
-                    path: r.path,
-
-                    filters: <Filter<undefined>[]>[...filters, ...r.filters]
+                    filters: <Filter<undefined>[]>[...filters, ...r.filters],
 
                 })));
 
@@ -53,7 +51,7 @@ export class RoutingStage implements Stage {
             exApp.use(mod.getRouter());
 
             if (temp.app && temp.app.on && temp.app.on.notFound)
-                exApp.use(mod.runInContext([temp.app.on.notFound]));
+                exApp.use(mod.runIn404Context(temp.app.on.notFound));
 
             if (temp.app && temp.app.on && temp.app.on.internalError)
                 exApp.use(mod.runInContextWithError(temp.app.on.internalError));

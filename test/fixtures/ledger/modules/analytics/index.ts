@@ -19,7 +19,9 @@ export const template = (): Template => ({
 
             path: '/',
 
-            filters: [() => (show('analytics'))]
+            filters: [() => (show('analytics'))],
+
+            tags: {}
 
         }],
 

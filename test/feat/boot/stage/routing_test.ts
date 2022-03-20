@@ -84,7 +84,8 @@ const template = (calls: number[]) => (): Template => ({
                                             calls.push(4);
                                             return ok();
 
-                                        }]
+                                        }],
+                                      tags:{}
                                     },
 
                                 ]

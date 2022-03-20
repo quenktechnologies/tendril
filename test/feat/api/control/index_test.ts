@@ -98,7 +98,8 @@ describe('control', () => {
                             {
                                 method: 'get',
                                 path: '/',
-                                filters: [doStop(counter)]
+                                filters: [doStop(counter)],
+                              tags:{}
                             }
 
                         ]
@@ -147,7 +148,8 @@ describe('control', () => {
                             {
                                 method: 'get',
                                 path: '/',
-                                filters: [doChainStop(counter)]
+                                filters: [doChainStop(counter)],
+                              tags:{}
                             }
 
                         ]

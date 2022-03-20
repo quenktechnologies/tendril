@@ -26,26 +26,26 @@ export const template = (): Template => ({
 
         routes: (_: Module) => [
 
-            { method: 'delete', path: '/', filters: [handlers.disable] },
-            { method: 'post', path: '/', filters: [handlers.enable] },
-            { method: 'put', path: '/', filters: [handlers.redirect] },
-            { method: 'get', path: '/ping', filters: [handlers.ping] },
-            { method: 'get', path: '/x-headers', filters: [handlers.xheaders] },
-            { method: 'get', path: '/crash', filters: [handlers.crash] },
-            { method: 'get', path: '/num', filters: [handlers.getNum] },
-            { method: 'post', path: '/num', filters: [handlers.saveNum] },
+            { method: 'delete', path: '/', filters: [handlers.disable],tags:{} },
+            { method: 'post', path: '/', filters: [handlers.enable] ,tags:{}},
+            { method: 'put', path: '/', filters: [handlers.redirect] ,tags:{}},
+            { method: 'get', path: '/ping', filters: [handlers.ping] ,tags:{}},
+            { method: 'get', path: '/x-headers', filters: [handlers.xheaders] ,tags:{}},
+            { method: 'get', path: '/crash', filters: [handlers.crash] ,tags:{}},
+            { method: 'get', path: '/num', filters: [handlers.getNum] ,tags:{}},
+            { method: 'post', path: '/num', filters: [handlers.saveNum] ,tags:{}},
             {
                 method: 'get', path: '/prs', filters: [
                     handlers.prsSet,
                     handlers.prsGet,
                     handlers.prsExists,
                     handlers.prsRemove
-                ]
+                ],tags:{}
             },
-            { method: 'get', path: '/session', filters: [handlers.sessionGet] },
-            { method: 'post', path: '/session', filters: [handlers.sessionSet] },
-            { method: 'head', path: '/session', filters: [handlers.sessionExists] },
-            { method: 'delete', path: '/session', filters: [handlers.sessionRemove] }
+            { method: 'get', path: '/session', filters: [handlers.sessionGet] ,tags:{}},
+            { method: 'post', path: '/session', filters: [handlers.sessionSet] ,tags:{}},
+            { method: 'head', path: '/session', filters: [handlers.sessionExists] ,tags:{}},
+            { method: 'delete', path: '/session', filters: [handlers.sessionRemove] ,tags:{}}
 
         ],
 

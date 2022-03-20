@@ -1,4 +1,3 @@
-import * as express from 'express';
 import * as csurf from 'csurf';
 import * as prs from '../../api/storage/prs';
 
@@ -121,29 +120,9 @@ export class CSRFTokenStage implements Stage {
 
                     }
 
-                    if (conf.on && conf.on.failure) {
-
-                        let filters = [conf.on.failure];
-
-                        //XXX:The casts to Type are used here because @types/express
-                        //has gone wacky. I don't have time for these shenanigans.
-                        //See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/40138
-                        let handler: Type = (
-                            err: Error,
-                            req: express.RequestHandler,
-                            res: express.Response,
-                            next: express.NextFunction) => {
-
-                            if ((<Type>err).code !== ERROR_TOKEN_INVALID)
-                                return next();
-
-                            m.module.runInContext(filters)(<Type>req, res, next);
-
-                        };
-
-                        m.app.use(handler);
-
-                    }
+                    if (conf.on && conf.on.failure) 
+                        m.app.use(m.module.runInCSRFErrorContext(
+                            [conf.on.failure]));
 
                 }
 

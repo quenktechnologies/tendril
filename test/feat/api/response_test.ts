@@ -90,7 +90,8 @@ const shouldAbort = (filter: Function, expect: number[]) =>
                     {
                         method: 'get',
                         path: '/',
-                        filters: [getFilter(list, filter)]
+                        filters: [getFilter(list, filter)],
+                      tags:{}
                     }
 
                 ]

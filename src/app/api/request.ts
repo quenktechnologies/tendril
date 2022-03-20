@@ -6,6 +6,7 @@ import { Record } from '@quenk/noni/lib/data/record';
 import { SessionStorage, EnabledSessionStorage } from './storage/session';
 import { PRSStorage } from './storage/prs';
 import { Action } from './';
+import { RouteConf } from '../module';
 
 /**
  * Method
@@ -40,14 +41,14 @@ export interface Request {
     method: string,
 
     /**
-     * url of the request.
-     */
-    url: string,
-
-    /**
      * path of the request.
      */
     path: string,
+
+    /**
+     * url of the request.
+     */
+    url: string,
 
     /**
      * params is an object containing properties mapped the named route
@@ -113,6 +114,11 @@ export interface Request {
     session: SessionStorage,
 
     /**
+     * route is the RouteConf object that was used to generate the Request.
+     */
+    route: RouteConf,
+
+    /**
      * toExpress provides the **express** framework request object.
      */
     toExpress(): express.Request
@@ -125,9 +131,10 @@ export interface Request {
 export class ClientRequest implements Request {
 
     constructor(
+        public route: RouteConf,
         public method: string,
-        public url: string,
         public path: string,
+        public url: string,
         public params: Record<string>,
         public query: Record<string>,
         public body: Value,
@@ -144,12 +151,13 @@ export class ClientRequest implements Request {
      * fromExpress constructs a ClientRequest from the express framework's
      * Request object.
      */
-    static fromExpress(r: express.Request) {
+    static fromExpress(r: express.Request, route: RouteConf) {
 
         return new ClientRequest(
+            route,
             r.method,
-            r.url,
             r.path,
+            r.url,
             r.params,
             <Record<string>>r.query,
             r.body,

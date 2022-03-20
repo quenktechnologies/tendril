@@ -108,12 +108,15 @@ const template = (): Template => ({
             {
                 method: 'get',
                 path: '/prs',
-                filters: [fromPRS]
+                filters: [fromPRS],
+              tags:{}
             },
             {
                 method: 'get',
                 path: '/view',
-                filters: [fromViewCtx]
+                filters: [fromViewCtx],
+              tags: {}
+
             }
 
         ],
@@ -133,12 +136,14 @@ const template = (): Template => ({
                         {
                             method: 'get',
                             path: '/prs',
-                            filters: [fromPRS]
+                            filters: [fromPRS],
+                          tags:{}
                         },
                         {
                             method: 'get',
                             path: '/view',
-                            filters: [fromViewCtx]
+                            filters: [fromViewCtx],
+                          tags:{}
                         }
 
                     ]

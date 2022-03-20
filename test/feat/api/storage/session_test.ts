@@ -62,17 +62,20 @@ const template = (): Template => ({
             {
                 method: 'get',
                 path: '/value-ttl',
-                filters: [getTTLValue]
+                filters: [getTTLValue],
+              tags:{}
             },
             {
                 method: 'post',
                 path: '/value-ttl',
-                filters: [setTTLValue('foo', 3)]
+                filters: [setTTLValue('foo', 3)],
+              tags:{}
             },
             {
                 method: 'get',
                 path: '/ok',
-                filters: [alwaysOk]
+                filters: [alwaysOk],
+              tags:{}
             }
 
         ]
