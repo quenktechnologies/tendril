@@ -1,11 +1,13 @@
 import * as express from 'express';
 
+import { Object } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { just, nothing } from '@quenk/noni/lib/data/maybe';
-import { map } from '@quenk/noni/lib/data/record';
+import { Record, forEach, merge } from '@quenk/noni/lib/data/record';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
 
+import { ERROR_TOKEN_INVALID } from '../boot/stage/csrf-token';
 import { getModule } from '../module/data';
 import { Request, Filter, ErrorFilter, ClientRequest } from '../api/request';
 import { show } from '../api/response';
@@ -33,6 +35,18 @@ export type Path = string;
 export type Method = string;
 
 /**
+ * PathConf is an object where the key is a URL path and the value a
+ * [[MethodConf]] object containing routes for the desired HTTP methods.
+ */
+export interface PathConf extends Record<MethodConf> { }
+
+/**
+ * MethodConf is an object where the key is a supported HTTP method and
+ * the value the route configuration to use for that method.
+ */
+export interface MethodConf extends Record<RouteConf[]> { }
+
+/**
  * RouteConf describes a route to be installed in the application.
  */
 export interface RouteConf {
@@ -50,7 +64,15 @@ export interface RouteConf {
     /**
      * filters applied when the route is executed.
      */
-    filters: Filter<void>[]
+    filters: Filter<void>[],
+
+    /**
+     * tags is an object containing values set on the Request by the routing
+     * configuration.
+     *
+     * These are useful for distinguishing what action take in common filters.
+     */
+    tags: Object,
 
 }
 
@@ -65,26 +87,10 @@ export interface RoutingInfo {
     before: Filter<Type>[],
 
     /**
-     * routes is the [[RoutingTable]] for those Filters that are executed based
-     * on the incomming request.
+     * routes is the [[PathConf]] for those Filters that are executed based
+     * on the incoming request.
      */
-    routes: RoutingTable
-
-}
-
-/**
- * RoutingTable contains route configuration for each path and supported method
- * in the module.
- *
- * The structure here is path.method = Filter[].
- */
-export interface RoutingTable {
-
-    [key: string]: {
-
-        [key: string]: Filter<Type>[]
-
-    }
+    routes: PathConf
 
 }
 
@@ -120,7 +126,7 @@ const defaultRouteInfo = () => ({ before: [], routes: {} });
  * application and can communicate with each other via the actor API.
  *
  * Think of all the routes of a Module as one big function that pattern
- * matches incomming requests.
+ * matches incoming requests.
  */
 export class Module extends Immutable<Messages<any>> {
 
@@ -130,57 +136,110 @@ export class Module extends Immutable<Messages<any>> {
 
     receive(): Case<Messages<void>>[] {
 
-      return <Case<Messages<void>>[]>[
+        return <Case<Messages<void>>[]>[
 
-        new Case(Disable, () => this.disable()),
+            new Case(Disable, () => this.disable()),
 
-        new Case(Enable, () => this.enable()),
+            new Case(Enable, () => this.enable()),
 
-        new Case(Redirect, (r: Redirect) => this.redirect(r.location, r.status))
+            new Case(Redirect, (r: Redirect) => this.redirect(r.location, r.status))
 
-    ];
+        ];
 
     }
 
     /**
-     * runInContext given a list of filters, produces an
-     * express request handler where the action is the
-     * interpretation of the filters.
+     * runInContext given a final RouteConf, produces an express request handler
+     * that executes each filter sequentially.
      */
-    runInContext = <A>(filters: Filter<A>[]): express.RequestHandler => (
+    runInContext = (route: RouteConf): express.RequestHandler => (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction) => {
 
         new RequestContext(
-          this,
-          ClientRequest.fromExpress(req),
-          res,
-          next,
-          filters.slice()
+            this,
+            ClientRequest.fromExpress(req, route),
+            res,
+            next,
+            route.filters.slice()
         ).run()
 
     }
 
     /**
+     * runIn404Context is used when a 404 handler filter is installed.
+     */
+    runIn404Context = (filter: Filter<void>): express.RequestHandler => (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction) => this.runInContext({
+
+            method: req.method,
+
+            path: '404',
+
+            filters: [filter],
+
+            tags: {}
+
+        })(req, res, next);
+
+    /**
      * runInContextWithError is used when an error occurs during request 
      * handling.
      */
-    runInContextWithError = (filter: ErrorFilter): express.ErrorRequestHandler =>
-        (err: Error,
-            req: express.Request,
-            res: express.Response,
-            next: express.NextFunction) => {
+    runInContextWithError =
+        (filter: ErrorFilter): express.ErrorRequestHandler =>
+            (err: Error,
+                req: express.Request,
+                res: express.Response,
+                next: express.NextFunction) => {
 
-            new RequestContext(
-              this,
-              ClientRequest.fromExpress(req),
-              res,
-              next,
-                [(r: Request) => filter(err, r)]
-            ).run();
+                new RequestContext(
+                    this,
+                    ClientRequest.fromExpress(req, {
 
-        }
+                        method: req.method,
+
+                        path: '?',
+
+                        filters: [],
+
+                        tags: {}
+
+                    }),
+                    res,
+                    next,
+                    [(r: Request) => filter(err, r)]
+                ).run();
+
+            };
+
+  /**
+   * runInCSRFErrorContext is used for CSRF error handling.
+   */
+    runInCSRFErrorContext = (filters: Filter<void>[]) => (
+        err: Error,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction) => {
+
+        if ((<Type>err).code !== ERROR_TOKEN_INVALID)
+            return next();
+
+        this.runInContext({
+
+            method: req.method,
+
+            path: '?',
+
+            filters,
+
+            tags: {}
+        })(<Type>req, res, next);
+
+    }
 
     /**
      * addBefore adds filters to the RoutingInfo that will be executed
@@ -196,25 +255,24 @@ export class Module extends Immutable<Messages<any>> {
     /**
      * addRoute to the internal routing table of this Module.
      *
-     * The routing table is only a cache and must be installed to an 
-     * [[express.Application]] in order to take effect.
+     * These routes are later installed to the result of getRouter().
      */
-    addRoute(method: Method, path: Path, filters: Filter<Type>[]): Module {
+    addRoute(conf: RouteConf): Module {
 
         let { routes } = this.routeInfo;
 
-        if (routes[path] != null) {
+        if (routes[conf.path] != null) {
 
-            let route = routes[path];
+            let route = routes[conf.path];
 
-            if (route[method] != null)
-                route[method] = [...route[method], ...filters];
+            if (route[conf.method] != null)
+                route[conf.method] = [...route[conf.method], conf];
             else
-                route[method] = filters;
+                route[conf.method] = [conf];
 
         } else {
 
-            routes[path] = { [method]: filters };
+            routes[conf.path] = { [conf.method]: [conf] };
 
         }
 
@@ -228,7 +286,7 @@ export class Module extends Immutable<Messages<any>> {
      */
     addRoutes(routes: RouteConf[]): Module {
 
-        routes.forEach(r => this.addRoute(r.method, r.path, r.filters));
+        routes.forEach(r => this.addRoute(r));
         return this;
 
     }
@@ -261,7 +319,7 @@ export class Module extends Immutable<Messages<any>> {
     }
 
     /**
-     * show constructrs a Filter for displaying a view.
+     * show constructors a Filter for displaying a view.
      */
     show(name: string, ctx?: object): Filter<undefined> {
 
@@ -277,12 +335,33 @@ export class Module extends Immutable<Messages<any>> {
         let router = express.Router();
         let { before, routes } = this.routeInfo;
 
-        map(routes, (conf, path) => {
+        forEach(routes, (methodConfs, path) => {
 
-            map(conf, (filters, method) => {
+            forEach(methodConfs, (confs, method) => {
 
-                let allFilters = [...before, ...filters];
-                (<Type>router)[method](path, this.runInContext(allFilters));
+                let filters = before.slice();
+
+                let tags = <Object>{}
+
+                confs.forEach(conf => {
+
+                    filters = [...filters, ...conf.filters]
+
+                    tags = merge(tags, conf.tags)
+
+                });
+
+                (<Type>router)[method](path, this.runInContext({
+
+                    method,
+
+                    path,
+
+                    filters,
+
+                    tags
+
+                }));
 
             });
 

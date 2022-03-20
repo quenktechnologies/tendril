@@ -4,6 +4,7 @@ import { Record } from '@quenk/noni/lib/data/record';
 import { SessionStorage } from './storage/session';
 import { PRSStorage } from './storage/prs';
 import { Action } from './';
+import { RouteConf } from '../module';
 /**
  * Method
  */
@@ -32,13 +33,13 @@ export interface Request {
      */
     method: string;
     /**
-     * url of the request.
-     */
-    url: string;
-    /**
      * path of the request.
      */
     path: string;
+    /**
+     * url of the request.
+     */
+    url: string;
     /**
      * params is an object containing properties mapped the named route
      * “parameters”.
@@ -93,6 +94,10 @@ export interface Request {
      */
     session: SessionStorage;
     /**
+     * route is the RouteConf object that was used to generate the Request.
+     */
+    route: RouteConf;
+    /**
      * toExpress provides the **express** framework request object.
      */
     toExpress(): express.Request;
@@ -101,9 +106,10 @@ export interface Request {
  * ClientRequest class.
  */
 export declare class ClientRequest implements Request {
+    route: RouteConf;
     method: string;
-    url: string;
     path: string;
+    url: string;
     params: Record<string>;
     query: Record<string>;
     body: Value;
@@ -115,11 +121,11 @@ export declare class ClientRequest implements Request {
     prs: PRSStorage;
     session: SessionStorage;
     expressRequest: express.Request;
-    constructor(method: string, url: string, path: string, params: Record<string>, query: Record<string>, body: Value, cookies: CookieData, signedCookies: CookieData, hostname: string, remoteAddress: string, protocol: string, prs: PRSStorage, session: SessionStorage, expressRequest: express.Request);
+    constructor(route: RouteConf, method: string, path: string, url: string, params: Record<string>, query: Record<string>, body: Value, cookies: CookieData, signedCookies: CookieData, hostname: string, remoteAddress: string, protocol: string, prs: PRSStorage, session: SessionStorage, expressRequest: express.Request);
     /**
      * fromExpress constructs a ClientRequest from the express framework's
      * Request object.
      */
-    static fromExpress(r: express.Request): ClientRequest;
+    static fromExpress(r: express.Request, route: RouteConf): ClientRequest;
     toExpress(): express.Request<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, globalThis.Record<string, any>>;
 }

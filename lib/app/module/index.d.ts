@@ -1,8 +1,10 @@
 import * as express from 'express';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
+import { Record } from '@quenk/noni/lib/data/record';
 import { Case } from '@quenk/potoo/lib/actor/resident/case';
 import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
-import { Filter, ErrorFilter } from '../api/request';
+import { Request, Filter, ErrorFilter } from '../api/request';
 import { App } from '../';
 /**
  * Messages supported by modules.
@@ -16,6 +18,18 @@ export declare type Path = string;
  * Method
  */
 export declare type Method = string;
+/**
+ * PathConf is an object where the key is a URL path and the value a
+ * [[MethodConf]] object containing routes for the desired HTTP methods.
+ */
+export interface PathConf extends Record<MethodConf> {
+}
+/**
+ * MethodConf is an object where the key is a supported HTTP method and
+ * the value the route configuration to use for that method.
+ */
+export interface MethodConf extends Record<RouteConf[]> {
+}
 /**
  * RouteConf describes a route to be installed in the application.
  */
@@ -32,6 +46,13 @@ export interface RouteConf {
      * filters applied when the route is executed.
      */
     filters: Filter<void>[];
+    /**
+     * tags is an object containing values set on the Request by the routing
+     * configuration.
+     *
+     * These are useful for distinguishing what action take in common filters.
+     */
+    tags: Object;
 }
 /**
  * RoutingInfo holds all the Module's routing information.
@@ -42,21 +63,10 @@ export interface RoutingInfo {
      */
     before: Filter<Type>[];
     /**
-     * routes is the [[RoutingTable]] for those Filters that are executed based
-     * on the incomming request.
+     * routes is the [[PathConf]] for those Filters that are executed based
+     * on the incoming request.
      */
-    routes: RoutingTable;
-}
-/**
- * RoutingTable contains route configuration for each path and supported method
- * in the module.
- *
- * The structure here is path.method = Filter[].
- */
-export interface RoutingTable {
-    [key: string]: {
-        [key: string]: Filter<Type>[];
-    };
+    routes: PathConf;
 }
 /**
  * Disable a Module.
@@ -87,7 +97,7 @@ export declare class Redirect {
  * application and can communicate with each other via the actor API.
  *
  * Think of all the routes of a Module as one big function that pattern
- * matches incomming requests.
+ * matches incoming requests.
  */
 export declare class Module extends Immutable<Messages<any>> {
     app: App;
@@ -95,16 +105,23 @@ export declare class Module extends Immutable<Messages<any>> {
     constructor(app: App, routeInfo?: RoutingInfo);
     receive(): Case<Messages<void>>[];
     /**
-     * runInContext given a list of filters, produces an
-     * express request handler where the action is the
-     * interpretation of the filters.
+     * runInContext given a final RouteConf, produces an express request handler
+     * that executes each filter sequentially.
      */
-    runInContext: <A>(filters: Filter<A>[]) => express.RequestHandler;
+    runInContext: (route: RouteConf) => express.RequestHandler;
+    /**
+     * runIn404Context is used when a 404 handler filter is installed.
+     */
+    runIn404Context: (filter: Filter<void>) => express.RequestHandler;
     /**
      * runInContextWithError is used when an error occurs during request
      * handling.
      */
     runInContextWithError: (filter: ErrorFilter) => express.ErrorRequestHandler;
+    /**
+     * runInCSRFErrorContext is used for CSRF error handling.
+     */
+    runInCSRFErrorContext: (filters: Filter<void>[]) => (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => void;
     /**
      * addBefore adds filters to the RoutingInfo that will be executed
      * before every route.
@@ -113,10 +130,9 @@ export declare class Module extends Immutable<Messages<any>> {
     /**
      * addRoute to the internal routing table of this Module.
      *
-     * The routing table is only a cache and must be installed to an
-     * [[express.Application]] in order to take effect.
+     * These routes are later installed to the result of getRouter().
      */
-    addRoute(method: Method, path: Path, filters: Filter<Type>[]): Module;
+    addRoute(conf: RouteConf): Module;
     /**
      * addRoutes
      * @deprecated
@@ -126,7 +142,7 @@ export declare class Module extends Immutable<Messages<any>> {
     enable(): void;
     redirect(location: string, status: number): void;
     /**
-     * show constructrs a Filter for displaying a view.
+     * show constructors a Filter for displaying a view.
      */
     show(name: string, ctx?: object): Filter<undefined>;
     /**
