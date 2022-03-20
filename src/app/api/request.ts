@@ -1,6 +1,6 @@
 import * as express from 'express';
 
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { Object,Value } from '@quenk/noni/lib/data/jsonx';
 import { Record } from '@quenk/noni/lib/data/record';
 
 import { SessionStorage, EnabledSessionStorage } from './storage/session';
@@ -59,12 +59,13 @@ export interface Request {
     /**
      * query string of the request parsed into an object.
      *
-     * This should NEVER be used directly without proper validation as it
-     * is based on user input. 
+     * This should NEVER be used directly without first proper validating 
+     * because it is based on user input. Object is used here so middleware and
+     * filters can shape it as needed.
      *
      * Empty object if query string parsing is disabled.
      */
-    query: Record<string>
+    query: Object
 
     /**
      * body of the request.
