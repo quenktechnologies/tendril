@@ -45,7 +45,7 @@ export interface RouteConf {
     /**
      * filters applied when the route is executed.
      */
-    filters: Filter<void>[];
+    filters: Filter<Type>[];
     /**
      * tags is an object containing values set on the Request by the routing
      * configuration.
@@ -103,7 +103,7 @@ export declare class Module extends Immutable<Messages<any>> {
     app: App;
     routeInfo: RoutingInfo;
     constructor(app: App, routeInfo?: RoutingInfo);
-    receive(): Case<Messages<void>>[];
+    receive(): Case<Messages<Type>>[];
     /**
      * runInContext given a final RouteConf, produces an express request handler
      * that executes each filter sequentially.
@@ -112,7 +112,7 @@ export declare class Module extends Immutable<Messages<any>> {
     /**
      * runIn404Context is used when a 404 handler filter is installed.
      */
-    runIn404Context: (filter: Filter<void>) => express.RequestHandler;
+    runIn404Context: (filter: Filter<Type>) => express.RequestHandler;
     /**
      * runInContextWithError is used when an error occurs during request
      * handling.
@@ -121,7 +121,7 @@ export declare class Module extends Immutable<Messages<any>> {
     /**
      * runInCSRFErrorContext is used for CSRF error handling.
      */
-    runInCSRFErrorContext: (filters: Filter<void>[]) => (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => void;
+    runInCSRFErrorContext: (filters: Filter<Type>[]) => (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => void;
     /**
      * addBefore adds filters to the RoutingInfo that will be executed
      * before every route.

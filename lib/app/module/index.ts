@@ -64,7 +64,7 @@ export interface RouteConf {
     /**
      * filters applied when the route is executed.
      */
-    filters: Filter<void>[],
+    filters: Filter<Type>[],
 
     /**
      * tags is an object containing values set on the Request by the routing
@@ -134,9 +134,9 @@ export class Module extends Immutable<Messages<any>> {
         public app: App,
         public routeInfo: RoutingInfo = defaultRouteInfo()) { super(app); }
 
-    receive(): Case<Messages<void>>[] {
+    receive(): Case<Messages<Type>>[] {
 
-        return <Case<Messages<void>>[]>[
+        return <Case<Messages<Type>>[]>[
 
             new Case(Disable, () => this.disable()),
 
@@ -170,7 +170,7 @@ export class Module extends Immutable<Messages<any>> {
     /**
      * runIn404Context is used when a 404 handler filter is installed.
      */
-    runIn404Context = (filter: Filter<void>): express.RequestHandler => (
+    runIn404Context = (filter: Filter<Type>): express.RequestHandler => (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction) => this.runInContext({
@@ -219,7 +219,7 @@ export class Module extends Immutable<Messages<any>> {
   /**
    * runInCSRFErrorContext is used for CSRF error handling.
    */
-    runInCSRFErrorContext = (filters: Filter<void>[]) => (
+    runInCSRFErrorContext = (filters: Filter<Type>[]) => (
         err: Error,
         req: express.Request,
         res: express.Response,
