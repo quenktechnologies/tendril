@@ -1,11 +1,9 @@
 import { join } from 'path';
 
 import { Future, attempt } from '@quenk/noni/lib/control/monad/future';
-import { Type } from '@quenk/noni/lib/data/type';
 import { empty, map } from '@quenk/noni/lib/data/record';
 import { just, Maybe } from '@quenk/noni/lib/data/maybe';
 
-import { Template } from '../../module/template';
 import { Filter } from '../../api/request';
 import { ModuleData, ModuleDatas } from '../../module/data';
 import { Stage } from './';
@@ -28,7 +26,7 @@ export class RoutingStage implements Stage {
             let mod = mconf.module;
             let exApp = mconf.app;
             let routes = mconf.routes(mod);
-            let temp: Template = <Template><Type>mconf.template;
+            let temp = mconf.template;
             let filters = getConfFilters(just(mconf));
 
             if (!empty(filters)) {
@@ -36,7 +34,7 @@ export class RoutingStage implements Stage {
                 // Add the module level filters before each filter.
                 mod.addRoutes(routes.map(r => ({
 
-                  ...r,
+                    ...r,
 
                     filters: <Filter<undefined>[]>[...filters, ...r.filters],
 
@@ -59,7 +57,10 @@ export class RoutingStage implements Stage {
             if (mconf.parent.isJust()) {
 
                 let parentExpApp = mconf.parent.get().app;
-                parentExpApp.use(join('/', mconf.path), exApp);
+
+                let path = temp?.app?.path || mconf.path;
+
+                parentExpApp.use(join('/', path), exApp);
 
             }
 
@@ -83,7 +84,7 @@ const getConfFilters = (mdata: Maybe<ModuleData>): Filter<void>[] => {
     while (current.isJust()) {
 
         let target = current.get();
-        let temp: Template = <Template><Type>target.template;
+        let temp = target.template;
 
         if (temp.app && temp.app.filters)
             filters = [...temp.app.filters, ...filters];

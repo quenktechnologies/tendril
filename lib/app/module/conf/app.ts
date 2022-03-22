@@ -21,6 +21,13 @@ import * as statics from '../../boot/stage/static';
  */
 export interface AppConf {
 
+  /**
+   * path to mount routes of the module.
+   *
+   * This allows modules to override paths specified elsewhere.
+   */
+    path?: string,
+
     system?: conf.Conf,
 
     on?: hooks.HookConf,

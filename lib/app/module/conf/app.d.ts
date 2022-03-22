@@ -18,6 +18,12 @@ import * as statics from '../../boot/stage/static';
  * for configuring tendril modules.
  */
 export interface AppConf {
+    /**
+     * path to mount routes of the module.
+     *
+     * This allows modules to override paths specified elsewhere.
+     */
+    path?: string;
     system?: conf.Conf;
     on?: hooks.HookConf;
     log?: log.LogConf;

@@ -35,6 +35,7 @@ const template = (calls: number[]) => (): Template => ({
         filters: [(r: Type) => {
 
             calls.push(1);
+
             return next(r);
 
         }],
@@ -52,6 +53,7 @@ const template = (calls: number[]) => (): Template => ({
                     filters: [(r: Type) => {
 
                         calls.push(2);
+
                         return next(r);
 
                     }],
@@ -70,6 +72,7 @@ const template = (calls: number[]) => (): Template => ({
                                     (r: Type) => {
 
                                         calls.push(3);
+
                                         return next(r);
 
                                     }],
@@ -77,15 +80,20 @@ const template = (calls: number[]) => (): Template => ({
                                 routes: () => [
 
                                     {
+
                                         method: 'get',
+
                                         path: '/',
+
                                         filters: [() => {
 
                                             calls.push(4);
+
                                             return ok();
 
                                         }],
-                                      tags:{}
+
+                                        tags: {}
                                     },
 
                                 ]
@@ -95,6 +103,33 @@ const template = (calls: number[]) => (): Template => ({
                         })
 
                     }
+
+                }
+
+            }),
+
+            child2: (): Template => ({
+
+                id: 'child2',
+
+                create: s => new Module(<App>s),
+
+                app: {
+
+                    path: 'alt',
+
+                    routes: () => [
+                        {
+                            method: 'get',
+
+                            path: '/',
+
+                            filters: [() => ok('alt')],
+
+                            tags: {}
+                        }
+
+                    ]
 
                 }
 
@@ -137,4 +172,20 @@ describe('routing', () => {
             return pure(undefined);
 
         })));
+
+    it('should install to app.path', () =>
+        doFuture(function*() {
+
+            let agent = createAgent();
+
+            let res = yield agent.get('/alt', {});
+
+            yield assert(res.code).equal(200);
+
+            yield assert(res.body.toString()).equate('alt');
+
+            return pure(undefined);
+
+        }))
+
 });
