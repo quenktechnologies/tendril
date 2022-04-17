@@ -14,12 +14,12 @@ import {
     doFuture
 } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
-import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe, nothing, fromNullable } from '@quenk/noni/lib/data/maybe';
 import { merge } from '@quenk/noni/lib/data/record';
 
 import { getModule } from '../../module/data';
 import { Api, Action, Context } from '../';
+import { Type } from '@quenk/noni/lib/data/type';
 
 export const PRS_VIEW_CONTEXT = '$view.context';
 
@@ -46,6 +46,12 @@ export abstract class Response<B, A> extends Api<A> {
 
     abstract map<AA>(f: (a: A) => AA): Response<B, AA>;
 
+    marshal(body: B): Type {
+
+        return body;
+
+    }
+
     exec(ctx: Context<A>): Future<A> {
 
         let that = this;
@@ -56,7 +62,7 @@ export abstract class Response<B, A> extends Api<A> {
             yield attempt(() => ctx.response.status(status));
 
             if (body.isJust())
-                ctx.response.send(body.get());
+                ctx.response.send(that.marshal(body.get()));
 
             ctx.response.end();
 
@@ -153,20 +159,21 @@ export class Created<B, A> extends Response<B, A> {
 /**
  * InternalServerError response.
  */
-export class InternalServerError<A> extends Response<Err, A> {
-
-    constructor(
-        public error: Maybe<Err>,
-        public abort: boolean,
-        public next: A) {
-
-        super(nothing(), abort, next);
-
-    }
+export class InternalServerError<B, A> extends Response<B, A> {
 
     status = status.INTERNAL_SERVER_ERROR;
 
-    map<B>(f: (a: A) => B): InternalServerError<B> {
+    marshal(value: B) {
+
+        if ((value instanceof Error) &&
+            !process.env.TENDRIL_DISABLE_500_ERROR_LOG)
+            console.error(value);
+
+        return process.env.TENDRIL_SEND_500_ERRORS ? value : '';
+
+    }
+
+    map<C>(f: (a: A) => C): InternalServerError<B, C> {
 
         return new InternalServerError(this.body, this.abort, f(this.next));
 
@@ -406,15 +413,17 @@ export const unauthorized = <A>(body?: A, abort = true): Action<undefined> =>
     liftF(new Unauthorized(fromNullable(body), abort, undefined));
 
 /**
- * error sends the "INTERNAL SERVER ERROR" status and can optionally log
+ * internalError sends the "INTERNAL SERVER ERROR" status and can optionally log
  * the error to console.
  *
- * @param body        - Serializable data to be used as the response body.
+ * @param err        - Serializable data to be used as the response body.
  * @param abort       - Flag indicating whether the response filter chain should
  *                      be terminated or not.
  */
-export const error = (err?: Err, abort = true): Action<undefined> =>
-    liftF(new InternalServerError(fromNullable(err), abort, undefined));
+export const internalError = (body?: object, abort = true): Action<undefined> =>
+    liftF(new InternalServerError(fromNullable(body), abort, undefined));
+
+export { internalError as error }
 
 /**
  * forbidden sends the "FORBIDDEN" status to the client with optional body.

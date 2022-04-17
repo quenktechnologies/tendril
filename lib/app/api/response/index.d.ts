@@ -3,9 +3,9 @@
  */
 import * as status from './status';
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { Err } from '@quenk/noni/lib/control/error';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { Api, Action, Context } from '../';
+import { Type } from '@quenk/noni/lib/data/type';
 export declare const PRS_VIEW_CONTEXT = "$view.context";
 /**
  * Headers map.
@@ -23,6 +23,7 @@ export declare abstract class Response<B, A> extends Api<A> {
     constructor(body: Maybe<B>, abort: boolean, next: A);
     abstract status: status.Status;
     abstract map<AA>(f: (a: A) => AA): Response<B, AA>;
+    marshal(body: B): Type;
     exec(ctx: Context<A>): Future<A>;
 }
 /**
@@ -66,13 +67,10 @@ export declare class Created<B, A> extends Response<B, A> {
 /**
  * InternalServerError response.
  */
-export declare class InternalServerError<A> extends Response<Err, A> {
-    error: Maybe<Err>;
-    abort: boolean;
-    next: A;
-    constructor(error: Maybe<Err>, abort: boolean, next: A);
+export declare class InternalServerError<B, A> extends Response<B, A> {
     status: number;
-    map<B>(f: (a: A) => B): InternalServerError<B>;
+    marshal(value: B): "" | B;
+    map<C>(f: (a: A) => C): InternalServerError<B, C>;
 }
 /**
  * Forbiddden response.
@@ -190,14 +188,15 @@ export declare const created: <A>(body?: A | undefined, abort?: boolean) => Acti
  */
 export declare const unauthorized: <A>(body?: A | undefined, abort?: boolean) => Action<undefined>;
 /**
- * error sends the "INTERNAL SERVER ERROR" status and can optionally log
+ * internalError sends the "INTERNAL SERVER ERROR" status and can optionally log
  * the error to console.
  *
- * @param body        - Serializable data to be used as the response body.
+ * @param err        - Serializable data to be used as the response body.
  * @param abort       - Flag indicating whether the response filter chain should
  *                      be terminated or not.
  */
-export declare const error: (err?: Err | undefined, abort?: boolean) => Action<undefined>;
+export declare const internalError: (body?: object | undefined, abort?: boolean) => Action<undefined>;
+export { internalError as error };
 /**
  * forbidden sends the "FORBIDDEN" status to the client with optional body.
  *
