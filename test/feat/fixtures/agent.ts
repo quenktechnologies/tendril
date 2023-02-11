@@ -16,11 +16,11 @@ const opts = () =>
 export const HOST = 'localhost';
 
 export const createAgent = (host: string = HOST) =>
-    new Agent(host, {}, new MemoryContainer(), opts(),
+    new Agent(host, new MemoryContainer(), opts(),
         new NodeHTTPTransport(new FormTransform(),
             new NoParser(), http.globalAgent), []);
 
 export const createJSONAgent = (host: string = HOST) =>
-    new Agent(host, {}, new MemoryContainer(), opts(),
+    new Agent(host, new MemoryContainer(), opts(),
         new NodeHTTPTransport(new JSONTransform(),
             new BufferToStringAdapter(new JSONParser()), http.globalAgent), []);
