@@ -8,5 +8,5 @@ on:
 
 jobs:
   release:
-    uses: quenktechnologies/.github/.github/workflows/node-build.yml
+    uses: quenktechnologies/.github/.github/workflows/node-build.yml@master
     secrets: inherit
