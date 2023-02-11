@@ -1,0 +1,12 @@
+name: Release
+on:
+  push:
+    branches:
+      - 'master'
+    tags: 
+      - 'v*'
+
+jobs:
+  release:
+    uses: quenktechnologies/.github/.github/workflows/node-publish.yml
+    secrets: inherit
