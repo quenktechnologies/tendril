@@ -1,8 +1,8 @@
 name: Test
 on:
   push:
-    refs: 
-      - 'refs/tags/v*'
+    branches: 
+      - master
 
 jobs:
   release:
