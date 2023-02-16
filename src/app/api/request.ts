@@ -1,9 +1,9 @@
 import * as express from 'express';
 
-import { Object,Value } from '@quenk/noni/lib/data/jsonx';
-import { Record } from '@quenk/noni/lib/data/record';
+import { Object, Value } from '@quenk/noni/lib/data/jsonx';
+import { merge, Record } from '@quenk/noni/lib/data/record';
 
-import { SessionStorage, EnabledSessionStorage } from './storage/session';
+import { SessionStorage, EnabledSessionStorage, DisabledSessionStorage } from './storage/session';
 import { PRSStorage } from './storage/prs';
 import { Action } from './';
 import { RouteConf } from '../module';
@@ -126,6 +126,28 @@ export interface Request {
 
 }
 
+const defaults: Partial<Request> = {
+    route: {
+        method: 'get',
+        path: '/',
+        filters: [],
+        tags: {},
+    },
+    method: 'GET',
+    path: '/',
+    url: 'example.com',
+    params: {},
+    query: {},
+    body: {},
+    cookies: {},
+    signedCookies: {},
+    hostname: 'example.com',
+    remoteAddress: '127.0.0.1',
+    protocol: 'http',
+    prs: new PRSStorage(),
+    session: new DisabledSessionStorage(),
+}
+
 /**
  * ClientRequest class.
  */
@@ -152,7 +174,7 @@ export class ClientRequest implements Request {
      * fromExpress constructs a ClientRequest from the express framework's
      * Request object.
      */
-    static fromExpress(r: express.Request, route: RouteConf) {
+    static fromExpress(r: express.Request, route: RouteConf): ClientRequest {
 
         return new ClientRequest(
             route,
@@ -170,6 +192,22 @@ export class ClientRequest implements Request {
             new PRSStorage(),
             EnabledSessionStorage.fromExpress(r),
             r);
+
+    }
+
+  /**
+   * fromPartialExpress produces a ClientRequest using defaults and a parial
+   * express.Request shape.
+   *
+   * This method exists mainly for testing and should not be use in production.
+   */
+    static fromPartialExpress(req: Partial<express.Request>): ClientRequest {
+
+        let opts = merge(defaults, req);
+
+        return ClientRequest.fromExpress(
+            <express.Request><object>opts,
+            <RouteConf>opts.route);
 
     }
 
