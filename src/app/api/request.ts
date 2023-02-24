@@ -2,8 +2,13 @@ import * as express from 'express';
 
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { merge, Record } from '@quenk/noni/lib/data/record';
+import { isObject } from '@quenk/noni/lib/data/type';
 
-import { SessionStorage, EnabledSessionStorage, DisabledSessionStorage } from './storage/session';
+import {
+    SessionStorage,
+    EnabledSessionStorage,
+    DisabledSessionStorage
+} from './storage/session';
 import { PRSStorage } from './storage/prs';
 import { Action } from './';
 import { RouteConf } from '../module';
@@ -29,6 +34,32 @@ export type ErrorFilter = (e: Error, r: Request) => Action<void>;
  * CookieData is a record containing key value pairs of parsed cookies.
  */
 export interface CookieData extends Record<string | string[]> { }
+
+/**
+ * PartialRequest describes the properties that can be specified to intialize
+ * a new Request instance from partial data.
+ */
+export interface PartialRequest extends Partial<express.Request> {
+
+    /**
+     * routeConf specifies the route configuration that would have yielded this
+     * request.
+     */
+    routeConf?: RouteConf
+
+    /**
+     * prsData specifies the PRSStorage instance to use or an object that will 
+     * be used as initial data.
+     */
+    prsData?: PRSStorage | Object,
+
+    /**
+     * sessionStorage specifies the SessionStorage instance to use or an object
+     * that will be used as initial data.
+     */
+    sessionData?: SessionStorage | Object
+
+}
 
 /**
  * Request represents a client request.
@@ -126,8 +157,8 @@ export interface Request {
 
 }
 
-const defaults: Partial<Request> = {
-    route: {
+const defaults: PartialRequest = {
+    routeConf: {
         method: 'get',
         path: '/',
         filters: [],
@@ -142,10 +173,10 @@ const defaults: Partial<Request> = {
     cookies: {},
     signedCookies: {},
     hostname: 'example.com',
-    remoteAddress: '127.0.0.1',
+    ip: '127.0.0.1',
     protocol: 'http',
-    prs: new PRSStorage(),
-    session: new DisabledSessionStorage(),
+    prsData: {},
+    sessionData: {},
 }
 
 /**
@@ -195,19 +226,45 @@ export class ClientRequest implements Request {
 
     }
 
-  /**
-   * fromPartialExpress produces a ClientRequest using defaults and a parial
-   * express.Request shape.
-   *
-   * This method exists mainly for testing and should not be use in production.
-   */
-    static fromPartialExpress(req: Partial<express.Request>): ClientRequest {
+    /**
+     * fromPartial produces a ClientRequest using defaults merged with the 
+     * specified PartialRequest.
+     *
+     * This method exists mainly for testing and should not be use in production.
+     */
+    static fromPartial(req: PartialRequest): ClientRequest {
 
         let opts = merge(defaults, req);
 
-        return ClientRequest.fromExpress(
-            <express.Request><object>opts,
-            <RouteConf>opts.route);
+        opts.prsData = (isObject(opts.prsData) &&
+            (opts.prsData instanceof PRSStorage)) ?
+            opts.prsData :
+            new PRSStorage(opts.prsData || {})
+
+        opts.sessionData = isObject(opts.sessionData) &&
+            (opts.sessionData instanceof EnabledSessionStorage) ||
+            (opts.sessionData instanceof DisabledSessionStorage) ?
+            opts.sessionData :
+            new EnabledSessionStorage(<Object>opts.sessionData);
+
+        let r = <express.Request>opts;
+
+        return new ClientRequest(
+            <RouteConf>opts.routeConf,
+            r.method,
+            r.path,
+            r.url,
+            r.params,
+            <Record<string>>r.query,
+            r.body,
+            r.cookies,
+            r.signedCookies,
+            r.hostname,
+            r.ip,
+            r.protocol,
+            <PRSStorage>opts.prsData,
+           <SessionStorage>opts.sessionData,
+            r);
 
     }
 
