@@ -13,6 +13,7 @@ import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Value, Object } from '@quenk/noni/lib/data/jsonx';
+import { clone } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 
@@ -62,9 +63,9 @@ export class GetOrElse<A> extends Api<A> {
     exec(ctx: Context<A>): Future<A> {
 
         return pure(this.next(ctx.request.prs.getOrElse(
-          this.key, 
-          this.value
-            )));
+            this.key,
+            this.value
+        )));
 
     }
 
@@ -162,6 +163,13 @@ export class PRSStorage implements Storage {
     getOrElse(key: string, alt: Value): Value {
 
         return path.getDefault(key, this.data, alt);
+
+    }
+
+    getAll(): Object {
+
+        return clone(this.data);
+
 
     }
 

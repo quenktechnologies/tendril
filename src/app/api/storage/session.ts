@@ -20,7 +20,7 @@ import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type, isFunction, isObject } from '@quenk/noni/lib/data/type';
 import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
-import { rcompact } from '@quenk/noni/lib/data/record';
+import { clone, rcompact } from '@quenk/noni/lib/data/record';
 
 import { Action, Api, Context } from '../';
 import { Storage } from './';
@@ -326,6 +326,13 @@ export class DisabledSessionStorage implements SessionStorage {
 
     }
 
+    getAll(): Object {
+
+        this.warn('getAll');
+        return {};
+
+    }
+
     exists(_key: string): boolean {
 
         this.warn('exists');
@@ -445,6 +452,12 @@ export class EnabledSessionStorage implements SessionStorage {
     getOrElse(key: string, alt: Value): Value {
 
         return path.getDefault(key, this.target(), alt);
+
+    }
+
+    getAll() : Object {
+
+      return clone(this.target());
 
     }
 

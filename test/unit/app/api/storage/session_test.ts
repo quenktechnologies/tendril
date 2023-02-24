@@ -6,7 +6,8 @@ import { Type } from '@quenk/noni/lib/data/type';
 
 import {
     EnabledSessionStorage,
-    DisabledSessionStorage
+    DisabledSessionStorage,
+    SESSION_DATA
 } from '../../../../../lib/app/api/storage/session';
 
 describe('session', () => {
@@ -76,6 +77,32 @@ describe('session', () => {
 
         });
 
+        describe('getAll', () => {
+
+            it('should return all values', () => {
+
+                let s = new EnabledSessionStorage({ 
+                  [SESSION_DATA]: {level: 12 }});
+
+                assert(s.getAll()).equate({ level: 12 });
+
+            });
+
+            it('should return a copy', () => {
+
+                let s = new EnabledSessionStorage({ [SESSION_DATA]: {
+                  level: 12 }});
+
+                let values = s.getAll();
+
+                s.set('level', 1);
+
+                assert(values).equate({ level: 12 });
+
+            });
+
+        });
+
         describe('set', () => {
 
             it('should set session values', () => {
@@ -120,7 +147,7 @@ describe('session', () => {
             it('should work', () => {
 
                 let sessionData = <Type>{
-                  [session.SESSION_DATA]: <Object>{value:12} 
+                    [session.SESSION_DATA]: <Object>{ value: 12 }
                 };
 
                 let s = new EnabledSessionStorage(sessionData);

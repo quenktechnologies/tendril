@@ -1,4 +1,4 @@
-import { Value } from '@quenk/noni/lib/data/jsonx';
+import { Object,Value } from '@quenk/noni/lib/data/jsonx';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 /**
@@ -16,6 +16,11 @@ export interface Storage {
      * found.
      */
     getOrElse(key: string, alt: Value): Value
+
+    /**
+     * getAll returns a copy of all the values in storage.
+     */
+    getAll(): Object
 
     /**
      * set the value of a key in storage.

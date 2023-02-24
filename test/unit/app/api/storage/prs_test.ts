@@ -44,6 +44,30 @@ describe('prs', () => {
 
         });
 
+        describe('getAll', () => {
+
+            it('should return all values', () => {
+
+              let s = new PRSStorage({level: 12});
+              
+              assert(s.getAll()).equate({level: 12});
+              
+            });
+
+            it('should return a copy', () => {
+
+              let s = new PRSStorage({level: 12});
+
+              let values = s.getAll();
+
+              s.set('level', 1);
+
+              assert(values).equate({level: 12});
+              
+            });
+          
+        });
+
         describe('set', () => {
 
             it('should set values', () => {
