@@ -7,7 +7,8 @@ import { isObject } from '@quenk/noni/lib/data/type';
 import {
     SessionStorage,
     EnabledSessionStorage,
-    DisabledSessionStorage
+    DisabledSessionStorage,
+    SESSION_DATA
 } from './storage/session';
 import { PRSStorage } from './storage/prs';
 import { Action } from './';
@@ -245,7 +246,9 @@ export class ClientRequest implements Request {
             (opts.sessionData instanceof EnabledSessionStorage) ||
             (opts.sessionData instanceof DisabledSessionStorage) ?
             opts.sessionData :
-            new EnabledSessionStorage(<Object>opts.sessionData);
+            new EnabledSessionStorage({
+              [SESSION_DATA]:<Object>opts.sessionData || {}
+            });
 
         let r = <express.Request>opts;
 
@@ -263,7 +266,7 @@ export class ClientRequest implements Request {
             r.ip,
             r.protocol,
             <PRSStorage>opts.prsData,
-           <SessionStorage>opts.sessionData,
+            <SessionStorage>opts.sessionData,
             r);
 
     }
