@@ -1,16 +1,26 @@
-# Tendril Changelog
+# Tendril
+
+## [0.43.13] - 2023-03-02
+
+### Changed
+ - Route tags are now added to PRS automatically.
+ 
+### Added
+ - CI scripts for github actions.
 
 ## [0.42.3] - 2021-12-01
-## Changed
+
+### Changed
 - Filters declared at the conf level are now inherited by child modules.
 
 ## [0.42.2] - 2020-11-28
-## Added
+
+### Added
 - Added the `abort()` function to the control API so chains can be exited early.
 
 ## [0.42.0] - 2020-11-22
 
-## Changed
+### Changed
 - `app.api.Request` is no longer an alias for ExpressJS's Request object.
 - Request object now has APIs for PRS and session storage. The Action based 
   APIs may be removed in the future.
