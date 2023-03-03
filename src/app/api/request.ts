@@ -1,7 +1,7 @@
 import * as express from 'express';
 
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
-import { merge, Record } from '@quenk/noni/lib/data/record';
+import { clone, merge, Record } from '@quenk/noni/lib/data/record';
 import { isObject } from '@quenk/noni/lib/data/type';
 
 import {
@@ -221,7 +221,7 @@ export class ClientRequest implements Request {
             r.hostname,
             r.ip,
             r.protocol,
-            new PRSStorage(),
+            new PRSStorage(clone(route.tags)),
             EnabledSessionStorage.fromExpress(r),
             r);
 
@@ -240,7 +240,8 @@ export class ClientRequest implements Request {
         opts.prsData = (isObject(opts.prsData) &&
             (opts.prsData instanceof PRSStorage)) ?
             opts.prsData :
-            new PRSStorage(opts.prsData || {})
+            new PRSStorage(merge((<RouteConf>opts.routeConf).tags,
+              opts.prsData || {}))
 
         opts.sessionData = isObject(opts.sessionData) &&
             (opts.sessionData instanceof EnabledSessionStorage) ||
