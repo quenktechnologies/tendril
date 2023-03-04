@@ -1,5 +1,10 @@
 # Tendril
 
+## [0.43.14] - 2023-03-04
+
+### Added
+ - Add getInstance() to Pool class.
+
 ## [0.43.13] - 2023-03-02
 
 ### Changed
