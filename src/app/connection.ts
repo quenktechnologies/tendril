@@ -82,6 +82,15 @@ export class Pool {
 
     constructor(public conns: ConnectionStore) { }
 
+  /**
+   * getInstance provides the singleton instance of the connection pool.
+   */
+    static getInstance() {
+
+        return pool;
+
+    }
+
     /**
      * add a new Connection to the pool.
      */
@@ -154,5 +163,5 @@ export const getUserConnection = <T>(name: string): Future<Maybe<T>> =>
  *
  * If the the connection does not exist, the Future will raise an exception.
  */
-export const unsafeGetUserConnection = <T>(name:string) : Future<T> =>
-  getUserConnection(name).map(m => <T>m.get());
+export const unsafeGetUserConnection = <T>(name: string): Future<T> =>
+    getUserConnection(name).map(m => <T>m.get());
