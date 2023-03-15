@@ -221,7 +221,7 @@ export class ClientRequest implements Request {
             r.hostname,
             r.ip,
             r.protocol,
-            new PRSStorage(clone(route.tags)),
+            new PRSStorage(clone({tags: route.tags})),
             EnabledSessionStorage.fromExpress(r),
             r);
 
@@ -240,7 +240,7 @@ export class ClientRequest implements Request {
         opts.prsData = (isObject(opts.prsData) &&
             (opts.prsData instanceof PRSStorage)) ?
             opts.prsData :
-            new PRSStorage(rmerge((<RouteConf>opts.routeConf).tags,
+            new PRSStorage(rmerge({tags:(<RouteConf>opts.routeConf).tags},
               opts.prsData || {}))
 
         opts.sessionData = isObject(opts.sessionData) &&
