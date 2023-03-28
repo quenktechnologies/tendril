@@ -124,7 +124,7 @@ export class Ask<N, A> extends Api<A> {
 
         let { to, message, next } = this;
 
-        return (<Future<A>>new Run<Message>((_, onSuccess) => {
+        return (<Future<A>>new Run<Message>(()=> new Promise((onSuccess) => {
 
             let id = uuid.v4();
             let cb = (t: Message) => onSuccess(t.value);
@@ -139,7 +139,7 @@ export class Ask<N, A> extends Api<A> {
 
             return () => { }
 
-        }))
+        })))
             .chain(v => pure(next(v)));
 
     }
