@@ -1,10 +1,11 @@
-import * as uuid from 'uuid';
 import { resolve } from 'path';
 
 import { liftF } from '@quenk/noni/lib/control/monad/free';
 import { Future, Run, pure } from '@quenk/noni/lib/control/monad/future';
 import { compose, identity } from '@quenk/noni/lib/data/function';
 import { Constructor } from '@quenk/noni/lib/data/type/constructor';
+import { generateV4} from '@quenk/noni/lib/crypto/uuid';
+
 import { 
   Callback as ResidentCallback 
 } from '@quenk/potoo/lib/actor/resident/immutable/callback';
@@ -126,7 +127,7 @@ export class Ask<N, A> extends Api<A> {
 
         return (<Future<A>>new Run<Message>(()=> new Promise((onSuccess) => {
 
-            let id = uuid.v4();
+            let id = generateV4();
             let cb = (t: Message) => onSuccess(t.value);
 
             ctx.module.spawn({
