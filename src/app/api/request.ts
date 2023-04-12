@@ -13,6 +13,7 @@ import {
 import { PRSStorage } from './storage/prs';
 import { Action } from './';
 import { RouteConf } from '../module';
+import { CookieManager, CookieStorage, MapCookieManager } from './storage/cookie';
 
 /**
  * Method
@@ -30,11 +31,6 @@ export type Filter<A> = (r: Request) => Action<A>;
  * ErrorFilter functions are applied to a request when it triggers an error.
  */
 export type ErrorFilter = (e: Error, r: Request) => Action<void>;
-
-/**
- * CookieData is a record containing key value pairs of parsed cookies.
- */
-export interface CookieData extends Record<string | string[]> { }
 
 /**
  * PartialRequest describes the properties that can be specified to intialize
@@ -59,6 +55,11 @@ export interface PartialRequest extends Partial<express.Request> {
      * that will be used as initial data.
      */
     sessionData?: SessionStorage | Object
+
+    /**
+     * cookieManager for setting and clearing cookies.
+     */
+    cookieManager?: CookieManager
 
 }
 
@@ -108,18 +109,8 @@ export interface Request {
 
     /**
      * cookies sent with the request if the cookie parser is enabled.
-     *
-     * Empty object otherwise.
      */
-    cookies: CookieData,
-
-    /**
-     * signedCookies sent with the request if cookie parsing and signing is 
-     * enabled.
-     *
-     * Empty object otherwise.
-     */
-    signedCookies: CookieData,
+    cookies: CookieStorage,
 
     /**
      * hostname derived from the Host HTTP header.
@@ -193,8 +184,7 @@ export class ClientRequest implements Request {
         public params: Record<string>,
         public query: Record<string>,
         public body: Value,
-        public cookies: CookieData,
-        public signedCookies: CookieData,
+        public cookies: CookieStorage,
         public hostname: string,
         public remoteAddress: string,
         public protocol: string,
@@ -206,24 +196,26 @@ export class ClientRequest implements Request {
      * fromExpress constructs a ClientRequest from the express framework's
      * Request object.
      */
-    static fromExpress(r: express.Request, route: RouteConf): ClientRequest {
+    static fromExpress(
+        req: express.Request,
+        res: express.Response,
+        route: RouteConf): ClientRequest {
 
         return new ClientRequest(
             route,
-            r.method,
-            r.path,
-            r.url,
-            r.params,
-            <Record<string>>r.query,
-            r.body,
-            r.cookies,
-            r.signedCookies,
-            r.hostname,
-            r.ip,
-            r.protocol,
-            new PRSStorage(clone({tags: route.tags})),
-            EnabledSessionStorage.fromExpress(r),
-            r);
+            req.method,
+            req.path,
+            req.url,
+            req.params,
+            <Record<string>>req.query,
+            req.body,
+            new CookieStorage(req.cookies, res),
+            req.hostname,
+            req.ip,
+            req.protocol,
+            new PRSStorage(clone({ tags: route.tags })),
+            EnabledSessionStorage.fromExpress(req),
+            req);
 
     }
 
@@ -240,16 +232,19 @@ export class ClientRequest implements Request {
         opts.prsData = (isObject(opts.prsData) &&
             (opts.prsData instanceof PRSStorage)) ?
             opts.prsData :
-            new PRSStorage(rmerge({tags:(<RouteConf>opts.routeConf).tags},
-              opts.prsData || {}))
+            new PRSStorage(rmerge({ tags: (<RouteConf>opts.routeConf).tags },
+                opts.prsData || {}))
 
         opts.sessionData = isObject(opts.sessionData) &&
             (opts.sessionData instanceof EnabledSessionStorage) ||
             (opts.sessionData instanceof DisabledSessionStorage) ?
             opts.sessionData :
             new EnabledSessionStorage({
-              [SESSION_DATA]:<Object>opts.sessionData || {}
+                [SESSION_DATA]: <Object>opts.sessionData || {}
             });
+
+        let cookies = new CookieStorage(opts.signedCookies, opts.cookieManager ? 
+          opts.cookieManager: new MapCookieManager(opts.signedCookies));
 
         let r = <express.Request>opts;
 
@@ -261,8 +256,7 @@ export class ClientRequest implements Request {
             r.params,
             <Record<string>>r.query,
             r.body,
-            r.cookies,
-            r.signedCookies,
+          cookies,
             r.hostname,
             r.ip,
             r.protocol,

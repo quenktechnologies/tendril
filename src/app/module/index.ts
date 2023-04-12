@@ -159,7 +159,7 @@ export class Module extends Immutable<Messages<any>> {
 
         new RequestContext(
             this,
-            ClientRequest.fromExpress(req, route),
+            ClientRequest.fromExpress(req, res, route),
             res,
             next,
             route.filters.slice()
@@ -198,7 +198,7 @@ export class Module extends Immutable<Messages<any>> {
 
                 new RequestContext(
                     this,
-                    ClientRequest.fromExpress(req, {
+                    ClientRequest.fromExpress(req, res,{
 
                         method: req.method,
 
@@ -216,9 +216,9 @@ export class Module extends Immutable<Messages<any>> {
 
             };
 
-  /**
-   * runInCSRFErrorContext is used for CSRF error handling.
-   */
+    /**
+     * runInCSRFErrorContext is used for CSRF error handling.
+     */
     runInCSRFErrorContext = (filters: Filter<Type>[]) => (
         err: Error,
         req: express.Request,
