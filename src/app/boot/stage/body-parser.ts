@@ -1,119 +1,102 @@
 import * as parser from 'body-parser';
 
-import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
-import { map,merge } from '@quenk/noni/lib/data/record';
+import { map, merge } from '@quenk/noni/lib/data/record';
 
 import { ModuleDatas } from '../../module/data';
 import { Stage } from './';
 
 /**
- * BodyParserConf can be configured to enabled various request body parsing 
+ * BodyParserConf can be configured to enabled various request body parsing
  * algorithims.
  */
 export interface BodyParserConf {
-
     /**
      * json configures parsing for json body types.
      */
     json?: {
-
         /**
          * enable this parser.
          */
-        enable?: boolean,
+        enable?: boolean;
 
         /**
          * options for the parser.
          */
-        options?: parser.OptionsJson
-
-    },
+        options?: parser.OptionsJson;
+    };
 
     /**
      * raw configures parsing of the body into a Buffer.
      */
     raw?: {
-
         /**
          * enable this parser.
          */
-        enable?: boolean,
+        enable?: boolean;
 
         /**
          * options for this parser.
          */
-        options?: parser.Options
-
-    },
+        options?: parser.Options;
+    };
 
     /**
      * text configures parsing of the body as text.
      */
     text?: {
-
         /**
          * enable this parser.
          */
-        enable?: boolean,
+        enable?: boolean;
 
         /**
          * options for this parser.
          */
-        options?: parser.OptionsText
-
-    },
+        options?: parser.OptionsText;
+    };
 
     /**
      * urlencoded configures parsing the body as url-encoded text.
      */
     urlencoded?: {
-
         /**
          * enable this parser.
          */
-        enable?: boolean,
+        enable?: boolean;
 
         /**
          * options for this parser.
          */
-        options?: parser.OptionsUrlencoded
-
-    }
-
+        options?: parser.OptionsUrlencoded;
+    };
 }
 
 const defaults = {
-
-  urlencoded: { enable: true }
-
-}
+    urlencoded: { enable: true }
+};
 
 /**
  * BodyParserStage configures middleware for parsing request bodies into desired
  * values.
  */
 export class BodyParserStage implements Stage {
-
-    constructor(public modules: ModuleDatas) { }
+    constructor(public modules: ModuleDatas) {}
 
     name = 'body-parser';
 
-    execute(): Future<void> {
-
+    async execute() {
         let { modules } = this;
 
-      return fromCallback(cb => {
-
         map(modules, m => {
-
             let { app } = m;
 
-            if (m.template &&
+            if (
+                m.template &&
                 m.template.app &&
                 m.template.app.parsers &&
-                m.template.app.parsers.body) {
-
-                let body = merge (defaults, m.template.app.parsers.body);
+                m.template.app.parsers.body
+            ) {
+                let body = merge(defaults, m.template.app.parsers.body);
 
                 if (body.json && body.json.enable)
                     app.use(parser.json(body.json.options));
@@ -126,14 +109,7 @@ export class BodyParserStage implements Stage {
 
                 if (body.urlencoded && body.urlencoded.enable)
                     app.use(parser.urlencoded(body.urlencoded.options));
-
             }
-
         });
-
-        cb(null);
-
-      });
-
     }
 }

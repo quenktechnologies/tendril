@@ -3,7 +3,6 @@ import * as prs from '../../../../lib/app/api/storage/prs';
 
 import {
     Future,
-    toPromise,
     doFuture,
     attempt,
     pure
@@ -12,27 +11,26 @@ import { assert } from '@quenk/test/lib/assert';
 
 import { Template } from '../../../../lib/app/module/template';
 import { ok, show } from '../../../../lib/app/api/response';
-import { Module } from '../../../../lib/app/module';
 import { doAction } from '../../../../lib/app/api';
 import { App } from '../../../../lib/app';
 import { Content } from '../../../../lib/app/show';
 import { createAgent } from '../../fixtures/agent';
-import {
-    PRS_CSRF_TOKEN
-} from '../../../../lib/app/boot/stage/csrf-token';
+import { PRS_CSRF_TOKEN } from '../../../../lib/app/boot/stage/csrf-token';
 
 process.env.PORT = '8888';
 
 let token = '';
 
-const fromPRS = () => doAction<undefined>(function*() {
-    let value = yield prs.get(PRS_CSRF_TOKEN);
-    return ok(value.get());
-});
+const fromPRS = () =>
+    doAction<undefined>(function* () {
+        let value = yield prs.get(PRS_CSRF_TOKEN);
+        return ok(value.get());
+    });
 
-const fromViewCtx = () => doAction<undefined>(function*() {
-    return show('');
-});
+const fromViewCtx = () =>
+    doAction<undefined>(function* () {
+        return show('');
+    });
 
 const showFunc = (_: string, ctx: any): Future<Content> =>
     pure(<Content>{
@@ -41,134 +39,101 @@ const showFunc = (_: string, ctx: any): Future<Content> =>
     });
 
 const template = (): Template => ({
-
     id: '/',
 
-    create: s => new Module(<App>s),
-
     server: {
-
         host: 'localhost',
 
         port: Number(process.env.PORT)
-
     },
 
     app: {
-
         session: {
-
             enable: true
-
         },
 
         csrf: {
-
             token: {
-
                 enable: true
-
             }
-
         },
 
         middleware: {
-
             available: {
-
                 capture: {
+                    provider:
+                        () =>
+                        (
+                            req: express.Request,
+                            _: express.Response,
+                            next: express.NextFunction
+                        ) => {
+                            token = req.csrfToken();
 
-                    provider: () => (
-                        req: express.Request,
-                        _: express.Response,
-                        next: express.NextFunction) => {
-
-                        token = req.csrfToken();
-
-                        next();
-
-                    },
-
+                            next();
+                        }
                 }
-
             },
 
             enabled: ['capture']
-
         },
 
         views: {
-
             provider: () => showFunc
-
         },
 
         routes: () => [
-
             {
                 method: 'get',
                 path: '/prs',
                 filters: [fromPRS],
-              tags:{}
+                tags: {}
             },
             {
                 method: 'get',
                 path: '/view',
                 filters: [fromViewCtx],
-              tags: {}
-
+                tags: {}
             }
-
         ],
 
         modules: {
-
             child0: (): Template => ({
-
                 id: 'child0',
 
-                create: s => new Module(<App>s),
-
                 app: {
-
                     routes: () => [
-
                         {
                             method: 'get',
                             path: '/prs',
                             filters: [fromPRS],
-                          tags:{}
+                            tags: {}
                         },
                         {
                             method: 'get',
                             path: '/view',
                             filters: [fromViewCtx],
-                          tags:{}
+                            tags: {}
                         }
-
                     ]
-
                 }
-
             })
-
         }
-
     }
-
-})
+});
 
 describe('csrf-token', () => {
+    let app: App;
 
-    let app = new App(template);
+    beforeEach(() => {
+        app = new App(template);
+        return app.start();
+    });
 
-    beforeEach(() => toPromise(app.start()));
-
-    afterEach(() => toPromise(app.stop()));
+    afterEach(() => app.stop());
 
     it('should provide the current csrf token via PRS', () =>
-        toPromise(doFuture<undefined>(function*() {
-
+        doFuture<undefined>(function* () {
             let agent = createAgent();
             let res = yield agent.get('/prs', {});
 
@@ -177,12 +142,10 @@ describe('csrf-token', () => {
             });
 
             return pure(undefined);
-
-        })));
+        }));
 
     it('should provide the current csrf token via the view context', () =>
-        toPromise(doFuture<undefined>(function*() {
-
+        doFuture<undefined>(function* () {
             let agent = createAgent();
             let res = yield agent.get('/view', {});
 
@@ -191,12 +154,10 @@ describe('csrf-token', () => {
             });
 
             return pure(undefined);
-
-        })));
+        }));
 
     it('should provide the PRS token if child does not enable csrf', () =>
-        toPromise(doFuture<undefined>(function*() {
-
+        doFuture<undefined>(function* () {
             let agent = createAgent();
             let res = yield agent.get('/child0/prs', {});
 
@@ -205,12 +166,10 @@ describe('csrf-token', () => {
             });
 
             return pure(undefined);
-
-        })));
+        }));
 
     it('should provide the view context token if child does not enable csrf', () =>
-        toPromise(doFuture<undefined>(function*() {
-
+        doFuture<undefined>(function* () {
             let agent = createAgent();
             let res = yield agent.get('/child0/view', {});
 
@@ -219,6 +178,5 @@ describe('csrf-token', () => {
             });
 
             return pure(undefined);
-
-        })));
+        }));
 });

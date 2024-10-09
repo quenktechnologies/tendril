@@ -22,96 +22,92 @@ export type LookupFunc<T> = (mData: ModuleData) => LookupResult<T>;
 /**
  * LookupResult is either the value desired or undefined if not found.
  */
-export type LookupResult<T>
-    = T
-    | undefined
-    ;
+export type LookupResult<T> = T | undefined;
 
 /**
  * ModuleDatas map.
  */
-export interface ModuleDatas extends Record<ModuleData> { }
+export interface ModuleDatas extends Record<ModuleData> {}
 
 /**
  * ModuleData stores information about modules in the app.
  */
 export interface ModuleData {
-
     /**
      * path is the mount point of the module.
      */
-    path: string,
+    path: string;
 
     /**
      * address of the module in the system.
      */
-    address: Address,
+    address: Address;
 
     /**
      * parent context for this context.
      */
-    parent: Maybe<ModuleData>,
+    parent: Maybe<ModuleData>;
 
     /**
      * module instance
      */
-    module: M,
+    module: M;
 
     /**
      * template used to spawn the module.
      */
-    template: Template,
+    template: Template;
 
     /**
      * app (express) for the module.
      */
-    app: express.Application,
+    app: express.Application;
 
     /**
      * hooks installed for the module.
      */
-    hooks: HookConf,
+    hooks: HookConf;
 
     /**
      * middleware configuration for the module.
      */
-    middleware: { enabled: string[], available: Middlewares },
+    middleware: { enabled: string[]; available: Middlewares };
 
     /**
      * routes (express) for the module.
      */
-    routes: Routes,
+    routes: Routes;
 
     /**
      * show function configured for the module (if any).
      */
-    show: Maybe<Show>,
+    show: Maybe<Show>;
 
     /**
      * connections belonging to the module.
      */
-    connections: Connections
+    connections: Connections;
 
     /**
      * disabled indicates whether the routes of the module should be
      * served or not.
      */
-    disabled: boolean,
+    disabled: boolean;
 
     /**
      * redirect if set will force redirect all requests to
      * the module's routes.
      */
-    redirect: Maybe<{ status: number, location: string }>
-
+    redirect: Maybe<{ status: number; location: string }>;
 }
 
 /**
  * getModule provides a module given an address.
  */
-export const getModule =
-    (data: ModuleDatas, addr: Address): Maybe<ModuleData> =>
-        fromNullable(data[addr]);
+export const getModule = (
+    data: ModuleDatas,
+    addr: Address
+): Maybe<ModuleData> => fromNullable(data[addr]);
 
 /**
  * getValue from a ModuleData looking up the value on the parent recursively
@@ -119,25 +115,20 @@ export const getModule =
  *
  * Think of this function as prototype inheritance for tendril ModuleDatas.
  */
-export const getValue =
-    <T>(mData: ModuleData, f: LookupFunc<T>): LookupResult<T> => {
+export const getValue = <T>(
+    mData: ModuleData,
+    f: LookupFunc<T>
+): LookupResult<T> => {
+    let current = mData;
+    let result;
 
-        let current = mData;
-        let result;
+    while (true) {
+        result = f(current);
 
-        while (true) {
-
-            result = f(current);
-
-            if (result != null)
-                break;
-            else if (current.parent.isJust())
-                current = current.parent.get();
-            else
-                break;
-
-        }
-
-        return result;
-
+        if (result != null) break;
+        else if (current.parent.isJust()) current = current.parent.get();
+        else break;
     }
+
+    return result;
+};

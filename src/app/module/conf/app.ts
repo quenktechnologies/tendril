@@ -16,65 +16,55 @@ import * as statics from '../../boot/stage/static';
 /**
  * AppConf is the type of the configuration object for tendril apps and modules.
  *
- * It is based on the Potoo template with additional optional sections 
+ * It is based on the Potoo template with additional optional sections
  * for configuring tendril modules.
  */
 export interface AppConf {
+    /**
+     * path to mount routes of the module.
+     *
+     * This allows modules to override paths specified elsewhere.
+     */
+    path?: string;
 
-  /**
-   * path to mount routes of the module.
-   *
-   * This allows modules to override paths specified elsewhere.
-   */
-    path?: string,
+    system?: conf.Conf;
 
-    system?: conf.Conf,
+    on?: hooks.HookConf;
 
-    on?: hooks.HookConf,
+    log?: log.LogConf;
 
-    log?: log.LogConf,
-
-    session?: session.SessionConf,
+    session?: session.SessionConf;
 
     csrf?: {
-
-        token?: csrf.CSRFTokenConf
-
-    },
+        token?: csrf.CSRFTokenConf;
+    };
 
     parsers?: {
+        body?: bodyParser.BodyParserConf;
 
-        body?: bodyParser.BodyParserConf,
-
-        cookie?: cookieParser.CookieParserConf
-
-    }
+        cookie?: cookieParser.CookieParserConf;
+    };
 
     middleware?: {
+        available?: mid.AvailableMiddleware;
 
-        available?: mid.AvailableMiddleware,
+        enabled?: string[];
+    };
 
-        enabled?: string[]
+    routes?: routes.Routes;
 
-    },
-
-    routes?: routes.Routes,
-
-    views?: show.ShowConf,
+    views?: show.ShowConf;
 
     dirs?: {
-
-        public?: statics.StaticConf
+        public?: statics.StaticConf;
 
         /**
          * self is the absolute path to the module.
          */
-        self?: string 
+        self?: string;
+    };
 
-    },
+    modules?: mod.ModulesConf;
 
-    modules?: mod.ModulesConf
-
-    filters?: filters.Filter<void>[]
-
+    filters?: filters.Filter<void>[];
 }

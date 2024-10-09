@@ -8,29 +8,28 @@ import { Connection } from '../../../../connection';
 /**
  * Provider for SessionStoreConnections.
  */
-export type Provider
-   = (exFunc: SessionFunc, options?: object) => SessionStoreConnection
-  ;
+export type Provider = (
+    exFunc: SessionFunc,
+    options?: object
+) => SessionStoreConnection;
 
 /**
  * SessionFunc is the default function exported by express-session.
  */
-export type SessionFunc
-    = (options?: session.SessionOptions) => express.RequestHandler
-    ;
+export type SessionFunc = (
+    options?: session.SessionOptions
+) => express.RequestHandler;
 
 /**
  * SessionStoreConnection is a wrapper around an express-session#Store instance
  * that allows tendril interoperability.
  */
 export interface SessionStoreConnection extends Connection {
-
     /**
      * checkout the underlying Store.
      *
      * This method is called after the Connection is open and the session
      * middleware is ready to be configured.
      */
-    checkout(): Future<session.Store>
-
+    checkout(): Future<session.Store>;
 }

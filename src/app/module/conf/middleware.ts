@@ -11,24 +11,20 @@ export type MiddlewareProvider = (...options: Type[]) => Middleware;
  * used.
  */
 export interface AvailableMiddleware {
-
-    [key: string]: MiddlewareConf
-
+    [key: string]: MiddlewareConf;
 }
 
 /**
  * MiddlewareConf allows express middleware to be configured for a module.
  */
 export interface MiddlewareConf {
-
     /**
      * provider for the middleware.
      */
-    provider: MiddlewareProvider,
+    provider: MiddlewareProvider;
 
     /**
      * options to pass to the provider.
      */
-    options?: Type[]
-
+    options?: Type[];
 }

@@ -1,17 +1,11 @@
-import { Immutable } from '@quenk/potoo/lib/actor/resident/immutable';
+import { Immutable } from '@quenk/potoo/lib/actor/framework/resident';
 
 export class Child extends Immutable<void> {
-
-    stop() {
-
+    async stop() {
         process.env.CHILD_RUNNING = 'no';
-
     }
 
-    run() {
-
+    async run() {
         process.env.CHILD_RUNNING = 'yes';
-
     }
-
 }

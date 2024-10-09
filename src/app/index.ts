@@ -1,20 +1,7 @@
 import * as express from 'express';
 
-import { merge, mapTo } from '@quenk/noni/lib/data/record';
-import {
-    Maybe,
-    just,
-    nothing
-} from '@quenk/noni/lib/data/maybe';
-import {
-    Future,
-    pure,
-    sequential
-} from '@quenk/noni/lib/control/monad/future';
+import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
 import { PVM } from '@quenk/potoo/lib/actor/system/vm';
-import { System } from '@quenk/potoo/lib/actor/system';
-import { Template as PotooTemplate } from '@quenk/potoo/lib/actor/template';
-import { Address } from '@quenk/potoo/lib/actor/address';
 
 import { Server } from '../net/http/server';
 import { getInstance } from './connection';
@@ -46,22 +33,24 @@ import { Module } from './module';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
-const dconf = { log: { level: 3 } }
+const dconf = { log: { level: 'error' } };
 
 /**
  * App is the main entry point to the framework.
  *
- * An App serves as an actor system for all the modules of the application.
- * It configures routing of requests for each module and makes whatever services
- * the user desires available via child actors.
+ * App makes an actor system available to all its modules via the potoo
+ * framework. This allows module code to communicate with each other when
+ * needed to trigger effects that may not rely on http requests.
+ *
+ * Module code includes the routes declared for a module but also its services,
+ * handlers and whatever logic configureed to be executed.
  */
-export class App implements System {
-
-    constructor(public provider: (s: App) => Template) { }
+export class App {
+    constructor(public provider: (s: App) => Template) {}
 
     main = <Template>this.provider(this);
 
-    vm: PVM = PVM.create(this, this.main.app && this.main.app.system || dconf);
+    vm: PVM = PVM.create((this.main.app && this.main.app.system) || dconf);
 
     modules = <ModuleDatas>{};
 
@@ -77,16 +66,13 @@ export class App implements System {
      * create a new Application instance.
      */
     static create(provider: (s: App) => Template): App {
-
         return new App(provider);
-
     }
 
     /**
      * createDefaultStageBundle produces a StageBundle
      */
     static createDefaultStageBundle(app: App): StageBundle {
-
         let provideMain = () =>
             getModule(app.modules, mainPath(app.main.id)).get();
 
@@ -101,88 +87,39 @@ export class App implements System {
             new MiddlewareStage(app, app.modules),
             new RoutingStage(app.modules),
             new StaticStage(provideMain, app.modules),
-            new ListenStage(app.server, app.hooks, provideMain)
+            new ListenStage(app.server, app.hooks, provideMain, app)
         ]);
-
     }
 
     getPlatform() {
-
         return this.vm;
-
     }
 
-    /**
-     * spawn a regular actor from a template.
-     *
-     * This actor must use the same Context type as the App.
-     */
-    spawn(tmpl: PotooTemplate): App {
-
-        this.vm.spawn(this.vm,tmpl);
-
-        return this;
-
-    }
-
-    /**
-     * spawnModule (not a generic actor) from a template.
-     *
-     * A module must have a parent unless it is the root module of the app.
-     */
-    spawnModule(
-        path: string,
-        parent: Maybe<ModuleData>,
-        tmpl: Template): Future<Address> {
-
-        let module = <Module>tmpl.create(this, tmpl);
-
-        let t = merge(tmpl, { create: () => module });
-
-        let address = parent.isNothing() ?
-            this.vm.spawn(this.vm,<PotooTemplate>t) :
-            parent.get().module.spawn(t);
-
-        let app = express();
+    registerModule(parent: Maybe<ModuleData>, module: Module) {
+        let { self: address, template } = module;
 
         let mctx: ModuleData = {
-            path,
+            path: module.path,
             address,
             parent,
-            app,
+            app: express(),
             module,
-            hooks: getHooks(t),
-            template: t,
+            hooks: getHooks(template),
+            template: module.template,
             middleware: {
-
-                enabled: getEnabledMiddleware(t),
-
-                available: getAvailableMiddleware(t)
-
+                enabled: getEnabledMiddleware(template),
+                available: getAvailableMiddleware(template)
             },
-            routes: getRoutes(t),
-            show: getShowFun(t, parent),
-            connections: getConnections(t),
-            disabled: t.disabled || false,
+            routes: getRoutes(template),
+            show: getShowFun(template, parent),
+            connections: getConnections(template),
+            disabled: template.disabled || false,
             redirect: nothing()
         };
 
         this.modules[address] = mctx;
 
-        if (t.app && t.app.modules) {
-
-            let mmctx = just(mctx);
-
-            return sequential(mapTo(t.app.modules, (c, k) =>
-                this.spawnModule(k, mmctx, c(this))))
-                .chain(() => pure(address));
-
-        } else {
-
-            return pure(address);
-
-        }
-
+        return mctx;
     }
 
     /**
@@ -191,37 +128,31 @@ export class App implements System {
      * If no module exists there, the attempt will be ignored.
      */
     installMiddleware(path: string, handler: express.RequestHandler): App {
-
         return getModule(this.modules, path)
             .map(m => m.app.use(handler))
             .map(() => this)
             .orJust(() => this)
             .get();
-
     }
 
-    /**
-     * start the App.
-     */
-    start(): Future<App> {
-
-        return this
-            .spawnModule(mainPath(this.main.id), nothing(), this.main)
-            .chain(() => this.stages.execute())
-            .map(() => <App>this);
-
+    async start() {
+        await this.vm.spawn({
+            ...this.main,
+            spawnConcern: 'receiving',
+            create: runtime =>
+                this.registerModule(
+                    Maybe.nothing(),
+                    new Module(this, runtime, mainPath(this.main.id), this.main)
+                ).module
+        });
+        await this.stages.execute();
     }
 
-    stop(): Future<void> {
-
-        return this
-            .server
-            .stop()
-            .chain(() => this.pool.close())
-            .chain(() => this.vm.stop());
-
+    async stop() {
+        await this.server.stop();
+        await this.pool.close();
+        await this.vm.stop();
     }
-
 }
 
-const mainPath = (path?: string): string => (path != null) ? path : '/';
+const mainPath = (path?: string): string => (path != null ? path : '/');

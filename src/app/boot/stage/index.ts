@@ -1,5 +1,3 @@
-import { Future, sequential } from '@quenk/noni/lib/control/monad/future';
-
 /**
  * State represents a single step in the boot process of an Applicaiton.
  *
@@ -8,19 +6,17 @@ import { Future, sequential } from '@quenk/noni/lib/control/monad/future';
  * included as part of another one.
  */
 export interface Stage {
-
     /**
      * name of the Stage.
      *
      * Used for debugging.
      */
-    name: string
+    name: string;
 
     /**
      * execute this Stage.
      */
-    execute(): Future<void>
-
+    execute(): Promise<void>;
 }
 
 /**
@@ -31,20 +27,14 @@ export interface Stage {
  * updating the name property each time one completes.
  */
 export class StageBundle implements Stage {
-
     name = '<bundle>';
 
-    constructor(public stages: Stage[]) { }
+    constructor(public stages: Stage[]) {}
 
-    execute(): Future<void> {
-
-        let stages = this.stages.map(s =>
-            s
-                .execute()
-                .map(() => { this.name = s.name; }));
-
-        return <Future<void>><Future<unknown>>sequential(stages);
-
+    async execute() {
+        for (let stage of this.stages) {
+            this.name = stage.name;
+            await stage.execute();
+        }
     }
-
 }

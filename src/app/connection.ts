@@ -12,18 +12,14 @@ import { noop } from '@quenk/noni/lib/data/function';
  * Connections map.
  */
 export interface Connections {
-
-    [key: string]: Connection
-
+    [key: string]: Connection;
 }
 
 /**
  * ConnectionStore
  */
 export interface ConnectionStore {
-
-    [key: string]: Connection
-
+    [key: string]: Connection;
 }
 
 /**
@@ -34,11 +30,10 @@ export interface ConnectionStore {
  * to.
  */
 export interface Connection {
-
     /**
      * open the connection.
      *
-     * When called this method can initialize a new connection/pool or 
+     * When called this method can initialize a new connection/pool or
      * simply lie for connections that are not meant to be kept open.
      */
     open(): Future<void>;
@@ -61,14 +56,13 @@ export interface Connection {
      * close the connection.
      */
     close(): Future<void>;
-
 }
 
 /**
  * Pool provides a simple storage medium for persistent
  * remote resources used in an application.
  *
- * These resources may be databases, other http servers or 
+ * These resources may be databases, other http servers or
  * some low level resource the application uses.
  *
  * The Pool class itself does not actually implement connection
@@ -79,57 +73,45 @@ export interface Connection {
  * individual ones when needed. Tendril relies on this to cleanly shutdown.
  */
 export class Pool {
+    constructor(public conns: ConnectionStore) {}
 
-    constructor(public conns: ConnectionStore) { }
-
-  /**
-   * getInstance provides the singleton instance of the connection pool.
-   */
+    /**
+     * getInstance provides the singleton instance of the connection pool.
+     */
     static getInstance() {
-
         return pool;
-
     }
 
     /**
      * add a new Connection to the pool.
      */
     add(key: string, conn: Connection): Pool {
-
         this.conns[key] = conn;
         return this;
-
     }
 
     /**
-     * get a Connection from the pool.           
+     * get a Connection from the pool.
      **/
     get(key: string): Maybe<Connection> {
-
         return fromNullable(this.conns[key]);
-
     }
 
     /**
      * open all the connections in the pool.
      */
     open(): Future<void> {
-
         return parallel(mapTo(this.conns, c => c.open())).map(noop);
-
     }
 
     /**
      * close all the connections in the pool.
      */
     close(): Future<void> {
-
         return parallel(mapTo(this.conns, c => c.close())).map(() => {
             this.conns = {};
         });
-
     }
-
 }
 
 // store connections in one place.
@@ -144,22 +126,19 @@ export const getInstance = (): Pool => pool;
  * getUserConnection provides the underlying user connection by name if found.
  */
 export const getUserConnection = <T>(name: string): Future<Maybe<T>> =>
-    doFuture(function*() {
-
+    doFuture(function* () {
         let mConn = pool.get(name);
 
-        if (mConn.isNothing())
-            return pure(mConn);
+        if (mConn.isNothing()) return pure(mConn);
 
         let conn = yield mConn.get().checkout();
 
         return pure(just(conn));
-
     });
 
 /**
  * unsafeGetUserConnection is like getUserConnection but assumes the connection
- * exists. 
+ * exists.
  *
  * If the the connection does not exist, the Future will raise an exception.
  */

@@ -1,11 +1,11 @@
 /**
- * In tendril, web requests are handled by executing a sequence of one or more 
+ * In tendril, web requests are handled by executing a sequence of one or more
  * operations called actions. This is implemented in such a way that users
- * of the framework do not directly respond to requests but rather give 
+ * of the framework do not directly respond to requests but rather give
  * instructions to the framework on what to do which the framework will
  * figure out by interpreting the API results.
  *
- * The flexibility of this approach allows us to introduce new features and 
+ * The flexibility of this approach allows us to introduce new features and
  * APIs to tendril without having to modify the Request object or drastically
  * changing the design of the framework. Actions are returned from handler
  * functions which are executed based on the routing configuration of
@@ -38,65 +38,61 @@ export type Action<A> = Free<Api<Type>, A>;
 
 /**
  * Context represents the context of the http request.
- * 
+ *
  * This is an internal API not directly exposed to request handlers. It
  * stores lower level APIs used to execute the work of the higher level [[Api]]
  * objects.
  */
 export class Context<A> {
-
     constructor(
         public module: Module,
         public request: Request,
         public response: express.Response,
         public onError: express.NextFunction,
-        public filters: Filter<A>[]) { }
+        public filters: Filter<A>[]
+    ) {}
 
-  /**
-   * abort the processing of filters for this Context.
-   */
-  abort() : Future<Action<A>>{
-
+    /**
+     * abort the processing of filters for this Context.
+     */
+    abort(): Future<Action<A>> {
         this.filters = [];
         return pure(freePure(<Type>undefined));
-
-  }
+    }
 
     /**
      * next provides the next Action to be interpreted.
      */
     next(): Future<Action<A>> {
-
-        return (this.filters.length > 0) ?
-            pure((<Filter<A>>this.filters.shift())(this.request)) :
-            raise(new Error(`${this.module.self()}: No more filters!`));
-
+        return this.filters.length > 0
+            ? pure((<Filter<A>>this.filters.shift())(this.request))
+            : raise(new Error(`${this.module.self}: No more filters!`));
     }
 
     /**
      * run processes the next filter or action in the chain.
      */
     run(): void {
-
-        this
-            .next()
-            .chain(n => n.foldM(() => pure(<Type>undefined), n => n.exec(this)))
-            .fork(this.onError, () => { });
-
+        this.next()
+            .chain(n =>
+                n.foldM(
+                    () => pure(<Type>undefined),
+                    n => n.exec(this)
+                )
+            )
+            .fork(this.onError, () => {});
     }
-
 }
 
 /**
  * Api represents an instruction to the tendril framework to carry out.
  *
- * An Api is usually an instruction to send a response to the requesting client 
+ * An Api is usually an instruction to send a response to the requesting client
  * but are also used to interact with other APIs to do things like retrieve
  * a database connection from the connection pool for example.
  */
 export abstract class Api<A> implements Functor<A> {
-
-    constructor(public next: A | (<X>(a: X) => A)) { }
+    constructor(public next: A | (<X>(a: X) => A)) {}
 
     abstract map<B>(f: (n: A) => B): Api<B>;
 
@@ -104,7 +100,6 @@ export abstract class Api<A> implements Functor<A> {
      * exec the steps needed to produce the Api.
      */
     abstract exec(ctx: Context<A>): Future<A> | Future<Action<A>>;
-
 }
 
 /**

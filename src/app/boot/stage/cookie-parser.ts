@@ -1,6 +1,5 @@
 import * as parser from 'cookie-parser';
 
-import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map } from '@quenk/noni/lib/data/record';
 
 import { ModuleDatas } from '../../module/data';
@@ -15,11 +14,10 @@ will not be valid if the application restarts!';
  * CookieParserConf can be configured to enabled parsing of the Cookie header.
  */
 export interface CookieParserConf {
-
     /**
      * enable this parser.
      */
-    enable?: boolean,
+    enable?: boolean;
 
     /**
      * secret used to sign cookies.
@@ -32,58 +30,46 @@ export interface CookieParserConf {
      * If the 3rd option is used, cookies will not be valid after the
      * application restarts!
      */
-    secret?: string,
+    secret?: string;
 
     /**
      * options for the parser.
      */
-    options?: parser.CookieParseOptions
-
+    options?: parser.CookieParseOptions;
 }
 
 /**
  * CookieParserStage configures middleware for parsing cookies.
  */
 export class CookieParserStage implements Stage {
-
-    constructor(public modules: ModuleDatas) { }
+    constructor(public modules: ModuleDatas) {}
 
     name = 'cookie-parser';
 
-    execute(): Future<void> {
-
+    async execute() {
         let { modules } = this;
 
-        return fromCallback(cb => {
-
-          map(modules, m => {
-
-            if (m.template &&
+        map(modules, m => {
+            if (
+                m.template &&
                 m.template.app &&
                 m.template.app.parsers &&
                 m.template.app.parsers.cookie &&
-                m.template.app.parsers.cookie.enable) {
-
+                m.template.app.parsers.cookie.enable
+            ) {
                 let { cookie } = m.template.app.parsers;
 
-                let secret = cookie.secret ||
+                let secret =
+                    cookie.secret ||
                     process.env.COOKIE_SECRET ||
                     process.env.SECRET ||
                     randomSecret;
 
-                if (secret === randomSecret)
-                    console.warn(WARN_NO_SECRET);
+                if (secret === randomSecret) console.warn(WARN_NO_SECRET);
 
                 m.app.use(parser(secret, cookie.options));
-
             }
-
         });
-
-          cb(null);
-
-        });
-
     }
 }
 
@@ -91,11 +77,5 @@ export class CookieParserStage implements Stage {
  * @private
  */
 export const randomSecret =
-    (Math
-        .random()
-        .toString(36)
-        .substring(2, 15)) +
-    (Math
-        .random()
-        .toString(36)
-        .substring(2, 15));
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15);

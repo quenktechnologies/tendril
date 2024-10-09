@@ -1,38 +1,29 @@
 import { Template } from '../../../../../src/app/module/template';
 import { Module } from '../../../../../src/app/module';
 import { show } from '../../../../../src/app/api/response';
-import { App } from '../../../../../src/app';
 
 export const template = (): Template => ({
-
     id: 'analytics',
 
     disabled: true,
 
-    create: s => new Module(<App>s),
-
     app: {
+        routes: (_: Module) => [
+            {
+                method: 'get',
 
-        routes: (_: Module) => [{
+                path: '/',
 
-            method: 'get',
+                filters: [() => show('analytics')],
 
-            path: '/',
-
-            filters: [() => (show('analytics'))],
-
-            tags: {}
-
-        }],
+                tags: {}
+            }
+        ],
 
         dirs: {
-
             self: __dirname,
 
             public: ['../../public2', { dir: '../../public3' }]
-
         }
-
     }
-
 });

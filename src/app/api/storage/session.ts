@@ -35,41 +35,39 @@ export const SESSION_DESCRIPTORS = 'tendril.$descriptors';
  * property.
  */
 export interface Descriptor {
-
     /**
      * ttl if set is the number of requests a session value should be retained
      * for. When this reaches zero the propety will be automatically removed.
      */
-    ttl?: number
-
+    ttl?: number;
 }
 
 /**
- * SessionStorage acts as a bridge between the tendril applications and 
+ * SessionStorage acts as a bridge between the tendril applications and
  * the underlying express session store API.
  */
 export interface SessionStorage extends Storage {
-
     /**
      * isEnabled returns true if session storage is enabled, false otherwise.
      */
-    isEnabled(): boolean
+    isEnabled(): boolean;
 
     /**
-     * setWithDescriptor sets the value of a key in session storage along with 
+     * setWithDescriptor sets the value of a key in session storage along with
      * a descriptor.
      */
     setWithDescriptor(
         key: string,
         value: Value,
-        desc: Descriptor): SessionStorage
+        desc: Descriptor
+    ): SessionStorage;
 
     /**
      * save the session data.
      *
      * Call this method to immediately persist any data written to the session.
      */
-    save(): Future<void>
+    save(): Future<void>;
 
     /**
      * regenerate the session.
@@ -78,15 +76,14 @@ export interface SessionStorage extends Storage {
      * supplied by the client and issue a new one. All data stored in the
      * session will be lost, including data not set through this API.
      */
-    regenerate(): Future<void>
+    regenerate(): Future<void>;
 
     /**
      * destroy the session.
      *
      * Everything comes to an end here.
      */
-    destroy(): Future<void>
-
+    destroy(): Future<void>;
 }
 
 /**
@@ -94,23 +91,20 @@ export interface SessionStorage extends Storage {
  * @private
  */
 export class Get<A> extends Api<A> {
-
     constructor(
         public key: path.Path,
-        public next: (v: Type) => A) { super(next); }
+        public next: (v: Type) => A
+    ) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Get<B> {
-
         return new Get(this.key, compose(this.next, f));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
         return pure(this.next(ctx.request.session.get(this.key)));
-
     }
-
 }
 
 /**
@@ -118,26 +112,23 @@ export class Get<A> extends Api<A> {
  * @private
  */
 export class GetOrElse<A> extends Api<A> {
-
     constructor(
         public key: path.Path,
         public value: Value,
-        public next: (v: Type) => A) { super(next); }
+        public next: (v: Type) => A
+    ) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): GetOrElse<B> {
-
         return new GetOrElse(this.key, this.value, compose(this.next, f));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
-        return pure(this.next(
-            ctx.request.session.getOrElse(this.key, this.value)
-        ));
-
+        return pure(
+            this.next(ctx.request.session.getOrElse(this.key, this.value))
+        );
     }
-
 }
 
 /**
@@ -145,26 +136,23 @@ export class GetOrElse<A> extends Api<A> {
  * @private
  */
 export class Set<A> extends Api<A> {
-
     constructor(
         public key: path.Path,
         public value: Value,
         public desc: Descriptor,
-        public next: A) { super(next); }
+        public next: A
+    ) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Set<B> {
-
         return new Set(this.key, this.value, this.desc, f(this.next));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
         ctx.request.session.setWithDescriptor(this.key, this.value, this.desc);
         return pure(this.next);
-
     }
-
 }
 
 /**
@@ -172,24 +160,21 @@ export class Set<A> extends Api<A> {
  * @private
  */
 export class Remove<A> extends Api<A> {
-
     constructor(
         public key: path.Path,
-        public next: A) { super(next); }
+        public next: A
+    ) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Remove<B> {
-
         return new Remove(this.key, f(this.next));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
         ctx.request.session.remove(this.key);
         return pure(this.next);
-
     }
-
 }
 
 /**
@@ -197,22 +182,20 @@ export class Remove<A> extends Api<A> {
  * @private
  */
 export class Exists<A> extends Api<A> {
-
-    constructor(public key: path.Path,
-        public next: (v: Type) => A) { super(next); }
+    constructor(
+        public key: path.Path,
+        public next: (v: Type) => A
+    ) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Exists<B> {
-
         return new Exists(this.key, compose(this.next, f));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
         return pure(this.next(ctx.request.session.exists(this.key)));
-
     }
-
 }
 
 /**
@@ -220,25 +203,17 @@ export class Exists<A> extends Api<A> {
  * @private
  */
 export class Regenerate<A> extends Api<A> {
-
-    constructor(public next: A) { super(next); }
+    constructor(public next: A) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Regenerate<B> {
-
         return new Regenerate(f(this.next));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
-        return ctx
-            .request
-            .session
-            .regenerate()
-            .chain(() => pure(this.next));
-
+        return ctx.request.session.regenerate().chain(() => pure(this.next));
     }
-
 }
 
 /**
@@ -246,25 +221,17 @@ export class Regenerate<A> extends Api<A> {
  * @private
  */
 export class Destroy<A> extends Api<A> {
-
-    constructor(public next: A) { super(next); }
+    constructor(public next: A) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Destroy<B> {
-
         return new Destroy(f(this.next));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
-        return ctx
-            .request
-            .session
-            .destroy()
-            .chain(() => pure(this.next));
-
+        return ctx.request.session.destroy().chain(() => pure(this.next));
     }
-
 }
 
 /**
@@ -272,137 +239,101 @@ export class Destroy<A> extends Api<A> {
  * @private
  */
 export class Save<A> extends Api<A> {
-
-    constructor(public next: A) { super(next); }
+    constructor(public next: A) {
+        super(next);
+    }
 
     map<B>(f: (n: A) => B): Save<B> {
-
         return new Save(f(this.next));
-
     }
 
     exec(ctx: Context<A>): Future<A> {
-
-        return ctx
-            .request
-            .session
-            .save()
-            .chain(() => pure(this.next));
-
+        return ctx.request.session.save().chain(() => pure(this.next));
     }
-
 }
 
 /**
  * @private
  */
 export class DisabledSessionStorage implements SessionStorage {
-
     warn(method: string) {
-
         console.warn(
             `[DisabledSessionStorage#${method}]: session storage is not enabled!`
         );
-
     }
 
     isEnabled() {
-
         return false;
-
     }
 
     get(_key: string): Maybe<Value> {
-
         this.warn('get');
         return nothing();
-
     }
 
     getOrElse(_key: string, alt: Value): Value {
-
         this.warn('getOrElse');
         return alt;
-
     }
 
     getAll(): Object {
-
         this.warn('getAll');
         return {};
-
     }
 
     exists(_key: string): boolean {
-
         this.warn('exists');
         return false;
-
     }
 
     set(_key: string, _value: Value): DisabledSessionStorage {
-
         this.warn('set');
         return this;
-
     }
 
     setWithDescriptor(
         _key: string,
         _value: Value,
-        _desc: Descriptor): DisabledSessionStorage {
-
+        _desc: Descriptor
+    ): DisabledSessionStorage {
         this.warn('setWithDescriptor');
         return this;
-
     }
 
     remove(_: string): DisabledSessionStorage {
-
         this.warn('remove');
         return this;
-
     }
 
     reset(): DisabledSessionStorage {
-
         this.warn('reset');
         return this;
-
     }
 
     save(): Future<void> {
-
         this.warn('save');
         return pure(<void>undefined);
-
     }
 
     regenerate(): Future<void> {
-
         this.warn('regenerate');
         return pure(<void>undefined);
-
     }
 
     destroy(): Future<void> {
-
         this.warn('destroy');
         return pure(<void>undefined);
-
     }
-
 }
 
 /**
  * EnabledSessionStorage class.
  */
 export class EnabledSessionStorage implements SessionStorage {
-
     /**
      * @private
      */
-    constructor(public data: Object) { }
+    constructor(public data: Object) {}
 
     /**
      * fromExpress constructs a SessionStorage instance from an express
@@ -412,72 +343,54 @@ export class EnabledSessionStorage implements SessionStorage {
      * provided instead.
      */
     static fromExpress(r: express.Request): SessionStorage {
-
-        return isObject(r.session) ?
-            new EnabledSessionStorage(<Object><object>r.session) :
-            new DisabledSessionStorage();
-
+        return isObject(r.session)
+            ? new EnabledSessionStorage(<Object>(<object>r.session))
+            : new DisabledSessionStorage();
     }
 
     /**
      * @private
      */
     target(): Object {
-
-        return <Object>(this.data && this.data[SESSION_DATA] || {});
-
+        return <Object>((this.data && this.data[SESSION_DATA]) || {});
     }
 
     /**
      * @private
      */
     descriptors(): Object {
-
-        return <Object>(this.data && this.data[SESSION_DESCRIPTORS] || {});
-
+        return <Object>((this.data && this.data[SESSION_DESCRIPTORS]) || {});
     }
 
     isEnabled(): boolean {
-
         return isObject(this.data);
-
     }
 
     get(key: string): Maybe<Value> {
-
         return path.get(key, this.target());
-
     }
 
     getOrElse(key: string, alt: Value): Value {
-
         return path.getDefault(key, this.target(), alt);
-
     }
 
-    getAll() : Object {
-
-      return clone(this.target());
-
+    getAll(): Object {
+        return clone(this.target());
     }
 
     exists(key: string): boolean {
-
         return path.get(key, this.target()).isJust();
-
     }
 
     set(key: string, value: Value): EnabledSessionStorage {
-
         return this.setWithDescriptor(key, value, {});
-
     }
 
     setWithDescriptor(
         key: string,
         value: Value,
-        desc: Descriptor): EnabledSessionStorage {
-
+        desc: Descriptor
+    ): EnabledSessionStorage {
         let target = this.target();
         let descs = this.descriptors();
 
@@ -488,120 +401,105 @@ export class EnabledSessionStorage implements SessionStorage {
         this.data[SESSION_DESCRIPTORS] = <Object>descs;
 
         return this;
-
     }
 
     remove(key: string): EnabledSessionStorage {
-
         let target = this.target();
         let descs = this.descriptors();
 
-        this.data[SESSION_DATA] =
-            rcompact(path.set(key, <Value>undefined, target));
+        this.data[SESSION_DATA] = rcompact(
+            path.set(key, <Value>undefined, target)
+        );
 
         delete descs[key];
         this.data[SESSION_DESCRIPTORS] = descs;
 
         return this;
-
     }
 
     reset(): EnabledSessionStorage {
-
         this.data[SESSION_DATA] = {};
         return this;
-
     }
 
     save(): Future<void> {
-
-        return isFunction(this.data.save) ?
-            fromCallback(cb => (<Function><object>this.data.save)(cb)) :
-            pure(<void>undefined);
-
+        return isFunction(this.data.save)
+            ? fromCallback(cb => (<Function>(<object>this.data.save))(cb))
+            : pure(<void>undefined);
     }
 
     regenerate(): Future<void> {
-
-        return isFunction(this.data.regenerate) ?
-            fromCallback(cb => (<Function><object>this.data.regenerate)(cb)) :
-            pure(<void>undefined);
-
+        return isFunction(this.data.regenerate)
+            ? fromCallback(cb => (<Function>(<object>this.data.regenerate))(cb))
+            : pure(<void>undefined);
     }
 
     destroy(): Future<void> {
-
-        return isFunction(this.data.destroy) ?
-            fromCallback(cb => (<Function><object>this.data.destroy)(cb)) :
-            pure(<void>undefined);
-
+        return isFunction(this.data.destroy)
+            ? fromCallback(cb => (<Function>(<object>this.data.destroy))(cb))
+            : pure(<void>undefined);
     }
-
 }
 
 /**
  * @private
  */
 export const getSessionValue = (session: Object, key: string) => {
-
     let data = <Object>(session[SESSION_DATA] || {});
     return path.get(key, data);
-
-}
+};
 
 /**
  * @private
  */
 export const getSessionValueAsString = (session: Object, key: string) => {
-
     let data = <Object>(session[SESSION_DATA] || {});
     return path.getString(key, data);
-
-}
-
-/**
- * @private
- */
-export const getSessionValueOrElse =
-    (session: Object, key: string, other: Value) => {
-
-        let data = <Object>(session[SESSION_DATA] || {});
-        return path.getDefault(key, data, other);
-
-    }
+};
 
 /**
  * @private
  */
-export const setSessionValue =
-    (session: Object, key: string, value: Value, desc: Descriptor) => {
+export const getSessionValueOrElse = (
+    session: Object,
+    key: string,
+    other: Value
+) => {
+    let data = <Object>(session[SESSION_DATA] || {});
+    return path.getDefault(key, data, other);
+};
 
-        let data = <Object>(session[SESSION_DATA] || {});
-        let descs = <Object>(session[SESSION_DESCRIPTORS] || {});
+/**
+ * @private
+ */
+export const setSessionValue = (
+    session: Object,
+    key: string,
+    value: Value,
+    desc: Descriptor
+) => {
+    let data = <Object>(session[SESSION_DATA] || {});
+    let descs = <Object>(session[SESSION_DESCRIPTORS] || {});
 
-        session[SESSION_DATA] = path.set(key, value, data);
+    session[SESSION_DATA] = path.set(key, value, data);
 
-        descs[key] = <Object>desc;
-        session[SESSION_DESCRIPTORS] = <Object>descs;
-
-    }
+    descs[key] = <Object>desc;
+    session[SESSION_DESCRIPTORS] = <Object>descs;
+};
 
 /**
  * @private
  */
 export const deleteSessionKey = (session: Object, key: string) => {
-
     let data = <Object>(session[SESSION_DATA] || {});
     let descs = <Object>(session[SESSION_DESCRIPTORS] || {});
 
-    session[SESSION_DATA] =
-        rcompact(path.set(key, <Value>undefined, data));
+    session[SESSION_DATA] = rcompact(path.set(key, <Value>undefined, data));
 
     delete descs[key];
 
     session[SESSION_DESCRIPTORS] = descs;
-
-}
+};
 
 /**
  * get a value from session by key.
@@ -621,9 +519,11 @@ export const getOrElse = (key: path.Path, value: Value): Action<string> =>
 /**
  * set a value for a key in the session.
  */
-export const set =
-    (key: path.Path, value: Value, desc: Descriptor = {}): Action<undefined> =>
-        liftF(new Set(key, value, desc, undefined));
+export const set = (
+    key: path.Path,
+    value: Value,
+    desc: Descriptor = {}
+): Action<undefined> => liftF(new Set(key, value, desc, undefined));
 
 /**
  * remove a value from the session.
@@ -646,8 +546,7 @@ export const regenerate = (): Action<undefined> =>
 /**
  * destroy the session.
  */
-export const destroy = (): Action<undefined> =>
-    liftF(new Destroy(undefined));
+export const destroy = (): Action<undefined> => liftF(new Destroy(undefined));
 
 /**
  * Save session data.
@@ -655,5 +554,4 @@ export const destroy = (): Action<undefined> =>
  * This causes session data to be stored immediately instead of at the end
  * of the request.
  */
-export const save = (): Action<undefined> =>
-    liftF(new Save(undefined));
+export const save = (): Action<undefined> => liftF(new Save(undefined));

@@ -1,7 +1,6 @@
 import * as csurf from 'csurf';
 import * as prs from '../../api/storage/prs';
 
-import { Future, fromCallback } from '@quenk/noni/lib/control/monad/future';
 import { map, merge } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 
@@ -19,27 +18,24 @@ export const PRS_CSRF_TOKEN = '$csrf.token';
 export const PRS_VIEW_CSRF_TOKEN = `${PRS_VIEW_CONTEXT}.csrf.token`;
 
 const defaultOptions = {
-
     send_cookie: false,
 
     send_cookie_name: DEFAULT_SEND_COOKIE_NAME,
 
     options: {}
-
-}
+};
 
 const readMethods = ['GET', 'HEAD', 'OPTIONS'];
 
 /**
- * CSRFTokenConf can be configured to enabled cross-site request forgery 
+ * CSRFTokenConf can be configured to enabled cross-site request forgery
  * protection.
  */
 export interface CSRFTokenConf {
-
     /**
      * enable if true will enable csrf protection.
      */
-    enable?: boolean,
+    enable?: boolean;
 
     /**
      * send_cookie if true will send a cookie to the client on each read
@@ -47,7 +43,7 @@ export interface CSRFTokenConf {
      * Note: This is not the double submit pattern but rather a way for XHR
      * requests to retrieve the token.
      */
-    send_cookie?: boolean,
+    send_cookie?: boolean;
 
     /**
      * send_cookie_name if set will be used as the name of the cookie used
@@ -55,26 +51,23 @@ export interface CSRFTokenConf {
      *
      * Defaults to DEFAULT_SEND_COOKIE_NAME.
      */
-    send_cookie_name?: string,
+    send_cookie_name?: string;
 
     /**
      * options passed on to the middleware.
      */
-    options?: object,
+    options?: object;
 
     /**
      * on hooks.
      */
     on?: {
-
         /**
          * failure if specified will be invoked whenever a request fails CSRF
          * token validation.
          */
-        failure?: Filter<Type>
-
-    }
-
+        failure?: Filter<Type>;
+    };
 }
 
 /**
@@ -83,72 +76,55 @@ export interface CSRFTokenConf {
  * This requires app.session.enable to be set to true.
  */
 export class CSRFTokenStage implements Stage {
-
-    constructor(public modules: ModuleDatas) { }
+    constructor(public modules: ModuleDatas) {}
 
     name = 'csrf-token';
 
-    execute(): Future<void> {
-
+    async execute() {
         let { modules } = this;
 
-        return fromCallback(cb => {
+        map(modules, m => {
+            if (
+                m.template &&
+                m.template.app &&
+                m.template.app.csrf &&
+                m.template.app.csrf.token &&
+                m.template.app.csrf.token.enable
+            ) {
+                let conf = merge(defaultOptions, m.template.app.csrf.token);
 
-            map(modules, m => {
+                m.app.use(csurf(conf.options));
 
-                if (m.template &&
-                    m.template.app &&
-                    m.template.app.csrf &&
-                    m.template.app.csrf.token &&
-                    m.template.app.csrf.token.enable) {
+                if (conf.send_cookie) {
+                    m.app.all('*', (req, res, next) => {
+                        if (readMethods.indexOf(req.method) > -1)
+                            res.cookie(conf.send_cookie_name, req.csrfToken());
 
-                    let conf = merge(defaultOptions, m.template.app.csrf.token);
-
-                    m.app.use(csurf(conf.options));
-
-                    if (conf.send_cookie) {
-
-                        m.app.all('*', (req, res, next) => {
-
-                            if (readMethods.indexOf(req.method) > -1)
-                                res.cookie(conf.send_cookie_name,
-                                    req.csrfToken());
-
-                            next();
-
-                        });
-
-                    }
-
-                    if (conf.on && conf.on.failure) 
-                        m.app.use(m.module.runInCSRFErrorContext(
-                            [conf.on.failure]));
-
+                        next();
+                    });
                 }
 
-                if (getValue(m, isEnabled) === true)
-                    m.module.addBefore(setCSRFToken);
+                if (conf.on && conf.on.failure)
+                    m.app.use(
+                        m.module.runInCSRFErrorContext([conf.on.failure])
+                    );
+            }
 
-            });
-
-            return cb(null);
-
+            if (getValue(m, isEnabled) === true)
+                m.module.addBefore(setCSRFToken);
         });
-
     }
 }
 
 // Ensures the csrf token is available via prs and to views.
 const setCSRFToken = (r: Request): Action<undefined> =>
-    doAction<undefined>(function*() {
-
+    doAction<undefined>(function* () {
         let token = yield getToken();
 
         yield prs.set(PRS_CSRF_TOKEN, token);
         yield prs.set(PRS_VIEW_CSRF_TOKEN, token);
 
         return next(r);
-
     });
 
 const isEnabled = (m: ModuleData) =>
@@ -156,4 +132,4 @@ const isEnabled = (m: ModuleData) =>
     m.template.app &&
     m.template.app.csrf &&
     m.template.app.csrf.token &&
-    m.template.app.csrf.token.enable
+    m.template.app.csrf.token.enable;

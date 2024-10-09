@@ -11,24 +11,18 @@ import { SessionStoreConnection } from './';
  * Note: This should only be used during development.
  */
 export class MemoryConnection implements SessionStoreConnection {
-
-    open() : Future<void> {
-
-      return pure(<void> undefined);
-
+    open(): Future<void> {
+        return pure(<void>undefined);
     }
 
     checkout(): Future<session.Store> {
-
-        console.warn('[MemoryStoreProvider]: Should not be used in production!');
+        console.warn(
+            '[MemoryStoreProvider]: Should not be used in production!'
+        );
         return pure(<session.Store>new session.MemoryStore());
-
     }
 
-  close() : Future<void> {
-
-    return pure(<void>undefined);
-
-  }
-
+    close(): Future<void> {
+        return pure(<void>undefined);
+    }
 }

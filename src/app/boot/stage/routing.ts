@@ -1,7 +1,6 @@
 import { join } from 'path';
 
-import { Future, attempt } from '@quenk/noni/lib/control/monad/future';
-import { empty, map } from '@quenk/noni/lib/data/record';
+import { empty } from '@quenk/noni/lib/data/record';
 import { just, Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Filter } from '../../api/request';
@@ -12,17 +11,14 @@ import { Stage } from './';
  * RoutingStage sets up all the Application routing in one go.
  */
 export class RoutingStage implements Stage {
-
-    constructor(public modules: ModuleDatas) { }
+    constructor(public modules: ModuleDatas) {}
 
     name = 'routing';
 
-    execute(): Future<void> {
-
+    async execute() {
         let { modules } = this;
 
-        return <Future<void>>attempt(() => map(modules, mconf => {
-
+        for (let mconf of Object.values(modules)) {
             let mod = mconf.module;
             let exApp = mconf.app;
             let routes = mconf.routes(mod);
@@ -30,20 +26,16 @@ export class RoutingStage implements Stage {
             let filters = getConfFilters(just(mconf));
 
             if (!empty(filters)) {
-
                 // Add the module level filters before each filter.
-                mod.addRoutes(routes.map(r => ({
+                mod.addRoutes(
+                    routes.map(r => ({
+                        ...r,
 
-                    ...r,
-
-                    filters: <Filter<undefined>[]>[...filters, ...r.filters],
-
-                })));
-
+                        filters: <Filter<undefined>[]>[...filters, ...r.filters]
+                    }))
+                );
             } else {
-
                 mod.addRoutes(routes);
-
             }
 
             exApp.use(mod.getRouter());
@@ -55,34 +47,27 @@ export class RoutingStage implements Stage {
                 exApp.use(mod.runInContextWithError(temp.app.on.internalError));
 
             if (mconf.parent.isJust()) {
-
                 let parentExpApp = mconf.parent.get().app;
 
                 let path = temp?.app?.path || mconf.path;
 
                 parentExpApp.use(join('/', path), exApp);
-
             }
-
-        })).map(() => undefined);
-
+        }
     }
-
 }
 
 /**
- * getConfFilters provides all the filters declared at the configuration 
- * level. 
+ * getConfFilters provides all the filters declared at the configuration
+ * level.
  *
  * Filters from parent modules are inherited and are first in the list.
  */
 const getConfFilters = (mdata: Maybe<ModuleData>): Filter<void>[] => {
-
     let filters = <Filter<void>[]>[];
     let current = mdata;
 
     while (current.isJust()) {
-
         let target = current.get();
         let temp = target.template;
 
@@ -90,9 +75,7 @@ const getConfFilters = (mdata: Maybe<ModuleData>): Filter<void>[] => {
             filters = [...temp.app.filters, ...filters];
 
         current = target.parent;
-
     }
 
     return filters;
-
-}
+};

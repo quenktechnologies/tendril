@@ -11,7 +11,5 @@ export type Middleware = express.RequestHandler;
  * Middlewares map.
  */
 export interface Middlewares {
-
-    [key: string]: Middleware
-
+    [key: string]: Middleware;
 }

@@ -10,11 +10,10 @@ export type Show = (view: string, context?: object) => Future<Content>;
  * Content to send to the client.
  */
 export interface Content {
-
     /**
      * type is the mime type used when sending the content.
      */
-    type: string,
+    type: string;
 
     /**
      * content sent to the client.
@@ -22,5 +21,4 @@ export interface Content {
      * Either a string or a binary buffer.
      */
     content: string | Buffer;
-
 }

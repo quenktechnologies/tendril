@@ -1,5 +1,3 @@
-import { Future } from '@quenk/noni/lib/control/monad/future';
-
 import { Dispatcher } from '../../hooks';
 import { Stage } from './';
 import { App } from '../..';
@@ -10,15 +8,11 @@ import { App } from '../..';
  * Invokes the init hooks of all modules.
  */
 export class InitStage implements Stage {
-
-    constructor(public hooks: Dispatcher<App>) { }
+    constructor(public hooks: Dispatcher<App>) {}
 
     name = 'init';
 
-    execute(): Future<void> {
-
+    async execute() {
         return this.hooks.init();
-
     }
-
 }
