@@ -4,43 +4,12 @@ import { isAbsolute, resolve, join } from 'path';
 
 import { Record, map, merge } from '@quenk/noni/lib/data/record';
 import { isObject, isString } from '@quenk/noni/lib/data/type';
-import { isDirectory } from '@quenk/noni/lib/io/file';
+import { isDirectory, Path } from '@quenk/noni/lib/io/file';
 
-import { ModuleDatas, ModuleData } from '../../module/data';
-import { Stage } from './';
+import { ModuleInfo } from '../module';
+import { StaticConf, StaticDirConf } from '../conf';
+import { BaseStartupTask } from '.';
 
-/**
- * DirPath is a path containing the files to serve.
- */
-export type DirPath = string;
-
-/**
- * StaticConf is the configuration for one or more
- */
-export type StaticConf = DirPath | StaticConfMap | (DirPath | StaticDirConf)[];
-
-/**
- * StaticDirConf is the configuration for a single static directory.
- */
-export interface StaticDirConf {
-    /**
-     * dir path to serve.
-     */
-    dir: DirPath;
-
-    /**
-     * options passed directly to the serve-static middleware.
-     */
-    options?: object;
-}
-
-/**
- * StaticConfMap configures zero or more directories to be served as static
- * files.
- */
-export interface StaticConfMap {
-    [key: string]: DirPath | StaticDirConf;
-}
 
 interface FlatStaticConfMap {
     [key: string]: StaticDirConf;
@@ -62,32 +31,30 @@ interface FlatStaticConfMap {
  * to its value. This is usually the path for the main module from the root
  * of the working directory.
  */
-export class StaticStage implements Stage {
+export class StaticStage extends BaseStartupTask {
     constructor(
-        public mainProvider: () => ModuleData,
-        public modules: ModuleDatas
-    ) {}
+        public mainProvider: () => ModuleInfo,
+    ) { super(); }
 
     name = 'static';
 
-    async execute() {
-        let { mainProvider, modules, name } = this;
+    async onConfigureModule(mod:ModuleInfo) {
+        let { mainProvider, name } = this;
 
         let main = mainProvider();
 
-        for (let m of Object.values(modules)) {
             let prefix = '';
 
             let mconfs: FlatStaticConfMap = { public: { dir: 'public' } };
 
-            if (m.template) {
-                let dirs = (m.template.app && m.template.app.dirs) || {};
+            if (mod.conf) {
+                let dirs = (mod.conf.app && mod.conf.app.dirs) || {};
 
                 prefix = getPrefix(dirs.self);
 
                 mconfs = merge(
                     mconfs,
-                    normalizeConf(<StaticConf>dirs.public || {})
+                    normalizeConf(dirs.public || {})
                 );
             }
 
@@ -105,18 +72,17 @@ export class StaticStage implements Stage {
                                 `"${conf.dir}" does not exist!`
                         );
 
-                    main.app.use(express.static(conf.dir, conf.options));
+                    main.express.use(express.static(conf.dir, conf.options));
                 }
             } else {
                 map(normalizedConfs, conf =>
-                    main.app.use(express.static(conf.dir, conf.options))
+                    main.express.use(express.static(conf.dir, conf.options))
                 );
             }
         }
     }
-}
 
-const normalizeConf = (conf: StaticConf): FlatStaticConfMap => {
+const normalizeConf = (conf: StaticConf={}): FlatStaticConfMap => {
     if (Array.isArray(conf)) {
         return conf.reduce(
             (p: FlatStaticConfMap, c) => {
@@ -132,7 +98,7 @@ const normalizeConf = (conf: StaticConf): FlatStaticConfMap => {
     return map(<Record<string>>conf, normalize);
 };
 
-const normalize = (conf: DirPath | StaticDirConf): StaticDirConf =>
+const normalize = (conf: Path | StaticDirConf): StaticDirConf =>
     isObject(conf) ? conf : { dir: conf };
 
 const normalizeDirs = (

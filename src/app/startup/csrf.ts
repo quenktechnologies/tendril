@@ -1,16 +1,14 @@
 import * as csurf from 'csurf';
-import * as prs from '../../api/storage/prs';
 
-import { map, merge } from '@quenk/noni/lib/data/record';
-import { Type } from '@quenk/noni/lib/data/type';
+import {   merge } from '@quenk/noni/lib/data/record';
 
-import { ModuleData, ModuleDatas, getValue } from '../../module/data';
-import { PRS_VIEW_CONTEXT } from '../../api/response';
-import { Filter, Request } from '../../api/request';
-import { next } from '../../api/control';
-import { getToken } from '../../api/csrf';
-import { Action, doAction } from '../../api';
-import { Stage } from './';
+import { PRS_VIEW_CONTEXT } from '../api/response';
+import { Filter  } from '../api/request';
+import { ModuleInfo } from '../module';
+import { BaseStartupTask  } from './';
+import { RequestContext } from '../api';
+
+export const EVENT_CSRF_TOKEN_FAILURE = 'CSRF_TOKEN_FAILURE';
 
 export const DEFAULT_SEND_COOKIE_NAME = 'xsrf-token';
 export const ERROR_TOKEN_INVALID = 'EBADCSRFTOKEN';
@@ -66,7 +64,7 @@ export interface CSRFTokenConf {
          * failure if specified will be invoked whenever a request fails CSRF
          * token validation.
          */
-        failure?: Filter<Type>;
+        failure?: Filter
     };
 }
 
@@ -75,28 +73,23 @@ export interface CSRFTokenConf {
  *
  * This requires app.session.enable to be set to true.
  */
-export class CSRFTokenStage implements Stage {
-    constructor(public modules: ModuleDatas) {}
+export class CSRFTokenStage extends BaseStartupTask {
 
     name = 'csrf-token';
 
-    async execute() {
-        let { modules } = this;
-
-        map(modules, m => {
+    async onConfigureModule(mod: ModuleInfo) {
             if (
-                m.template &&
-                m.template.app &&
-                m.template.app.csrf &&
-                m.template.app.csrf.token &&
-                m.template.app.csrf.token.enable
+                mod.conf &&
+                mod.conf.app &&
+                mod.conf.app.csrf &&
+                mod.conf.app.csrf.enable
             ) {
-                let conf = merge(defaultOptions, m.template.app.csrf.token);
+                let conf = merge(defaultOptions, mod.conf.app.csrf);
 
-                m.app.use(csurf(conf.options));
+                mod.express.use(csurf(conf.options));
 
                 if (conf.send_cookie) {
-                    m.app.all('*', (req, res, next) => {
+                    mod.express.all('*', (req, res, next) => {
                         if (readMethods.indexOf(req.method) > -1)
                             res.cookie(conf.send_cookie_name, req.csrfToken());
 
@@ -104,32 +97,16 @@ export class CSRFTokenStage implements Stage {
                     });
                 }
 
-                if (conf.on && conf.on.failure)
-                    m.app.use(
-                        m.module.runInCSRFErrorContext([conf.on.failure])
-                    );
             }
 
-            if (getValue(m, isEnabled) === true)
-                m.module.addBefore(setCSRFToken);
-        });
+                mod.routing.globalFilters.push(setCSRFToken);
     }
 }
 
 // Ensures the csrf token is available via prs and to views.
-const setCSRFToken = (r: Request): Action<undefined> =>
-    doAction<undefined>(function* () {
-        let token = yield getToken();
+const setCSRFToken = async (ctx: RequestContext) => {
+        let token = ctx.request.toExpress().csrfToken();
+        ctx.request.prs.set(PRS_CSRF_TOKEN, token);
+         ctx.request.prs.set(PRS_VIEW_CSRF_TOKEN, token);
 
-        yield prs.set(PRS_CSRF_TOKEN, token);
-        yield prs.set(PRS_VIEW_CSRF_TOKEN, token);
-
-        return next(r);
-    });
-
-const isEnabled = (m: ModuleData) =>
-    m.template &&
-    m.template.app &&
-    m.template.app.csrf &&
-    m.template.app.csrf.token &&
-    m.template.app.csrf.token.enable;
+    }

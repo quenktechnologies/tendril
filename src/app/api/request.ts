@@ -11,13 +11,14 @@ import {
     SESSION_DATA
 } from './storage/session';
 import { PRSStorage } from './storage/prs';
-import { Action } from './';
-import { RouteConf } from '../module';
 import {
     CookieManager,
     CookieStorage,
     MapCookieManager
 } from './storage/cookie';
+import { RouteConf } from '../conf';
+import { Response } from './response';
+import { RequestContext } from '.';
 
 /**
  * Method
@@ -25,16 +26,20 @@ import {
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 /**
- * Filter functions are applied to the request.
+ * Filter is a function executed on incomming requests before the handler
+ * for the route is executed.
  *
- * These can either transform the request or terminate.
+ * If a Filter returns a response, it signals to the executor that the chain 
+ * should be aborted and the response returned to the client.
  */
-export type Filter<A> = (r: Request) => Action<A>;
+export type Filter = (ctx: RequestContext) => Promise<void|Response>
 
-/**
- * ErrorFilter functions are applied to a request when it triggers an error.
- */
-export type ErrorFilter = (e: Error, r: Request) => Action<void>;
+  /**
+   * Handler is the final function executed in the chain for the route.
+   *
+   * This is where the business logic should be implemented.
+   */
+export type Handler = (ctx: RequestContext) => Promise<Response>
 
 /**
  * PartialRequest describes the properties that can be specified to intialize
@@ -141,7 +146,7 @@ export interface Request {
     /**
      * route is the RouteConf object that was used to generate the Request.
      */
-    route: RouteConf;
+    route?: RouteConf;
 
     /**
      * toExpress provides the **express** framework request object.
@@ -150,12 +155,6 @@ export interface Request {
 }
 
 const defaults: PartialRequest = {
-    routeConf: {
-        method: 'get',
-        path: '/',
-        filters: [],
-        tags: {}
-    },
     method: 'GET',
     path: '/',
     url: 'example.com',
@@ -176,7 +175,6 @@ const defaults: PartialRequest = {
  */
 export class ClientRequest implements Request {
     constructor(
-        public route: RouteConf,
         public method: string,
         public path: string,
         public url: string,
@@ -189,7 +187,8 @@ export class ClientRequest implements Request {
         public protocol: string,
         public prs: PRSStorage,
         public session: SessionStorage,
-        public expressRequest: express.Request
+        public expressRequest: express.Request,
+        public route?: RouteConf
     ) {}
 
     /**
@@ -199,10 +198,9 @@ export class ClientRequest implements Request {
     static fromExpress(
         req: express.Request,
         res: express.Response,
-        route: RouteConf
+        route?: RouteConf
     ): ClientRequest {
         return new ClientRequest(
-            route,
             req.method,
             req.path,
             req.url,
@@ -213,9 +211,10 @@ export class ClientRequest implements Request {
             req.hostname,
             req.ip || '',
             req.protocol,
-            new PRSStorage(clone({ tags: route.tags })),
+            new PRSStorage(clone({ tags:route?.tags ?? [] })),
             EnabledSessionStorage.fromExpress(req),
-            req
+            req,
+            route
         );
     }
 
@@ -259,7 +258,6 @@ export class ClientRequest implements Request {
         let r = <express.Request>opts;
 
         return new ClientRequest(
-            <RouteConf>opts.routeConf,
             r.method,
             r.path,
             r.url,
@@ -272,7 +270,8 @@ export class ClientRequest implements Request {
             r.protocol,
             <PRSStorage>opts.prsData,
             <SessionStorage>opts.sessionData,
-            r
+            r,
+            <RouteConf>opts.routeConf,
         );
     }
 

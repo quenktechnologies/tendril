@@ -1,75 +1,72 @@
 import * as express from 'express';
 
-import { Object } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
-import { Maybe } from '@quenk/noni/lib/data/maybe';
-import { Record, forEach, merge } from '@quenk/noni/lib/data/record';
+import { Record } from '@quenk/noni/lib/data/record';
+import { Path } from '@quenk/noni/lib/io/file';
 
-import { TypeCase } from '@quenk/potoo/lib/actor/framework';
 import { Immutable } from '@quenk/potoo/lib/actor/framework/resident';
 import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
+import { Address } from '@quenk/potoo/lib/actor/address';
+import { SPAWN_CONCERN_RECEIVING } from '@quenk/potoo/lib/actor/template';
 
-import { ERROR_TOKEN_INVALID } from '../boot/stage/csrf-token';
-import { Template } from './template';
-import { getModule, ModuleData } from '../module/data';
-import { Request, Filter, ErrorFilter, ClientRequest } from '../api/request';
-import { show } from '../api/response';
-import { Context as RequestContext } from '../api';
+import {  Filter, ClientRequest, Handler } from '../api/request';
+import { Connection } from '../connection';
 import { App } from '../';
+import { Middleware } from '../middleware';
+import { RouteConf } from '../conf';
+import { ModuleConf } from './conf';
+import { ERROR_TOKEN_INVALID } from '../startup/csrf';
+import { RequestContext } from '../api';
 
 /**
- * Messages supported by modules.
+ * ModuleInfo holds all the internal runtime information about a Module within
+ * the application.
+ *
+ * This interface is separate from the main Module class to allow for use
+ * without the actor specific properties from potoo.
  */
-export type Messages<M> = Disable | Enable | Redirect | M;
-
-/**
- * Path
- */
-export type Path = string;
-
-/**
- * Method
- */
-export type Method = string;
-
-/**
- * PathConf is an object where the key is a URL path and the value a
- * [[MethodConf]] object containing routes for the desired HTTP methods.
- */
-export interface PathConf extends Record<MethodConf> {}
-
-/**
- * MethodConf is an object where the key is a supported HTTP method and
- * the value the route configuration to use for that method.
- */
-export interface MethodConf extends Record<RouteConf[]> {}
-
-/**
- * RouteConf describes a route to be installed in the application.
- */
-export interface RouteConf {
+export interface ModuleInfo {
     /**
-     * method of the route.
-     */
-    method: Method;
-
-    /**
-     * path of the route.
+     * path the module's routes are to be mounted at.
      */
     path: Path;
 
     /**
-     * filters applied when the route is executed.
+     * address the module received from the potoo VM.
      */
-    filters: Filter<Type>[];
+    address: Address;
 
     /**
-     * tags is an object containing values set on the Request by the routing
-     * configuration.
-     *
-     * These are useful for distinguishing what action take in common filters.
+     * module instance (active one).
      */
-    tags: Object;
+    module: Module;
+
+    /**
+     * parent of this ModuleInfo.
+     *
+     * If missing indicates the ModuleInfo is the root.
+     */
+    parent?: ModuleInfo;
+
+    /**
+     * conf object used to create the module.
+     */
+    conf: ModuleConf;
+
+    /**
+     * express app for the module.
+     */
+    express: express.Application;
+
+    /**
+     * connections available to the module.
+     */
+    connections: Record<Connection>;
+
+    /**
+     * routing configured for the module.
+     */
+    routing: RoutingInfo;
 }
 
 /**
@@ -77,297 +74,166 @@ export interface RouteConf {
  */
 export interface RoutingInfo {
     /**
-     * before is those Filters that will be executed before all others.
+     * middleware (express) that will be installed and executed for each
+     * request is handled.
+     *
+     * Due to how express works, these are inherited by child modules.
      */
-    before: Filter<Type>[];
+    middleware: { available: Map<string, Middleware>; enabled: Middleware[] };
 
     /**
-     * routes is the [[PathConf]] for those Filters that are executed based
-     * on the incoming request.
+     * globalFilters serve as application level middleware and are executed
+     * before each request is handled.
+     *
+     * These are also inherited by child modules.
      */
-    routes: PathConf;
+    globalFilters: Filter[];
+
+    /**
+     * handlers are used when certain error conditions are encountered such
+     * as missing CSRF tokens or 404s.
+     *
+     * The key specifies the condition and the value is a chain of filters to
+     * executed when the condition is met.
+     *
+     * These are inherited by child modules.
+     */
+    handlers: Record<Filter[]>;
+
+    /**
+     * routes configured for the module.
+     *
+     * These specify which requests are actually valid for handling by the
+     * application. They are not inherited by child modules.
+     */
+    routes: RouteConf[];
 }
 
 /**
- * Disable a Module.
- *
- * All requests to the Module will 404.
- */
-export class Disable {}
-
-/**
- * Enable a Module.
- */
-export class Enable {}
-
-/**
- * Redirect requests to the module to another location.
- */
-export class Redirect {
-    constructor(
-        public status: number,
-        public location: string
-    ) {}
-}
-
-const defaultRouteInfo = () => ({ before: [], routes: {} });
-
-/**
- * Module of a tendril application.
+ * Module is a contained unit of route and configuration data for a single
+ * mount point in a tendril application.
  *
  * In tendril, an application is broken up into one more Modules that
  * represent the respective areas of concern. Modules are responsible
  * for configuring and handling their assigned routes (endpoints) in the
- * application and can communicate with each other via the actor API.
- *
- * Think of all the routes of a Module as one big function that pattern
- * matches incoming requests.
+ * application and can spawn or child actors for one off or persistent tasks.
  */
-export class Module extends Immutable<Messages<Type>> {
+export class Module extends Immutable<void> {
     constructor(
         public app: App,
         public runtime: Runtime,
-        public path: Path,
-        public template: Template,
-        public parent: Maybe<ModuleData> = Maybe.nothing(),
-        public routeInfo: RoutingInfo = defaultRouteInfo()
+        public conf: ModuleConf
     ) {
         super(runtime);
     }
 
-    selectors() {
-        return [
-            new TypeCase(Disable, () => this.disable()),
-
-            new TypeCase(Enable, () => this.enable()),
-
-            new TypeCase(Redirect, (r: Redirect) =>
-                this.redirect(r.location, r.status)
-            )
-        ];
-    }
+    address = this.runtime.self;
 
     /**
-     * runInContext given a final RouteConf, produces an express request handler
+     * routeHandler given a final RouteConf, produces an express request handler
      * that executes each filter sequentially.
      */
-    runInContext =
+    routeHandler =
         (route: RouteConf): express.RequestHandler =>
-        (
-            req: express.Request,
-            res: express.Response,
-            next: express.NextFunction
-        ) => {
-            new RequestContext(
-                this,
-                ClientRequest.fromExpress(req, res, route),
-                res,
-                next,
-                route.filters.slice()
-            ).run();
+        async (req: express.Request, res: express.Response) => {
+            await this.spawn(
+                this.requestHandler(req, res, route.filters, route)
+            );
         };
 
-    /**
-     * runIn404Context is used when a 404 handler filter is installed.
-     */
-    runIn404Context =
-        (filter: Filter<Type>): express.RequestHandler =>
-        (
-            req: express.Request,
-            res: express.Response,
-            next: express.NextFunction
-        ) =>
-            this.runInContext({
-                method: req.method,
-
-                path: '404',
-
-                filters: [filter],
-
-                tags: {}
-            })(req, res, next);
-
-    /**
-     * runInContextWithError is used when an error occurs during request
-     * handling.
-     */
-    runInContextWithError =
-        (filter: ErrorFilter): express.ErrorRequestHandler =>
-        (
-            err: Error,
-            req: express.Request,
-            res: express.Response,
-            next: express.NextFunction
-        ) => {
-            new RequestContext(
-                this,
-                ClientRequest.fromExpress(req, res, {
-                    method: req.method,
-
-                    path: '?',
-
-                    filters: [],
-
-                    tags: {}
-                }),
-                res,
-                next,
-                [(r: Request) => filter(err, r)]
-            ).run();
-        };
-
-    /**
-     * runInCSRFErrorContext is used for CSRF error handling.
-     */
-    runInCSRFErrorContext =
-        (filters: Filter<Type>[]) =>
-        (
-            err: Error,
-            req: express.Request,
-            res: express.Response,
-            next: express.NextFunction
-        ) => {
-            if ((<Type>err).code !== ERROR_TOKEN_INVALID) return next();
-
-            this.runInContext({
-                method: req.method,
-
-                path: '?',
-
-                filters,
-
-                tags: {}
-            })(<Type>req, res, next);
-        };
-
-    /**
-     * addBefore adds filters to the RoutingInfo that will be executed
-     * before every route.
-     */
-    addBefore(filter: Filter<Type>): Module {
-        this.routeInfo.before.push(filter);
-        return this;
-    }
-
-    /**
-     * addRoute to the internal routing table of this Module.
-     *
-     * These routes are later installed to the result of getRouter().
-     */
-    addRoute(conf: RouteConf): Module {
-        let { routes } = this.routeInfo;
-
-        if (routes[conf.path] != null) {
-            let route = routes[conf.path];
-            if (route[conf.method] != null)
-                route[conf.method] = [...route[conf.method], conf];
-            else route[conf.method] = [conf];
+    errorHandler = async (
+        err: Error,
+        req: express.Request,
+        res: express.Response,
+        _: express.NextFunction
+    ) => {
+        if ((<Type>err).code === ERROR_TOKEN_INVALID) {
+            if (this.conf?.app?.csrf?.on?.error) {
+                await this.spawn(this.requestHandler(req, res, [this.conf.app.csrf.on.error]))
+            } else {
+                res.status(404).send('Token invalid!');
+            }
         } else {
-            routes[conf.path] = { [conf.method]: [conf] };
+            //TODO: this.getLogger().error(err);
+            if (this.conf?.app?.routing?.on?.error) {
+                let filter = this.conf.app.routing.on.error;
+                await this.spawn(this.requestHandler(req, res, [filter]))
+            } else {
+                res.status(500).send('Internal Server Error!');
+            }
         }
+    };
 
-        return this;
-    }
+    noneHandler = async (req: express.Request, res: express.Response) => {
+        if (this.conf?.app?.routing?.on?.none) {
+            await this.spawn(this.requestHandler(req, res, [this.conf.app.routing.on.none]));
+        } else {
+            res.status(404).send('Not Found');
+        }
+    };
 
-    /**
-     * addRoutes
-     * @deprecated
-     */
-    addRoutes(routes: RouteConf[]): Module {
-        routes.forEach(r => this.addRoute(r));
-        return this;
-    }
-
-    disable() {
-        getModule(this.app.modules, this.self)
-            .map(m => {
-                m.disabled = true;
-            })
-            .orJust(() => console.warn(`${this.self}: Cannot be disabled!`))
-            .get();
-    }
-
-    enable() {
-        getModule(this.app.modules, this.self)
-            .map(m => {
-                m.disabled = false;
-                m.redirect = Maybe.nothing();
-            })
-            .orJust(() => console.warn(`${this.self}: Cannot be enabled!`))
-            .get();
-    }
-
-    redirect(location: string, status: number) {
-        getModule(this.app.modules, this.self)
-            .map(m => {
-                m.redirect = Maybe.just({ location, status });
-            })
-            .orJust(() => console.warn(`${this.self}: Cannot be enabled!`))
-            .get();
-    }
-
-    /**
-     * show constructors a Filter for displaying a view.
-     */
-    show(name: string, ctx?: object): Filter<undefined> {
-        return () => show(name, ctx);
-    }
-
-    /**
-     * getRouter provides the [[express.Router]] for the Module.
-     */
-    getRouter(): express.Router {
-        let router = express.Router();
-        let { before, routes } = this.routeInfo;
-
-        forEach(routes, (methodConfs, path) => {
-            forEach(methodConfs, (confs, method) => {
-                let filters = before.slice();
-
-                let tags = <Object>{};
-
-                confs.forEach(conf => {
-                    filters = [...filters, ...conf.filters];
-
-                    tags = merge(tags, conf.tags);
-                });
-
-                (<Type>router)[method](
-                    path,
-                    this.runInContext({
-                        method,
-
-                        path,
-
-                        filters,
-
-                        tags
-                    })
-                );
-            });
-        });
-
-        return router;
-    }
+    requestHandler =
+        (
+            req: express.Request,
+            res: express.Response,
+            filters: Filter[],
+            route?: RouteConf
+        ) =>
+        (rtime: Runtime) =>
+            new RequestHandler(
+                rtime,
+                {
+                    actor: this,
+                    request: ClientRequest.fromExpress(req, res, route)
+                },
+                res,
+                filters
+            );
 
     async run() {
-        let { app, children = [] } = this.template;
-        let moduleData = Maybe.fromNullable(
-            this.app.registerModule(this.parent, this)
-        );
+        let { modules, children = [] } = this.conf;
 
-        if (app && app.modules) {
-            for (let [key, conf] of Object.entries(app.modules)) {
-                let tmpl = conf(this.app);
+        if (modules) {
+            for (let [id, conf] of Object.entries(modules)) {
+                conf = { ...conf, id };
                 await this.spawn({
-                    ...tmpl,
-                    spawnConcern: 'receiving',
+                    ...conf,
+                    spawnConcern: SPAWN_CONCERN_RECEIVING,
                     create: runtime =>
-                        new Module(this.app, runtime, key, tmpl, moduleData)
+                        this.app.registerModule(
+                            new Module(this.app, runtime, conf)
+                        )
                 });
             }
         }
 
         for (let child of children) await this.spawn(child);
+    }
+}
+
+export type FilterChain = Filter | Handler;
+
+export class RequestHandler extends Immutable<void> {
+    constructor(
+        public runtime: Runtime,
+        public context: RequestContext,
+        public response: express.Response,
+        public handlers: FilterChain[]
+    ) {
+        super(runtime);
+    }
+
+    async run() {
+        let handler;
+        while ((handler = this.handlers.shift())) {
+            let res = await handler(this.context);
+
+            if (res) {
+                res.send(this.response);
+                return;
+            }
+        }
+
+        //TODO: 500 raise event or something
     }
 }

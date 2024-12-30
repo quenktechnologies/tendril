@@ -1,39 +1,22 @@
 import * as express from 'express';
 
-import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
+import { Record } from '@quenk/noni/lib/data/record';
+
 import { PVM } from '@quenk/potoo/lib/actor/system/vm';
 
 import { Server } from '../net/http/server';
+import { ModuleConf } from './module/conf';
 import { getInstance } from './connection';
-import { Template } from './module/template';
-import { ModuleData, getModule, ModuleDatas } from './module/data';
-import {
-    getAvailableMiddleware,
-    getEnabledMiddleware,
-    getRoutes,
-    getShowFun,
-    getServerConf,
-    getConnections,
-    getHooks
-} from './module/template';
-import { StageBundle } from './boot/stage';
-import { InitStage } from './boot/stage/init';
-import { ConnectionsStage } from './boot/stage/connections';
-import { LogStage } from './boot/stage/log';
-import { SessionStage } from './boot/stage/session';
-import { CSRFTokenStage } from './boot/stage/csrf-token';
-import { CookieParserStage } from './boot/stage/cookie-parser';
-import { BodyParserStage } from './boot/stage/body-parser';
-import { MiddlewareStage } from './boot/stage/middleware';
-import { RoutingStage } from './boot/stage/routing';
-import { StaticStage } from './boot/stage/static';
-import { ListenStage } from './boot/stage/listen';
-import { Dispatcher } from './hooks';
-import { Module } from './module';
+import { Module, ModuleInfo } from './module';
+import { StartupTaskManager } from './startup';
+import { EventDispatcher } from './events';
+import { getParent } from '@quenk/potoo/lib/actor/address';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
 const dconf = { log: { level: 'error' } };
+
+export type ModuleConfProvider = (app: App) => ModuleConf;
 
 /**
  * App is the main entry point to the framework.
@@ -46,32 +29,18 @@ const dconf = { log: { level: 'error' } };
  * handlers and whatever logic configureed to be executed.
  */
 export class App {
-    constructor(public provider: (s: App) => Template) {}
-
-    main = <Template>this.provider(this);
-
-    vm: PVM = PVM.create((this.main.app && this.main.app.system) || dconf);
-
-    modules = <ModuleDatas>{};
-
-    server = new Server(getServerConf(this.main, defaultServConf));
-
-    pool = getInstance();
-
-    hooks = <Dispatcher<this>>new Dispatcher(this);
-
-    stages = App.createDefaultStageBundle(this);
-
-    /**
-     * create a new Application instance.
-     */
-    static create(provider: (s: App) => Template): App {
-        return new App(provider);
-    }
+    constructor(
+        public main: ModuleConf,
+        public vm: PVM = PVM.create((main.app && main.app.vm) || dconf),
+        public modules: Record<ModuleInfo> = {},
+        public pool = getInstance(),
+        public server = new Server(main.app?.server ?? defaultServConf),
+        public startup = new StartupTaskManager([], modules),
+        public events = new EventDispatcher()
+    ) {}
 
     /**
      * createDefaultStageBundle produces a StageBundle
-     */
     static createDefaultStageBundle(app: App): StageBundle {
         let provideMain = () =>
             getModule(app.modules, mainPath(app.main.id)).get();
@@ -83,6 +52,7 @@ export class App {
             new SessionStage(app.modules, app.pool),
             new CookieParserStage(app.modules),
             new BodyParserStage(app.modules),
+            new BuildRoutingStage(app.modules),
             new CSRFTokenStage(app.modules),
             new MiddlewareStage(app, app.modules),
             new RoutingStage(app.modules),
@@ -90,49 +60,28 @@ export class App {
             new ListenStage(app.server, app.hooks, provideMain, app)
         ]);
     }
+     */
 
-    getPlatform() {
-        return this.vm;
-    }
-
-    registerModule(parent: Maybe<ModuleData>, module: Module) {
-        let { self: address, template } = module;
-
-        let mctx: ModuleData = {
-            path: module.path,
-            address,
+    registerModule(module: Module) {
+        let parent = this.modules[getParent(module.address)];
+        let conf = module.conf;
+        this.modules[module.address] = {
+            path:conf?.app?.path ?? conf.id ?? '/',
+            address: module.address,
+            conf,
             parent,
-            app: express(),
+            express: express(),
             module,
-            hooks: getHooks(template),
-            template: module.template,
-            middleware: {
-                enabled: getEnabledMiddleware(template),
-                available: getAvailableMiddleware(template)
+            routing: {
+                middleware: { available: new Map(), enabled: [] },
+                globalFilters: [],
+                handlers: {},
+                routes: []
             },
-            routes: getRoutes(template),
-            show: getShowFun(template, parent),
-            connections: getConnections(template),
-            disabled: template.disabled || false,
-            redirect: nothing()
+            connections: {}
         };
 
-        this.modules[address] = mctx;
-
-        return mctx;
-    }
-
-    /**
-     * installMiddleware at the specified mount point.
-     *
-     * If no module exists there, the attempt will be ignored.
-     */
-    installMiddleware(path: string, handler: express.RequestHandler): App {
-        return getModule(this.modules, path)
-            .map(m => m.app.use(handler))
-            .map(() => this)
-            .orJust(() => this)
-            .get();
+        return module;
     }
 
     async start() {
@@ -141,11 +90,11 @@ export class App {
             spawnConcern: 'receiving',
             create: runtime =>
                 this.registerModule(
-                    Maybe.nothing(),
-                    new Module(this, runtime, mainPath(this.main.id), this.main)
-                ).module
+                    new Module(this, runtime, this.main)
+                )
         });
-        await this.stages.execute();
+
+        await this.startup.run();
     }
 
     async stop() {
@@ -154,5 +103,3 @@ export class App {
         await this.vm.stop();
     }
 }
-
-const mainPath = (path?: string): string => (path != null ? path : '/');

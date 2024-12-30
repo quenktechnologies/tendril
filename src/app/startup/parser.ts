@@ -1,9 +1,9 @@
 import * as parser from 'body-parser';
 
-import { map, merge } from '@quenk/noni/lib/data/record';
+import {  merge } from '@quenk/noni/lib/data/record';
 
-import { ModuleDatas } from '../../module/data';
-import { Stage } from './';
+import { ModuleInfo } from '../module';
+import { BaseStartupTask  } from './';
 
 /**
  * BodyParserConf can be configured to enabled various request body parsing
@@ -76,40 +76,35 @@ const defaults = {
 };
 
 /**
- * BodyParserStage configures middleware for parsing request bodies into desired
+ * BodyParser configures middleware for parsing request bodies into desired
  * values.
  */
-export class BodyParserStage implements Stage {
-    constructor(public modules: ModuleDatas) {}
+export class BodyParser extends BaseStartupTask {
 
-    name = 'body-parser';
+    name = 'parser';
 
-    async execute() {
-        let { modules } = this;
+    async onAncestor() {}
 
-        map(modules, m => {
-            let { app } = m;
-
+    async onModule(mod: ModuleInfo) {
             if (
-                m.template &&
-                m.template.app &&
-                m.template.app.parsers &&
-                m.template.app.parsers.body
+                mod.conf &&
+                mod.conf.app &&
+                mod.conf.app.parsers &&
+                mod.conf.app.parsers.body
             ) {
-                let body = merge(defaults, m.template.app.parsers.body);
+                let body = merge(defaults, mod.conf.app.parsers.body);
 
                 if (body.json && body.json.enable)
-                    app.use(parser.json(body.json.options));
+                    mod.express.use(parser.json(body.json.options));
 
                 if (body.raw && body.raw.enable)
-                    app.use(parser.raw(body.raw.options));
+                    mod.express.use(parser.raw(body.raw.options));
 
                 if (body.text && body.text.enable)
-                    app.use(parser.text(body.text.options));
+                    mod.express.use(parser.text(body.text.options));
 
                 if (body.urlencoded && body.urlencoded.enable)
-                    app.use(parser.urlencoded(body.urlencoded.options));
+                    mod.express.use(parser.urlencoded(body.urlencoded.options));
             }
-        });
     }
 }

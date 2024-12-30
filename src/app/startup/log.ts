@@ -1,10 +1,10 @@
 import * as express from 'express';
 import * as morgan from 'morgan';
 
-import { merge, map } from '@quenk/noni/lib/data/record';
+import {  merge  } from '@quenk/noni/lib/data/record';
 
-import { ModuleDatas } from '../../module/data';
-import { Stage } from './';
+import { ModuleInfo } from '../module';
+import { BaseStartupTask } from '.';
 
 /**
  * LogConf can be configured to log each HTTP request as they come in.
@@ -34,25 +34,19 @@ const defaultOptions = {
 /**
  * LogStage configures the morgan middleware to log incomming requests.
  */
-export class LogStage implements Stage {
-    constructor(public modules: ModuleDatas) {}
+export class LogStage extends BaseStartupTask {
 
     name = 'log';
 
-    async execute() {
-        let { modules } = this;
-
-        map(modules, m => {
+    async onConfigureModule(mod: ModuleInfo) {
             if (
-                m.template &&
-                m.template.app &&
-                m.template.app.log &&
-                m.template.app.log.enable
+                mod.conf &&
+                mod.conf.app &&
+                mod.conf.app.log &&
+                mod.conf.app.log.enable
             ) {
-                let conf = merge(defaultOptions, m.template.app.log);
-
-                m.app.use(morgan(conf.format, conf.options));
+                let conf = merge(defaultOptions, mod.conf.app.log);
+                mod.express.use(morgan(conf.format, conf.options));
             }
-        });
     }
 }

@@ -1,9 +1,7 @@
 import * as parser from 'cookie-parser';
 
-import { map } from '@quenk/noni/lib/data/record';
-
-import { ModuleDatas } from '../../module/data';
-import { Stage } from './';
+import { ModuleInfo } from '../module';
+import { BaseStartupTask  } from '.';
 
 export const WARN_NO_SECRET =
     '[CookieParser]: Warning! No app.parser.cookie.secret configured! \
@@ -39,25 +37,20 @@ export interface CookieParserConf {
 }
 
 /**
- * CookieParserStage configures middleware for parsing cookies.
+ * CookieStage configures middleware for parsing cookies.
  */
-export class CookieParserStage implements Stage {
-    constructor(public modules: ModuleDatas) {}
+export class CookiesStage extends BaseStartupTask {
+    name = 'cookies';
 
-    name = 'cookie-parser';
-
-    async execute() {
-        let { modules } = this;
-
-        map(modules, m => {
+    async onConfigureModule(mod: ModuleInfo) {
             if (
-                m.template &&
-                m.template.app &&
-                m.template.app.parsers &&
-                m.template.app.parsers.cookie &&
-                m.template.app.parsers.cookie.enable
+                mod.conf &&
+                mod.conf.app &&
+                mod.conf.app.parsers &&
+                mod.conf.app.parsers.cookie &&
+                mod.conf.app.parsers.cookie.enable
             ) {
-                let { cookie } = m.template.app.parsers;
+                let { cookie } = mod.conf.app.parsers;
 
                 let secret =
                     cookie.secret ||
@@ -67,9 +60,8 @@ export class CookieParserStage implements Stage {
 
                 if (secret === randomSecret) console.warn(WARN_NO_SECRET);
 
-                m.app.use(parser(secret, cookie.options));
+                mod.express.use(parser(secret, cookie.options));
             }
-        });
     }
 }
 

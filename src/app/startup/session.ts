@@ -5,18 +5,18 @@ import { Record, merge, map } from '@quenk/noni/lib/data/record';
 import { isObject, isNumber } from '@quenk/noni/lib/data/type';
 import { Object } from '@quenk/noni/lib/data/jsonx';
 
-import { Provider } from '../../middleware/session/store/connection';
-import { MemoryConnection } from '../../middleware/session/store/connection/memory';
+import { Provider } from '../middleware/session/store/connection';
+import { MemoryConnection } from '..//middleware/session/store/connection/memory';
 import {
     Descriptor,
     SESSION_DESCRIPTORS,
     SESSION_DATA,
     deleteSessionKey
-} from '../../api/storage/session';
-import { ModuleDatas } from '../../module/data';
-import { Pool } from '../../connection';
-import { randomSecret } from './cookie-parser';
-import { Stage } from './';
+} from '../api/storage/session';
+import { ModuleInfo } from '..//module';
+import { Pool } from '../connection';
+import { randomSecret } from './cookies';
+import { BaseStartupTask  } from './';
 
 export const SESSION_COOKIE_NAME = 'tendril.session.id';
 export const POOL_KEY_SESSION = '$tendril-session-store-connection';
@@ -91,25 +91,23 @@ export interface SessionConf {
  * 3. the value is read from process.env.SECRET otherwise
  * 4. a random string is generated (sessions will not survive app restarts).
  */
-export class SessionStage implements Stage {
+export class SessionStage extends BaseStartupTask {
     constructor(
-        public modules: ModuleDatas,
         public pool: Pool
-    ) {}
+    ) { super(); }
 
     name = 'session';
 
-    async execute() {
-        let { modules, pool } = this;
+    async onConfigureModule(mod: ModuleInfo) {
+        let { pool } = this;
 
-        for (let m of Object.values(modules)) {
             if (
-                m.template &&
-                m.template.app &&
-                m.template.app.session &&
-                m.template.app.session.enable
+                mod.conf &&
+                mod.conf.app &&
+                mod.conf.app.session &&
+                mod.conf.app.session.enable
             ) {
-                let conf = merge(defaultOptions, m.template.app.session);
+                let conf = merge(defaultOptions, mod.conf.app.session);
 
                 if (!conf.options.secret) {
                     if (process.env.SESSION_SECRET) {
@@ -130,10 +128,9 @@ export class SessionStage implements Stage {
                 let store = await conn.checkout();
                 pool.add(POOL_KEY_SESSION, conn);
 
-                m.app.use(session(merge(conf.options, { store })));
-                m.app.use(handleSessionTTL);
+                mod.express.use(session(merge(conf.options, { store })));
+                mod.express.use(handleSessionTTL);
             }
-        }
     }
 }
 
