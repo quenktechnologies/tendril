@@ -1,277 +1,90 @@
-import * as request from 'superagent';
+import axios from 'axios';
 
-import { assert } from '@quenk/test/lib/assert';
+import { expect } from '@jest/globals';
 
-import { template } from '../fixtures/ledger';
-import { App } from '../../src/app';
+import { makeDir, removeDir, writeTextFile } from '@quenk/noni/lib/io/file';
 
-const URL = 'localhost:8888';
-const FILE_STYLE_CSS = `${URL}/style.css`;
-const ROUTE_ACCOUNTS = `${URL}/accounts`;
-const ROUTE_ACCOUNTS_BALANCE = `${ROUTE_ACCOUNTS}/balance`;
-const ROUTE_REPORTS = `${ROUTE_ACCOUNTS}/reports`;
-const ROUTE_REPORTS_CUSTOM = `${ROUTE_REPORTS}/custom`;
-const ROUTE_ADMIN = `${URL}/admin`;
-const ROUTE_ADMIN_PING = `${ROUTE_ADMIN}/ping`;
-const ROUTE_ADMIN_CRASH = `${ROUTE_ADMIN}/crash`;
-const ROUTE_ADMIN_XHEADERS = `${ROUTE_ADMIN}/x-headers`;
-const ROUTE_ADMIN_NUM = `${ROUTE_ADMIN}/num`;
-const ROUTE_ADMIN_PRS = `${ROUTE_ADMIN}/prs`;
-const ROUTE_ADMIN_SESSION = `${ROUTE_ADMIN}/session`;
-const ROUTE_ANALYTICS = `${URL}/analytics`;
+import { App } from '../../lib/app';
+import { ModuleConf } from '../../lib/app/module/conf';
+import { dirname } from 'path/win32';
 
-const agent = request.agent();
+const TEST_DIR = `${process.cwd()}/test/feat`;
+const FIXTURES_DIR = `${TEST_DIR}/fixtures`;
+const STATIC_DIR = `${FIXTURES_DIR}/static`;
 
-describe('tendril', () => {
-    describe('ledger', () => {
-        let app: App;
+const agent = axios.create({
+    baseURL: 'http://localhost:2407',
+    validateStatus: () => true
+});
 
-        beforeEach(() => (process.env.APP_INIT = ''));
+let app: App | undefined;
 
-        beforeEach(() => (process.env.APP_CONNECTED = ''));
-
-        beforeEach(() => {
-            app = new App(template);
+const createApp = (conf: ModuleConf) =>
+    new Promise<void>((resolve, reject) => {
+        app = new App(conf);
+        let timer = setTimeout(
+            () => reject(new Error('App failed to start')),
+            1000
+        );
+        app.events.addListener('started', async () => {
+            clearTimeout(timer);
+            resolve();
         });
-
-        beforeEach(() => (process.env.APP_START = ''));
-
-        beforeEach(() => app.start());
-
-        afterEach(() => app.stop());
-
-        it('should invoke init hook', () =>
-            assert(process.env.APP_INIT).equal('true'));
-
-        it('should invoke connected hook', () =>
-            assert(process.env.APP_CONNECTED).equal('true'));
-
-        it('should invoke connected hook', () =>
-            assert(process.env.APP_START).equal('true'));
-
-        it('should have connections', () =>
-            assert(app.pool.conns['main']).not.be.undefined());
-
-        it('should show views', () =>
-            agent
-                .get(URL)
-                .then((r: any) => assert(r.text).equal('<b>Index</b>')));
-
-        it('should show parent views if none configured for child', () =>
-            agent
-                .get(ROUTE_ACCOUNTS_BALANCE)
-                .then((r: any) => assert(r.text).equal('$0.00')));
-
-        it('should bubble views up', () =>
-            agent
-                .get(ROUTE_REPORTS)
-                .then((r: any) => assert(r.text).equal('A list of reports')));
-
-        it('should apply middleware', () =>
-            agent
-                .get(FILE_STYLE_CSS)
-                .then((r: any) =>
-                    assert(r.text.split(/\s/).join('')).equal(
-                        'body{background:black;color:white;}'
-                    )
-                ));
-
-        it('should configure post routes', () =>
-            agent
-                .post(ROUTE_ACCOUNTS)
-                .send({ name: 'sundry', class: 'expense' })
-                .then((r: any) => assert(r.body.id).not.equal(undefined)));
-
-        it('should run filters', () => {
-            let fourohfoured = false;
-
-            return agent
-                .get(`${ROUTE_REPORTS}/xincome`)
-                .then((r: any) => assert(r.text).equal('Income Report'))
-                .then(() => agent.get(`${ROUTE_REPORTS}/xexpense`))
-                .then((r: any) => assert(r.text).equal('A list of reports'))
-                .then(() => agent.get(`${ROUTE_REPORTS}/liabilities`))
-                .catch((e: Error) => {
-                    console.error(e);
-                    if (e.message !== 'Forbidden') throw e;
-
-                    fourohfoured = true;
-                    return fourohfoured;
-                });
-        });
-
-        it('should allow modules to be recursively disabled', () =>
-            agent
-                .get(ROUTE_ACCOUNTS)
-                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('$0.00'))
-                .then(() => agent.delete(ROUTE_ADMIN))
-                .then(() =>
-                    agent
-                        .get(ROUTE_ACCOUNTS)
-                        .catch((e: Error) =>
-                            assert(e.message).equal('Not Found')
-                        )
-                )
-                .then(() =>
-                    agent
-                        .get(ROUTE_ACCOUNTS_BALANCE)
-                        .catch((e: Error) =>
-                            assert(e.message).equal('Not Found')
-                        )
-                ));
-
-        it('should allow modules to enable each other recursively', () =>
-            agent
-                .get(ROUTE_ACCOUNTS)
-                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('$0.00'))
-                .then(() => agent.delete(ROUTE_ADMIN))
-                .then(() =>
-                    agent
-                        .get(ROUTE_ACCOUNTS)
-                        .catch((e: Error) =>
-                            assert(e.message).equal('Not Found')
-                        )
-                )
-                .then(() =>
-                    agent
-                        .get(ROUTE_ACCOUNTS_BALANCE)
-                        .catch((e: Error) =>
-                            assert(e.message).equal('Not Found')
-                        )
-                )
-                .then(() => agent.post(ROUTE_ADMIN))
-                .then(() => agent.get(ROUTE_ACCOUNTS))
-                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('$0.00')));
-
-        // Actor API not implemented yet.
-        xit('should allow modules to redirect each other recursively', () =>
-            agent
-                .get(ROUTE_ACCOUNTS)
-                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => agent.put(ROUTE_ADMIN))
-                .then(() => agent.get(ROUTE_ACCOUNTS))
-                .then((r: any) => assert(r.text).equal('<b>Index</b>'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('<b>Index</b>')));
-
-        xit('should stop redirecting enabled modules', () =>
-            agent
-                .get(ROUTE_ACCOUNTS)
-                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('$0.00'))
-                .then(() => agent.put(ROUTE_ADMIN))
-                .then(() => agent.get(ROUTE_ACCOUNTS))
-                .then((r: any) => assert(r.text).equal('<b>Index</b>'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('<b>Index</b>'))
-                .then(() => agent.post(ROUTE_ADMIN))
-                .then(() => agent.get(ROUTE_ACCOUNTS))
-                .then((r: any) => assert(r.text).equal('Chart of Accounts'))
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then((r: any) => assert(r.text).equal('$0.00')));
-
-        it('should acknowledge some modules start disabled', () =>
-            agent
-                .get(ROUTE_ANALYTICS)
-                .catch((e: Error) => assert(e.message).equal('Not Found')));
-
-        xit('should spawn child actors', () => {
-            assert(process.env.CHILD_RUNNING).equal('yes');
-        });
-
-        xit('should stop child actors', () =>
-            app
-                .stop()
-                .then(() => assert(process.env.CHILD_RUNNING).equal('no')));
-
-        xit('should allow asking of actors', () =>
-            agent
-                .get(ROUTE_ADMIN_PING)
-                .then((r: any) => assert(r.text).equal('pong')));
-
-        it('should send custom headers', () =>
-            agent.get(ROUTE_ADMIN_XHEADERS).then((r: any) => {
-                assert(r.headers['x-powered-by']).equal('Thanos');
-                assert(r.headers['x-men']).equal('wolverine;storm;roll');
-                assert(r.headers['x-mega']).equal('zero');
-            }));
-
-        it('should provide context to views', () =>
-            agent
-                .get(ROUTE_REPORTS_CUSTOM)
-                .then((r: any) => assert(r.text).equal('Custom')));
-
-        xit('should execute module filters', () => {
-            process.env.MODULE_FILTERS_WORK = '';
-
-            return agent
-                .get(ROUTE_ADMIN_PING)
-                .then(() =>
-                    assert(process.env.MODULE_FILTERS_WORK).not.equal('yes')
-                )
-                .then(() => agent.get(ROUTE_ACCOUNTS_BALANCE))
-                .then(() => {
-                    assert(process.env.MODULE_FILTERS_WORK).equal('yes');
-                });
-        });
-
-        it('should invoke not found hooks', () =>
-            agent.get(`${ROUTE_ADMIN}/foobar`).catch(e => {
-                assert(process.env.NOT_FOUND_APPLIED).equal('yes');
-                assert(e.response.status).equal(404);
-            }));
-
-        it('should enable sessions when configured', () =>
-            agent
-                .get(ROUTE_ADMIN_NUM)
-                .then((r: any) => {
-                    assert(r.body.num).equal(0);
-                })
-                .then(() => agent.post(ROUTE_ADMIN_NUM).send({ num: 9 }))
-                .then(() =>
-                    agent.get(ROUTE_ADMIN_NUM).then((r: any) => {
-                        assert(r.body.num).equal(9);
-                    })
-                ));
-
-        it('should allow the prs api', () =>
-            agent.get(ROUTE_ADMIN_PRS).then(r => assert(r.status).equal(200)));
-
-        it('should allow the session api', () =>
-            agent
-                .post(ROUTE_ADMIN_SESSION)
-                .send({ value: 9 })
-                .then(() => agent.get(ROUTE_ADMIN_SESSION))
-                .then(r => assert(r.body.value).equal(9))
-                .then(() => agent.head(ROUTE_ADMIN_SESSION))
-                .then(() => agent.delete(ROUTE_ADMIN_SESSION))
-                .then(() => agent.head(ROUTE_ADMIN_SESSION))
-                .catch(e => assert(e.response.status).equal(404))
-                .then(() => agent.get(ROUTE_ADMIN_SESSION))
-                .then(r => assert(r.body.value).equal(undefined)));
+        app.start();
     });
 
-    describe('error escalation', () => {
-        let app: App = new App(template);
+describe('tendril', () => {
+    afterEach(async () => {
+        if (app) await app.stop();
+        app = undefined;
+    });
 
-        beforeEach(() => app.start());
+    describe('static dir support', () => {
+        beforeEach(async () => {
+            await makeDir(STATIC_DIR);
+        });
 
-        afterEach(() => app.stop());
+        beforeEach(async () => {
+            await removeDir(STATIC_DIR);
+        });
 
-        it('should respond with 500', () =>
-            agent
-                .get(ROUTE_ADMIN_CRASH)
-                .then(() => assert(false).true())
-                .catch(e => {
-                    assert(process.env.ERROR_HANDLER_APPLIED).equal('yes');
-                    assert(e.response.status).equal(500);
-                }));
+        const staticDirSupportTests = {
+            'should serve string configs': {
+                dirs: `${STATIC_DIR}/public`,
+                make: ['public/test.txt'],
+                tests: ['test.txt']
+            },
+            'should serve array configs': {
+                dirs: [`${STATIC_DIR}/public`],
+                make: ['public/test.txt'],
+                tests: ['test.txt']
+            },
+            'should serve mapped configs': {
+                dirs: {
+                    'path/to/public0': `${STATIC_DIR}/public0`,
+                    public1: { path: `${STATIC_DIR}/public1` }
+                },
+                make: ['public0/test0.txt', 'public1/test1.txt'],
+                tests: ['test0.txt', 'test1.txt']
+            }
+        };
+
+        for (let [key, conf] of Object.entries(staticDirSupportTests)) {
+            it(key, async () => {
+                let { dirs, make, tests } = conf;
+                for (let target of make) {
+                    await makeDir(dirname(`${STATIC_DIR}/${target}`));
+                    await writeTextFile(`${STATIC_DIR}/${target}`, key);
+                }
+
+                await createApp({ app: { routing: { dirs } } });
+
+                for (let test of tests) {
+                    let res = await agent.get(test);
+                    expect(res.status).toBe(200);
+                    expect(res.data).toBe(key);
+                }
+            });
+        }
     });
 });
