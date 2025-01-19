@@ -9,14 +9,15 @@ import { CookieParseOptions } from 'cookie-parser';
 import { Path } from '@quenk/noni/lib/io/file';
 import { Record } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
-import {Object} from '@quenk/noni/lib/data/jsonx';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 
 import { Provider } from './middleware/session/store/connection';
 import { Middleware } from './middleware';
 import { Filter, Handler, Method } from './api/request';
 import { Show } from './api/response';
 import { Connection } from './connection';
-import {  ModuleInfo } from './module';
+import { ModuleInfo } from './module';
+import { EventListener } from './events';
 
 /**
  * AppConf holds the bulk of the configuration directives for a tendril app.
@@ -100,11 +101,6 @@ export interface AppConf {
     };
 
     /**
-     * public configuration for specifying static directories to serve.
-     */
-    dirs?: { public?: StaticConf; self?: string };
-
-    /**
      * views confguration for rendering views from templates.
      */
     views?: ShowConf;
@@ -118,6 +114,11 @@ export interface AppConf {
      * routing configuration for the module.
      */
     routing?: {
+        /**
+         * dirs to serve static files from.
+         */
+        dirs?: StaticConf;
+
         /**
          * routes provides the HTTP route configuration.
          */
@@ -398,20 +399,34 @@ export interface MiddlewareConf {
 }
 
 /**
- *  StaticConf is the configuration for one or more
+ * StaticConf is the configuration for one or more static directories.
  */
-export type StaticConf = Path | StaticConfMap | (Path | StaticDirConf)[];
+export type StaticConf = Record<StaticDirConf | StaticDirConf[]>;
 
-export type StaticConfMap = Record<Path | StaticDirConf>;
+/**
+ * StaticDirConfMap specifies a local mount point for each configuration.
+ */
+export type StaticDirConfMap = Record<StaticDirConf | StaticDirConf[]>;
 
 /**
  * StaticDirConf is the configuration for a single static directory.
  */
-export interface StaticDirConf {
+export type StaticDirConf = ShortStaticDirConf | FullStaticDirConf;
+
+/**
+ * ShortStaticDirConf just specifies the path to a static directory.
+ */
+export type ShortStaticDirConf = Path;
+
+/**
+ * FullStaticDirConf specifies the path to a static directory and optional
+ * options.
+ */
+export interface FullStaticDirConf {
     /**
-     * dir path to serve.
+     * path to serve static files from.
      */
-    dir: Path;
+    path: Path;
 
     /**
      * options passed directly to the serve-static middleware.
@@ -469,7 +484,7 @@ export interface RouteConf {
     /**
      * action to take when the route is executed.
      */
-  action: Handler
+    action: Handler;
 }
 
 /**

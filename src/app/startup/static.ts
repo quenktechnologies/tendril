@@ -1,117 +1,59 @@
 import * as express from 'express';
 
-import { isAbsolute, resolve, join } from 'path';
+import { join, isAbsolute } from 'node:path';
 
-import { Record, map, merge } from '@quenk/noni/lib/data/record';
-import { isObject, isString } from '@quenk/noni/lib/data/type';
-import { isDirectory, Path } from '@quenk/noni/lib/io/file';
+import { map } from '@quenk/noni/lib/data/record';
+import { isString } from '@quenk/noni/lib/data/type';
 
 import { ModuleInfo } from '../module';
-import { StaticConf, StaticDirConf } from '../conf';
 import { BaseStartupTask } from '.';
 
-
-interface FlatStaticConfMap {
-    [key: string]: StaticDirConf;
-}
-
 /**
- * StaticStage configures middleware for serving static files for each module.
+ * StaticDirSupport configures the serving of local folders as static
+ * directories.
  *
- * All configured dirs are served as one virtual directory.
- * The configuration of static paths can be a [[StaticDirConf]] or a string
- * for a single path. Multiple paths can be configured by using an array of
- * strings or StaticDirConfs or a map object of StaticDirConfs.
+ * Each module has one virtual static directory in which users can specify sub
+ * directories to serve files from. The path '/' itself represents the root
+ * directory.
  *
- * They will all be expanded to a StaticDirConf before being installed.
- * By default, any folder named "public" in a module will be used to serve
- * static files.
+ * Currently the path to the local source directory is always resolved from the
+ * CWD of the process (unless an absolute path is provided). It is a lot less
+ * chaotic to therefore use absolute paths.
  *
- * Note: If "app.dirs.self" is configured, all static paths will be relative
- * to its value. This is usually the path for the main module from the root
- * of the working directory.
+ * A static directory configuration may look something like the following:
+ *
+ * // <path> : <source>
+ * app.routing.dirs:  {
+ *  '/': '/path/to/files',
+ *  '/js': { path: '/path/to/js', options: {} },
+ *  '/css': [{ path: '/path/to/css'}, { path: '/path/to/css2'}]
+ * }
+ *
+ * which will honour requests for files at the '/', '/js' and '/css' paths
+ * respectively. The options object is passed directly to the express.static
+ * middleware and is optional. The source for a mapping can be a string
+ * specifying the local path, an object with path and options, or an array
+ * combining the two.
  */
-export class StaticStage extends BaseStartupTask {
-    constructor(
-        public mainProvider: () => ModuleInfo,
-    ) { super(); }
+export class StaticDirSupport extends BaseStartupTask {
+    name = 'static-dir-support';
 
-    name = 'static';
+    async onConfigureModule(mod: ModuleInfo) {
+        let configs = map(mod.conf?.app?.routing?.dirs ?? {}, conf => {
+            let confs = Array.isArray(conf) ? conf : [conf];
+            return confs.map(conf => {
+                conf = isString(conf) ? { path: conf } : conf;
+                return isAbsolute(conf.path)
+                    ? conf
+                    : { ...conf, path: join(process.cwd(), conf.path) };
+            });
+        });
 
-    async onConfigureModule(mod:ModuleInfo) {
-        let { mainProvider, name } = this;
-
-        let main = mainProvider();
-
-            let prefix = '';
-
-            let mconfs: FlatStaticConfMap = { public: { dir: 'public' } };
-
-            if (mod.conf) {
-                let dirs = (mod.conf.app && mod.conf.app.dirs) || {};
-
-                prefix = getPrefix(dirs.self);
-
-                mconfs = merge(
-                    mconfs,
-                    normalizeConf(dirs.public || {})
-                );
-            }
-
-            let normalizedConfs = normalizeDirs(prefix, mconfs);
-
-            if (process.env.TENDRIL_STATIC_WARN_MISSING) {
-                // Check that the specified directory actually exists.
-
-                for (let conf of Object.values(normalizedConfs)) {
-                    let yes = await isDirectory(conf.dir);
-
-                    if (!yes)
-                        console.warn(
-                            `${name}: The directory ` +
-                                `"${conf.dir}" does not exist!`
-                        );
-
-                    main.express.use(express.static(conf.dir, conf.options));
-                }
-            } else {
-                map(normalizedConfs, conf =>
-                    main.express.use(express.static(conf.dir, conf.options))
-                );
+        for (let [prefix, dirs] of Object.entries(configs)) {
+            for (let dir of dirs) {
+                // TODO: Use middieware stage to install.
+                mod.express.use(prefix, express.static(dir.path, dir.options));
             }
         }
     }
-
-const normalizeConf = (conf: StaticConf={}): FlatStaticConfMap => {
-    if (Array.isArray(conf)) {
-        return conf.reduce(
-            (p: FlatStaticConfMap, c) => {
-                let obj = normalize(c);
-                return merge(p, { [obj.dir]: obj });
-            },
-            <FlatStaticConfMap>{}
-        );
-    } else if (isString(conf)) {
-        return { [conf]: { dir: conf } };
-    }
-
-    return map(<Record<string>>conf, normalize);
-};
-
-const normalize = (conf: Path | StaticDirConf): StaticDirConf =>
-    isObject(conf) ? conf : { dir: conf };
-
-const normalizeDirs = (
-    prefix: string,
-    confs: FlatStaticConfMap
-): FlatStaticConfMap =>
-    map(confs, c =>
-        isAbsolute(c.dir)
-            ? c
-            : merge(c, {
-                  dir: resolve(prefix, c.dir)
-              })
-    );
-
-const getPrefix = (prefix?: string) =>
-    isString(prefix) ? join(process.cwd(), prefix) : '';
+}

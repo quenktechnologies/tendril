@@ -1,16 +1,32 @@
 import * as express from 'express';
 
 import { Record } from '@quenk/noni/lib/data/record';
+import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { PVM } from '@quenk/potoo/lib/actor/system/vm';
+import { getParent } from '@quenk/potoo/lib/actor/address';
 
 import { Server } from '../net/http/server';
 import { ModuleConf } from './module/conf';
 import { getInstance } from './connection';
 import { Module, ModuleInfo } from './module';
 import { StartupTaskManager } from './startup';
-import { EventDispatcher } from './events';
-import { getParent } from '@quenk/potoo/lib/actor/address';
+import { EventDispatcher, StartedEvent } from './events';
+import { ConfigureEventListeners } from './startup/events';
+import { PoolConnections } from './startup/connections';
+import { ConfigureRequestLogger } from './startup/log';
+import { SessionSupport } from './startup/session';
+import { CookieSupport } from './startup/cookie';
+import { ConfigureBodyParser } from './startup/body-parser';
+import {
+    BuildAvailableMiddleware,
+    BuildEnabledMiddleware,
+    BuildGlobalFilters,
+    BuildRouteFilters,
+    ConfigureRouting
+} from './startup/routing';
+import { CSRFTokenSupport } from './startup/csrf';
+import { StaticDirSupport } from './startup/static';
 
 const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
@@ -19,54 +35,60 @@ const dconf = { log: { level: 'error' } };
 export type ModuleConfProvider = (app: App) => ModuleConf;
 
 /**
- * App is the main entry point to the framework.
+ * App is the main class of the tendril framework.
  *
- * App makes an actor system available to all its modules via the potoo
- * framework. This allows module code to communicate with each other when
- * needed to trigger effects that may not rely on http requests.
+ * An App is a collection of one or more modules each of which in turn are
+ * configured to handle specific incoming requests via routes. Routes are
+ * handled by spawning a child actor (in the same process) that can communicate
+ * with other actors in the app via the PVM apis.
  *
- * Module code includes the routes declared for a module but also its services,
- * handlers and whatever logic configureed to be executed.
+ * Modules are configurable and hierarchical with the first one serving as the
+ * root. Most of the App configuration should be done there as many directives
+ * are either inherited by children or do not have a productive effect.
+ *
+ * When an App is started, it will spawn the root module and all its children,
+ * it will also execute a series of startup tasks that prepare the modules for
+ * routing requests. These tasks are also responsible for opening connections
+ * to resources and configuring the underlying framework.
+ *
+ * At this time tasks are meant to be an internal API and not configurable
+ * in userland. This may change if a need arises for plugins etc.
  */
 export class App {
     constructor(
-        public main: ModuleConf,
-        public vm: PVM = PVM.create((main.app && main.app.vm) || dconf),
+        public conf: ModuleConf,
+        public vm: PVM = PVM.create((conf.app && conf.app.vm) || dconf),
         public modules: Record<ModuleInfo> = {},
         public pool = getInstance(),
-        public server = new Server(main.app?.server ?? defaultServConf),
-        public startup = new StartupTaskManager([], modules),
-        public events = new EventDispatcher()
+        public server = new Server(conf.app?.server ?? defaultServConf),
+        public events = new EventDispatcher(),
+        public rootInfo: Maybe<ModuleInfo> = Maybe.nothing(),
+        public startup = new StartupTaskManager(modules, [
+            new ConfigureEventListeners(events),
+            new PoolConnections(pool, events),
+            new ConfigureRequestLogger(),
+            new SessionSupport(pool),
+            new CookieSupport(),
+            new ConfigureBodyParser(),
+            new BuildGlobalFilters(),
+            new BuildRouteFilters(),
+            new BuildAvailableMiddleware(),
+            new BuildEnabledMiddleware(),
+            new CSRFTokenSupport(),
+            new StaticDirSupport(),
+            new ConfigureRouting()
+        ])
     ) {}
 
     /**
-     * createDefaultStageBundle produces a StageBundle
-    static createDefaultStageBundle(app: App): StageBundle {
-        let provideMain = () =>
-            getModule(app.modules, mainPath(app.main.id)).get();
-
-        return new StageBundle([
-            new InitStage(app.hooks),
-            new ConnectionsStage(app.pool, app.modules, app.hooks),
-            new LogStage(app.modules),
-            new SessionStage(app.modules, app.pool),
-            new CookieParserStage(app.modules),
-            new BodyParserStage(app.modules),
-            new BuildRoutingStage(app.modules),
-            new CSRFTokenStage(app.modules),
-            new MiddlewareStage(app, app.modules),
-            new RoutingStage(app.modules),
-            new StaticStage(provideMain, app.modules),
-            new ListenStage(app.server, app.hooks, provideMain, app)
-        ]);
-    }
+     * registerModule creates internal tracking information for newly created
+     * modules.
      */
-
     registerModule(module: Module) {
         let parent = this.modules[getParent(module.address)];
         let conf = module.conf;
-        this.modules[module.address] = {
-            path:conf?.app?.path ?? conf.id ?? '/',
+        let info = {
+            path: conf?.app?.path ?? conf.id ?? '/',
             address: module.address,
             conf,
             parent,
@@ -76,27 +98,47 @@ export class App {
                 middleware: { available: new Map(), enabled: [] },
                 globalFilters: [],
                 handlers: {},
-                routes: []
+                routes: [],
+                dirs: []
             },
             connections: {}
         };
 
-        return module;
+        this.modules[module.address] = info;
+
+        return info;
     }
 
+    /**
+     * start the App.
+     */
     async start() {
         await this.vm.spawn({
-            ...this.main,
+            ...this.conf,
             spawnConcern: 'receiving',
-            create: runtime =>
-                this.registerModule(
-                    new Module(this, runtime, this.main)
-                )
+            create: runtime => {
+                let root = this.registerModule(
+                    new Module(this, runtime, this.conf)
+                );
+                this.rootInfo = Maybe.just(root);
+                return root.module;
+            }
         });
 
         await this.startup.run();
+
+        await Promise.allSettled([
+            this.server.listen(this.rootInfo.get().express),
+            this.events.dispatch(new StartedEvent())
+        ]);
     }
 
+    /**
+     * stop the App
+     *
+     * Note: At this time, a stopped App should be considered in an invalid
+     * state and not started again. This may change in a future version.
+     */
     async stop() {
         await this.server.stop();
         await this.pool.close();
