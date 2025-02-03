@@ -29,17 +29,17 @@ export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
  * Filter is a function executed on incomming requests before the handler
  * for the route is executed.
  *
- * If a Filter returns a response, it signals to the executor that the chain 
+ * If a Filter returns a response, it signals to the executor that the chain
  * should be aborted and the response returned to the client.
  */
-export type Filter = (ctx: RequestContext) => Promise<void|Response>
+export type Filter = (ctx: RequestContext) => Promise<void | Response>;
 
-  /**
-   * Handler is the final function executed in the chain for the route.
-   *
-   * This is where the business logic should be implemented.
-   */
-export type Handler = (ctx: RequestContext) => Promise<Response>
+/**
+ * Handler is the final function executed in the chain for the route.
+ *
+ * This is where the business logic should be implemented.
+ */
+export type Handler = (ctx: RequestContext) => Promise<Response>;
 
 /**
  * PartialRequest describes the properties that can be specified to intialize
@@ -211,7 +211,7 @@ export class ClientRequest implements Request {
             req.hostname,
             req.ip || '',
             req.protocol,
-            new PRSStorage(clone({ tags:route?.tags ?? [] })),
+            new PRSStorage(clone({ tags: route?.tags ?? [] })),
             EnabledSessionStorage.fromExpress(req),
             req,
             route
@@ -271,7 +271,7 @@ export class ClientRequest implements Request {
             <PRSStorage>opts.prsData,
             <SessionStorage>opts.sessionData,
             r,
-            <RouteConf>opts.routeConf,
+            <RouteConf>opts.routeConf
         );
     }
 

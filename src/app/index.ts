@@ -5,13 +5,15 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { PVM } from '@quenk/potoo/lib/actor/system/vm';
 import { getParent } from '@quenk/potoo/lib/actor/address';
+import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
+import { LogSink } from '@quenk/potoo/lib/actor/system/vm/log';
 
 import { Server } from '../net/http/server';
 import { ModuleConf } from './module/conf';
 import { getInstance } from './connection';
 import { Module, ModuleInfo } from './module';
-import { StartupTaskManager } from './startup';
-import { EventDispatcher, StartedEvent } from './events';
+import { StartupManager } from './startup';
+import { ConnectedEvent, EventDispatcher, InitEvent, StartedEvent } from './events';
 import { ConfigureEventListeners } from './startup/events';
 import { PoolConnections } from './startup/connections';
 import { ConfigureRequestLogger } from './startup/log';
@@ -23,7 +25,8 @@ import {
     BuildEnabledMiddleware,
     BuildGlobalFilters,
     BuildRouteFilters,
-    ConfigureRouting
+    ConfigureFinalRoutes,
+    ConfigureRoutes
 } from './startup/routing';
 import { CSRFTokenSupport } from './startup/csrf';
 import { StaticDirSupport } from './startup/static';
@@ -32,7 +35,22 @@ const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
 const dconf = { log: { level: 'error' } };
 
-export type ModuleConfProvider = (app: App) => ModuleConf;
+export const defaultStartupTasks = (app: App) => [
+    new ConfigureEventListeners(app),
+    new PoolConnections(app),
+    new ConfigureRequestLogger(app),
+    new SessionSupport(app),
+    new CookieSupport(app),
+    new ConfigureBodyParser(app),
+    new BuildGlobalFilters(app),
+    new BuildRouteFilters(app),
+    new BuildAvailableMiddleware(app),
+    new BuildEnabledMiddleware(app),
+    new CSRFTokenSupport(app),
+    new StaticDirSupport(app),
+    new ConfigureRoutes(app),
+    new ConfigureFinalRoutes(app)
+];
 
 /**
  * App is the main class of the tendril framework.
@@ -59,25 +77,12 @@ export class App {
         public conf: ModuleConf,
         public vm: PVM = PVM.create((conf.app && conf.app.vm) || dconf),
         public modules: Record<ModuleInfo> = {},
+        public rootInfo: Maybe<ModuleInfo> = Maybe.nothing(),
         public pool = getInstance(),
         public server = new Server(conf.app?.server ?? defaultServConf),
         public events = new EventDispatcher(),
-        public rootInfo: Maybe<ModuleInfo> = Maybe.nothing(),
-        public startup = new StartupTaskManager(modules, [
-            new ConfigureEventListeners(events),
-            new PoolConnections(pool, events),
-            new ConfigureRequestLogger(),
-            new SessionSupport(pool),
-            new CookieSupport(),
-            new ConfigureBodyParser(),
-            new BuildGlobalFilters(),
-            new BuildRouteFilters(),
-            new BuildAvailableMiddleware(),
-            new BuildEnabledMiddleware(),
-            new CSRFTokenSupport(),
-            new StaticDirSupport(),
-            new ConfigureRouting()
-        ])
+        public startup = new StartupManager(defaultStartupTasks),
+        public log: LogSink = console
     ) {}
 
     /**
@@ -92,6 +97,7 @@ export class App {
             address: module.address,
             conf,
             parent,
+            ancestors: parent ? [...parent.ancestors, parent] : [],
             express: express(),
             module,
             routing: {
@@ -99,7 +105,7 @@ export class App {
                 globalFilters: [],
                 handlers: {},
                 routes: [],
-                dirs: []
+                dirs: {}
             },
             connections: {}
         };
@@ -115,7 +121,7 @@ export class App {
     async start() {
         await this.vm.spawn({
             ...this.conf,
-            spawnConcern: 'receiving',
+            spawnConcern: SPAWN_CONCERN_STARTED,
             create: runtime => {
                 let root = this.registerModule(
                     new Module(this, runtime, this.conf)
@@ -125,7 +131,13 @@ export class App {
             }
         });
 
-        await this.startup.run();
+        await this.startup.run(this);
+
+        await this.events.dispatch(new InitEvent());
+
+        await this.pool.open();
+
+        await this.events.dispatch(new ConnectedEvent());
 
         await Promise.allSettled([
             this.server.listen(this.rootInfo.get().express),

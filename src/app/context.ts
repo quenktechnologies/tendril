@@ -1,8 +1,4 @@
-
 /**
  *
  */
-export interface AppContext {
-
-
-}
+export interface AppContext {}

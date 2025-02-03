@@ -38,8 +38,8 @@ import { BaseStartupTask } from '.';
 export class StaticDirSupport extends BaseStartupTask {
     name = 'static-dir-support';
 
-    async onConfigureModule(mod: ModuleInfo) {
-        let configs = map(mod.conf?.app?.routing?.dirs ?? {}, conf => {
+    async execute(mod: ModuleInfo) {
+        mod.routing.dirs = map(mod.conf?.app?.routing?.dirs ?? {}, conf => {
             let confs = Array.isArray(conf) ? conf : [conf];
             return confs.map(conf => {
                 conf = isString(conf) ? { path: conf } : conf;
@@ -49,7 +49,7 @@ export class StaticDirSupport extends BaseStartupTask {
             });
         });
 
-        for (let [prefix, dirs] of Object.entries(configs)) {
+        for (let [prefix, dirs] of Object.entries(mod.routing.dirs)) {
             for (let dir of dirs) {
                 // TODO: Use middieware stage to install.
                 mod.express.use(prefix, express.static(dir.path, dir.options));

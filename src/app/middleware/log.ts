@@ -21,4 +21,3 @@ export interface LogConf {
      */
     options?: morgan.Options<express.Request, express.Response>;
 }
-

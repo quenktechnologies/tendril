@@ -1,4 +1,3 @@
-
 export type EventType = string;
 
 export type EventListener = (event: Event) => Promise<void>;
@@ -13,30 +12,38 @@ export interface Event {
     type: EventType;
 }
 
-export class InitEvent { type = 'init'; }
-export class ConnectedEvent { type = 'connected'; }
-export class StartedEvent { type = 'started'; }
+export class InitEvent {
+    type = 'init';
+}
+export class ConnectedEvent {
+    type = 'connected';
+}
+export class StartedEvent {
+    type = 'started';
+}
 
 /**
  * EventDispatcher is a simple event dispatcher for tendril applications.
  */
 export class EventDispatcher {
-    constructor(public listeners: Map<EventType, Set<EventListener>> = new Map()) {}
+    constructor(
+        public listeners: Map<EventType, Set<EventListener>> = new Map()
+    ) {}
 
-  /**
-   * addListener adds a listener for a specific event type.
-   *
-   * A listener can only be added once for a specific event type.
-   */
+    /**
+     * addListener adds a listener for a specific event type.
+     *
+     * A listener can only be added once for a specific event type.
+     */
     addListener(type: EventType, listener: EventListener) {
         let target = this.listeners.get(type) ?? new Set();
         target.add(listener);
         this.listeners.set(type, target);
     }
 
-  /**
-   * removeListener removes a single listener for a specific event type.
-   */
+    /**
+     * removeListener removes a single listener for a specific event type.
+     */
     removeListener(type: EventType, listener: EventListener) {
         let target = this.listeners.get(type);
         if (target) {
@@ -44,17 +51,16 @@ export class EventDispatcher {
         }
     }
 
-  /**
-   * removeListeners removes all listeners for a specific event type.
-   */
+    /**
+     * removeListeners removes all listeners for a specific event type.
+     */
     removeListeners(type: EventType) {
         this.listeners.delete(type);
     }
 
-
-  /**
-   * dispatch an event to all listeners.
-   */
+    /**
+     * dispatch an event to all listeners.
+     */
     async dispatch(event: Event) {
         let target = this.listeners.get(event.type);
         if (target) {

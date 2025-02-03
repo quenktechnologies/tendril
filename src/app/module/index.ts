@@ -4,16 +4,16 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { Record } from '@quenk/noni/lib/data/record';
 import { Path } from '@quenk/noni/lib/io/file';
 
-import { Immutable } from '@quenk/potoo/lib/actor/framework/resident';
+import { Mutable } from '@quenk/potoo/lib/actor/framework/resident';
 import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { Address } from '@quenk/potoo/lib/actor/address';
-import { SPAWN_CONCERN_RECEIVING } from '@quenk/potoo/lib/actor/template';
+import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 
-import {  Filter, ClientRequest, Handler } from '../api/request';
+import { Filter, ClientRequest  } from '../api/request';
 import { Connection } from '../connection';
 import { App } from '../';
 import { Middleware } from '../middleware';
-import { RouteConf } from '../conf';
+import { FilterChain, FullStaticDirConf, RouteConf } from '../conf';
 import { ModuleConf } from './conf';
 import { ERROR_TOKEN_INVALID } from '../startup/csrf';
 import { RequestContext } from '../api';
@@ -48,6 +48,11 @@ export interface ModuleInfo {
      */
     parent?: ModuleInfo;
 
+    /** 
+     * ancestors (direct) of the ModuleInfo.
+     */
+  ancestors: ModuleInfo[];
+
     /**
      * conf object used to create the module.
      */
@@ -68,6 +73,11 @@ export interface ModuleInfo {
      */
     routing: RoutingInfo;
 }
+
+/**
+ * isMain tests if a ModuleInfo is the main module.
+ */
+export const isMain = (mod: ModuleInfo) => mod.parent === undefined;
 
 /**
  * RoutingInfo holds all the Module's routing information.
@@ -101,6 +111,11 @@ export interface RoutingInfo {
     handlers: Record<Filter[]>;
 
     /**
+     * dirs are the static directories that are served by the module.
+     */
+     dirs: Record<FullStaticDirConf[]>;
+
+    /**
      * routes configured for the module.
      *
      * These specify which requests are actually valid for handling by the
@@ -118,7 +133,7 @@ export interface RoutingInfo {
  * for configuring and handling their assigned routes (endpoints) in the
  * application and can spawn or child actors for one off or persistent tasks.
  */
-export class Module extends Immutable<void> {
+export class Module extends Mutable {
     constructor(
         public app: App,
         public runtime: Runtime,
@@ -134,12 +149,8 @@ export class Module extends Immutable<void> {
      * that executes each filter sequentially.
      */
     routeHandler =
-        (route: RouteConf): express.RequestHandler =>
-        async (req: express.Request, res: express.Response) => {
-            await this.spawn(
-                this.requestHandler(req, res, route.filters, route)
-            );
-        };
+        (route: RouteConf): express.RequestHandler => 
+                this.requestHandler(route.filters, route)
 
     errorHandler = async (
         err: Error,
@@ -149,7 +160,7 @@ export class Module extends Immutable<void> {
     ) => {
         if ((<Type>err).code === ERROR_TOKEN_INVALID) {
             if (this.conf?.app?.csrf?.on?.error) {
-                await this.spawn(this.requestHandler(req, res, [this.conf.app.csrf.on.error]))
+                    this.requestHandler([this.conf.app.csrf.on.error])(req,res)
             } else {
                 res.status(404).send('Token invalid!');
             }
@@ -157,7 +168,7 @@ export class Module extends Immutable<void> {
             //TODO: this.getLogger().error(err);
             if (this.conf?.app?.routing?.on?.error) {
                 let filter = this.conf.app.routing.on.error;
-                await this.spawn(this.requestHandler(req, res, [filter]))
+                this.requestHandler([filter])(req, res);
             } else {
                 res.status(500).send('Internal Server Error!');
             }
@@ -166,21 +177,19 @@ export class Module extends Immutable<void> {
 
     noneHandler = async (req: express.Request, res: express.Response) => {
         if (this.conf?.app?.routing?.on?.none) {
-            await this.spawn(this.requestHandler(req, res, [this.conf.app.routing.on.none]));
+                this.requestHandler([this.conf.app.routing.on.none])(req,res)
         } else {
             res.status(404).send('Not Found');
         }
     };
 
-    requestHandler =
-        (
+    requestHandler = (filters:FilterChain, route?: RouteConf) =>        (
             req: express.Request,
             res: express.Response,
-            filters: Filter[],
-            route?: RouteConf
-        ) =>
-        (rtime: Runtime) =>
-            new RequestHandler(
+        ) => { 
+           this.spawn({
+             create: (rtime: Runtime) =>  
+              new RequestHandler(
                 rtime,
                 {
                     actor: this,
@@ -188,7 +197,10 @@ export class Module extends Immutable<void> {
                 },
                 res,
                 filters
-            );
+            )
+        })
+        }
+
 
     async run() {
         let { modules, children = [] } = this.conf;
@@ -198,27 +210,27 @@ export class Module extends Immutable<void> {
                 conf = { ...conf, id };
                 await this.spawn({
                     ...conf,
-                    spawnConcern: SPAWN_CONCERN_RECEIVING,
-                    create: runtime =>
-                        this.app.registerModule(
-                            new Module(this.app, runtime, conf)
-                        )
+                    spawnConcern: SPAWN_CONCERN_STARTED,
+                    create: runtime => {
+                      let mod =  new Module(this.app, runtime, conf);
+                        this.app.registerModule(mod);
+                      return mod;
+                    }
                 });
             }
         }
 
         for (let child of children) await this.spawn(child);
+
     }
 }
 
-export type FilterChain = Filter | Handler;
-
-export class RequestHandler extends Immutable<void> {
+export class RequestHandler extends Mutable {
     constructor(
         public runtime: Runtime,
         public context: RequestContext,
         public response: express.Response,
-        public handlers: FilterChain[]
+        public handlers: FilterChain
     ) {
         super(runtime);
     }

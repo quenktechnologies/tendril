@@ -1,11 +1,11 @@
 import * as csurf from 'csurf';
 
-import {   merge } from '@quenk/noni/lib/data/record';
+import { merge } from '@quenk/noni/lib/data/record';
 
 import { PRS_VIEW_CONTEXT } from '../api/response';
-import { Filter  } from '../api/request';
+import { Filter } from '../api/request';
 import { ModuleInfo } from '../module';
-import { BaseStartupTask  } from './';
+import { BaseStartupTask } from './';
 import { RequestContext } from '../api';
 
 export const EVENT_CSRF_TOKEN_FAILURE = 'CSRF_TOKEN_FAILURE';
@@ -64,49 +64,46 @@ export interface CSRFTokenConf {
          * failure if specified will be invoked whenever a request fails CSRF
          * token validation.
          */
-        failure?: Filter
+        failure?: Filter;
     };
 }
 
 /**
- * CSRFTokenStage configures middleware to help protect against CSRF attacks.
+ * CSRFTokenSupport configures middleware to help protect against CSRF attacks.
  *
  * This requires app.session.enable to be set to true.
  */
-export class CSRFTokenStage extends BaseStartupTask {
+export class CSRFTokenSupport extends BaseStartupTask {
+    name = 'csrf-token-support';
 
-    name = 'csrf-token';
+    async execute(mod: ModuleInfo) {
+        if (
+            mod.conf &&
+            mod.conf.app &&
+            mod.conf.app.csrf &&
+            mod.conf.app.csrf.enable
+        ) {
+            let conf = merge(defaultOptions, mod.conf.app.csrf);
 
-    async onConfigureModule(mod: ModuleInfo) {
-            if (
-                mod.conf &&
-                mod.conf.app &&
-                mod.conf.app.csrf &&
-                mod.conf.app.csrf.enable
-            ) {
-                let conf = merge(defaultOptions, mod.conf.app.csrf);
+            mod.express.use(csurf(conf.options));
 
-                mod.express.use(csurf(conf.options));
+            if (conf.send_cookie) {
+                mod.express.all('*', (req, res, next) => {
+                    if (readMethods.indexOf(req.method) > -1)
+                        res.cookie(conf.send_cookie_name, req.csrfToken());
 
-                if (conf.send_cookie) {
-                    mod.express.all('*', (req, res, next) => {
-                        if (readMethods.indexOf(req.method) > -1)
-                            res.cookie(conf.send_cookie_name, req.csrfToken());
-
-                        next();
-                    });
-                }
-
+                    next();
+                });
             }
+        }
 
-                mod.routing.globalFilters.push(setCSRFToken);
+        mod.routing.globalFilters.push(setCSRFToken);
     }
 }
 
 // Ensures the csrf token is available via prs and to views.
 const setCSRFToken = async (ctx: RequestContext) => {
-        let token = ctx.request.toExpress().csrfToken();
-        ctx.request.prs.set(PRS_CSRF_TOKEN, token);
-         ctx.request.prs.set(PRS_VIEW_CSRF_TOKEN, token);
-
-    }
+    let token = ctx.request.toExpress().csrfToken();
+    ctx.request.prs.set(PRS_CSRF_TOKEN, token);
+    ctx.request.prs.set(PRS_VIEW_CSRF_TOKEN, token);
+};

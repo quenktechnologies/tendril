@@ -129,13 +129,13 @@ export interface AppConf {
              * error is invoked when the framework has encountered an error during
              * routing for a request.
              */
-            error?: Filter;
+            error?: Handler;
 
             /**
              * notFound is invoked when the configured module finds no routes to execute
              * for a request.
              */
-            none?: Filter;
+            none?: Handler;
         };
     };
 
@@ -238,7 +238,7 @@ export interface CSRFConf {
         /**
          * error is invoked to handle the response if the CSRF token is missing or invalid.
          */
-        error?: Filter;
+        error?: Handler;
     };
 }
 
@@ -404,11 +404,6 @@ export interface MiddlewareConf {
 export type StaticConf = Record<StaticDirConf | StaticDirConf[]>;
 
 /**
- * StaticDirConfMap specifies a local mount point for each configuration.
- */
-export type StaticDirConfMap = Record<StaticDirConf | StaticDirConf[]>;
-
-/**
  * StaticDirConf is the configuration for a single static directory.
  */
 export type StaticDirConf = ShortStaticDirConf | FullStaticDirConf;
@@ -479,13 +474,14 @@ export interface RouteConf {
     /**
      * filters applied when the route is executed.
      */
-    filters: Filter[];
+    filters: FilterChain
+   }
 
-    /**
-     * action to take when the route is executed.
-     */
-    action: Handler;
-}
+/**
+ * FilterChain is always terminated with a Handler.
+ */
+export type FilterChain = [...Filter[], Handler];
+
 
 /**
  * ServerConf for a server.

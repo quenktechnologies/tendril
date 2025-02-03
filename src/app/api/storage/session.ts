@@ -16,7 +16,7 @@ import {
     fromCallback
 } from '@quenk/noni/lib/control/monad/future';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
-import {  isFunction, isObject } from '@quenk/noni/lib/data/type';
+import { isFunction, isObject } from '@quenk/noni/lib/data/type';
 import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
 import { clone, rcompact } from '@quenk/noni/lib/data/record';
 
@@ -331,4 +331,3 @@ export const deleteSessionKey = (session: Object, key: string) => {
 
     session[SESSION_DESCRIPTORS] = descs;
 };
-

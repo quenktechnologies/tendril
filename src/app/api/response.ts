@@ -4,7 +4,7 @@
 
 import * as express from 'express';
 
-import {Value} from '@quenk/noni/lib/data/jsonx';
+import { Value } from '@quenk/noni/lib/data/jsonx';
 
 export const PRS_VIEW_CONTEXT = '$view.context';
 
@@ -233,7 +233,8 @@ export const unauthorized = (body?: BodyValue) => new Unauthorized(body);
  *
  * @param body        - Serializable data to be used as the response body.
  */
-export const internalError = (body?: BodyValue) => new InternalServerError(body);
+export const internalError = (body?: BodyValue) =>
+    new InternalServerError(body);
 
 export { internalError as error };
 

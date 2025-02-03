@@ -1,6 +1,5 @@
-import { Record } from '@quenk/noni/lib/data/record';
-
 import { ModuleInfo } from '../module';
+import { App } from '../';
 
 export type StartupTaskName = string;
 
@@ -19,66 +18,38 @@ export interface StartupTask {
     name: StartupTaskName;
 
     /**
-     * onScanAncestors is called with a target module and all its ancestors.
-     * 
-     * Use to collect inheirted configuration data.
+     * execute the task.
      */
-    onScanAncestors(target:ModuleInfo, ancestors: ModuleInfo[]): void;
-
-    /**
-     * onConfigureModule is called to configure a single module.
-     */
-    onConfigureModule(module: ModuleInfo): Promise<void>;
-
-    /**
-     * onModulesReady is called at the end of the startup lifecycle.
-     */
-    onModulesReady(): Promise<void>;
+    execute(module: ModuleInfo): Promise<void>;
 }
 
+/**
+ * BaseStartupTask providing boilerplate for implementors.
+ */
 export abstract class BaseStartupTask implements StartupTask {
     abstract name: StartupTaskName;
 
-    async onScanAncestors(_target:ModuleInfo, _ancestors: ModuleInfo[]) {}
+    constructor(public app: App) {}
 
-    async onConfigureModule(_: ModuleInfo): Promise<void> {}
-
-    async onModulesReady(): Promise<void> {}
+    abstract execute(m: ModuleInfo): Promise<void>;
 }
 
-export class StartupTaskManager {
-    constructor(
-        public tasks: StartupTask[] = [],
-        public modules: Record<ModuleInfo>
-    ) {}
+/**
+ * StartupManager combines the execution of all the tasks into a single
+ * location.
+ */
+export class StartupManager {
+    constructor(public tasks: (app: App) => StartupTask[]) {}
 
-    async dispatchAncestorScan() {
-        for (let mod of Object.values(this.modules)) {
-            let parents = [];
-            let target = mod;
-            while ((target = <ModuleInfo>mod.parent)) parents.push(target);
+    name = 'startup-manager';
 
-            for (let task of this.tasks) {
-                task.onScanAncestors(mod, parents);
+    async run(app: App) {
+        for (let task of this.tasks(app)) {
+            app.log.debug(`[${this.name}]: Executing task: ${task.name}`);
+            for (let mod of Object.values(app.modules)) {
+                await task.execute(mod);
             }
+            app.log.debug(`[${this.name}]: Task complete: ${task.name}`);
         }
-    }
-
-    async dispatchConfigureModules() {
-        for (let mod of Object.values(this.modules)) {
-            for (let task of this.tasks) {
-                await task.onConfigureModule(mod);
-            }
-        }
-    }
-
-    async dispatchStartupFinished() {
-        for (let task of this.tasks) task.onModulesReady();
-    }
-
-    async run() {
-        await this.dispatchAncestorScan();
-        await this.dispatchConfigureModules();
-        await this.dispatchStartupFinished();
     }
 }

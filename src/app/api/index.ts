@@ -20,10 +20,9 @@
 import { Module } from '../module';
 import { Request } from './request';
 
-
 export class RequestContext {
     constructor(
         public actor: Module,
-        public request: Request,
+        public request: Request
     ) {}
 }
