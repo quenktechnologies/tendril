@@ -52,7 +52,7 @@ export abstract class Response {
 
         //TODO: add headers
 
-        if (body) response.send(body);
+        if (body) response.json(body);
 
         response.end();
     }
