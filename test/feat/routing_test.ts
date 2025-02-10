@@ -9,6 +9,8 @@ import { createApp } from './fixtures/app';
 import { badRequest, error, ok } from '../../lib/app/api/response';
 import { ModuleInfo } from '../../lib/app/module';
 import { RequestContext } from '../../lib/app/api';
+import { FilterChain } from '../../lib/app/conf';
+import { Handler } from '../../lib/app/api/request';
 
 const agent = axios.create({
     baseURL: 'http://localhost:2407',
@@ -341,6 +343,27 @@ describe('tendril', () => {
 
             res = await agent.get('/child/gchild');
             expect(res.data).toEqual(3);
+        });
+
+        it('should 500 if no action taken', async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                filters: <FilterChain>(<Handler[]>(<unknown>[]))
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(500);
         });
     });
 });

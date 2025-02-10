@@ -9,7 +9,7 @@ import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 
-import { Filter, ClientRequest  } from '../api/request';
+import { Filter, ClientRequest } from '../api/request';
 import { Connection } from '../connection';
 import { App } from '../';
 import { Middleware } from '../middleware';
@@ -48,10 +48,10 @@ export interface ModuleInfo {
      */
     parent?: ModuleInfo;
 
-    /** 
+    /**
      * ancestors (direct) of the ModuleInfo.
      */
-  ancestors: ModuleInfo[];
+    ancestors: ModuleInfo[];
 
     /**
      * conf object used to create the module.
@@ -113,7 +113,7 @@ export interface RoutingInfo {
     /**
      * dirs are the static directories that are served by the module.
      */
-     dirs: Record<FullStaticDirConf[]>;
+    dirs: Record<FullStaticDirConf[]>;
 
     /**
      * routes configured for the module.
@@ -148,9 +148,8 @@ export class Module extends Mutable {
      * routeHandler given a final RouteConf, produces an express request handler
      * that executes each filter sequentially.
      */
-    routeHandler =
-        (route: RouteConf): express.RequestHandler => 
-                this.requestHandler(route.filters, route)
+    routeHandler = (route: RouteConf): express.RequestHandler =>
+        this.requestHandler(route.filters, route);
 
     errorHandler = async (
         err: Error,
@@ -160,7 +159,7 @@ export class Module extends Mutable {
     ) => {
         if ((<Type>err).code === ERROR_TOKEN_INVALID) {
             if (this.conf?.app?.csrf?.on?.error) {
-                    this.requestHandler([this.conf.app.csrf.on.error])(req,res)
+                this.requestHandler([this.conf.app.csrf.on.error])(req, res);
             } else {
                 res.status(404).send('Token invalid!');
             }
@@ -177,30 +176,28 @@ export class Module extends Mutable {
 
     noneHandler = async (req: express.Request, res: express.Response) => {
         if (this.conf?.app?.routing?.on?.none) {
-                this.requestHandler([this.conf.app.routing.on.none])(req,res)
+            this.requestHandler([this.conf.app.routing.on.none])(req, res);
         } else {
             res.status(404).send('Not Found');
         }
     };
 
-    requestHandler = (filters:FilterChain, route?: RouteConf) =>        (
-            req: express.Request,
-            res: express.Response,
-        ) => { 
-           this.spawn({
-             create: (rtime: Runtime) =>  
-              new RequestHandler(
-                rtime,
-                {
-                    actor: this,
-                    request: ClientRequest.fromExpress(req, res, route)
-                },
-                res,
-                filters
-            )
-        })
-        }
-
+    requestHandler =
+        (filters: FilterChain, route?: RouteConf) =>
+        (req: express.Request, res: express.Response) => {
+            this.spawn({
+                create: (rtime: Runtime) =>
+                    new RequestHandler(
+                        rtime,
+                        {
+                            actor: this,
+                            request: ClientRequest.fromExpress(req, res, route)
+                        },
+                        res,
+                        filters
+                    )
+            });
+        };
 
     async run() {
         let { modules, children = [] } = this.conf;
@@ -212,16 +209,15 @@ export class Module extends Mutable {
                     ...conf,
                     spawnConcern: SPAWN_CONCERN_STARTED,
                     create: runtime => {
-                      let mod =  new Module(this.app, runtime, conf);
+                        let mod = new Module(this.app, runtime, conf);
                         this.app.registerModule(mod);
-                      return mod;
+                        return mod;
                     }
                 });
             }
         }
 
         for (let child of children) await this.spawn(child);
-
     }
 }
 
@@ -246,6 +242,7 @@ export class RequestHandler extends Mutable {
             }
         }
 
-        //TODO: 500 raise event or something
+        //TODO: Log warning, rasie event.
+        this.response.sendStatus(500);
     }
 }
