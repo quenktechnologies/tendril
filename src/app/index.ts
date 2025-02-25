@@ -10,10 +10,15 @@ import { LogSink } from '@quenk/potoo/lib/actor/system/vm/log';
 
 import { Server } from '../net/http/server';
 import { ModuleConf } from './module/conf';
-import { getInstance } from './connection';
+import { Pool } from './connection/pool';
 import { Module, ModuleInfo } from './module';
 import { StartupManager } from './startup';
-import { ConnectedEvent, EventDispatcher, InitEvent, StartedEvent } from './events';
+import {
+    ConnectedEvent,
+    EventDispatcher,
+    InitEvent,
+    StartedEvent
+} from './events';
 import { ConfigureEventListeners } from './startup/events';
 import { PoolConnections } from './startup/connections';
 import { ConfigureRequestLogger } from './startup/log';
@@ -78,7 +83,7 @@ export class App {
         public vm: PVM = PVM.create((conf.app && conf.app.vm) || dconf),
         public modules: Record<ModuleInfo> = {},
         public rootInfo: Maybe<ModuleInfo> = Maybe.nothing(),
-        public pool = getInstance(),
+        public pool = Pool,
         public server = new Server(conf.app?.server ?? defaultServConf),
         public events = new EventDispatcher(),
         public startup = new StartupManager(defaultStartupTasks),

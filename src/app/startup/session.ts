@@ -15,6 +15,7 @@ import {
 import { ModuleInfo } from '../module';
 import { BaseStartupTask } from './';
 import { randomSecret } from './cookie';
+import { Pool } from '../connection/pool';
 
 export const SESSION_COOKIE_NAME = 'tendril.session.id';
 export const POOL_KEY_SESSION = '$tendril-session-store-connection';
@@ -30,15 +31,9 @@ const defaultOptions = {
     options: {
         name: SESSION_COOKIE_NAME,
 
-        saveUnitialized: false,
+        saveUninitialized: false,
 
         resave: false
-    },
-
-    store: {
-        provider: () => new MemoryConnection(),
-
-        options: {}
     }
 };
 
@@ -65,7 +60,7 @@ export class SessionSupport extends BaseStartupTask {
     name = 'session-support';
 
     async execute(mod: ModuleInfo) {
-        let { pool } = this.app;
+        let { pool, log } = this.app;
 
         if (
             mod.conf &&
@@ -83,18 +78,35 @@ export class SessionSupport extends BaseStartupTask {
                 } else if (process.env.SECRET) {
                     conf.options.secret = process.env.SECRET;
                 } else {
-                    console.warn(WARN_NO_SECRET);
+                    log.warn(WARN_NO_SECRET);
                     conf.options.secret = randomSecret;
                 }
             }
 
-            let conn = conf.store.provider(session, conf.store.options);
-            await conn.open();
+            if (conf.store?.connection) {
+                let key = conf.store.connection;
 
-            let store = await conn.checkout();
-            pool.add(POOL_KEY_SESSION, conn);
+                if (!pool.has(key)) {
+                    log.warn(
+                        `[SessionSupport]: No connection name "${key}" is ` +
+                            `configured. Cannot enable session support ` +
+                            `for module "${mod.path}"!`
+                    );
+                    return;
+                }
 
-            mod.express.use(session(merge(conf.options, { store })));
+                let mware: express.RequestHandler;
+
+                this.app.events.addListener('connected', async () => {
+                    let store = await Pool.checkout(key);
+                    mware = session(merge(conf.options, { store }));
+                });
+
+                mod.express.use((req, res, next) => mware(req, res, next));
+            } else {
+                mod.express.use(session(conf.options || {}));
+            }
+
             mod.express.use(handleSessionTTL);
         }
     }
