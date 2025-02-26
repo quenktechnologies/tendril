@@ -11,13 +11,11 @@ import { Record } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Object } from '@quenk/noni/lib/data/jsonx';
 
-import { Provider } from './middleware/session/store/connection';
 import { Middleware } from './middleware';
 import { Filter, Handler, Method } from './api/request';
-import { Show } from './api/response';
-import { Connection } from './connection';
 import { ModuleInfo } from './module';
 import { EventListener } from './events';
+import { Provider } from './connection/pool';
 
 /**
  * AppConf holds the bulk of the configuration directives for a tendril app.
@@ -101,11 +99,6 @@ export interface AppConf {
     };
 
     /**
-     * views confguration for rendering views from templates.
-     */
-    views?: ShowConf;
-
-    /**
      * filters (HTTP) to apply to all requests.
      */
     filters?: Filter[];
@@ -160,23 +153,18 @@ export interface AppConf {
 }
 
 /**
- * Connector used to create a system managed connection.
- */
-export type Connector = (...options: Type[]) => Connection;
-
-/**
  * ConnectionConf declares the configuration for a remote service connections.
  */
 export interface ConnectionConf {
     /**
-     * connector used.
+     * provider used to create new connection instances.
      */
-    connector: Connector;
+    provider: Provider;
 
     /**
      * options (if any).
      */
-    options?: Type[];
+    options?: object;
 }
 
 /**
@@ -352,24 +340,15 @@ export interface SessionConf {
      */
     options?: session.SessionOptions;
 
-    /**
-     * store configuration for the session.
-     */
     store?: {
         /**
-         * provider used to create the SessionStoreConnection object.
+         * connection is a string that corresponds to a connection in the tendril pool.
          *
-         * If unspecified, the inefficient in memory store will be used.
+         * If the connection is not found session configuration will fail.
          */
-        provider: Provider;
-
-        /**
-         * options passed to the Provider
-         */
-        options?: object;
+        connection?: string;
     };
 }
-
 /**
  * MiddlewareProvider is a function that provides Middleware.
  */
@@ -474,14 +453,13 @@ export interface RouteConf {
     /**
      * filters applied when the route is executed.
      */
-    filters: FilterChain
-   }
+    filters: FilterChain;
+}
 
 /**
  * FilterChain is always terminated with a Handler.
  */
 export type FilterChain = [...Filter[], Handler];
-
 
 /**
  * ServerConf for a server.

@@ -146,56 +146,6 @@ export class InternalServerError extends Response {
 }
 
 /**
- * Show action.
- */
-export class Show {
-    constructor(
-        public view: string,
-        public status: Status,
-        public context?: object
-    ) {}
-
-    /*
-    async send(response: Transport) { 
-        let { response, module, request } = ctx;
-        let self = module.self;
-        let mModule = Maybe.nothing<any>();
-
-        //TODO: log error, dispatch event, return 500
-        if (mModule.isNothing()) throw new Error(`${self}: Module not found!`);
-
-        let mshow = mModule.get().show;
-
-        //TODO: Same as previious TODO.
-        if (mshow.isNothing())
-            throw new Error(`${module.self}: ` + `No view engine configured!`);
-
-        let f = mshow.get();
-        let ctx0 = <object>request.prs.getOrElse(PRS_VIEW_CONTEXT, {});
-        let ctx1 = this.context ?? {};
-
-        let { view, status } = this;
-
-        let c = await f(view, merge(ctx0, Object(ctx1)));
-        response.set(headers.CONTENT_TYPE, c.type);
-        response(status);
-        response.write(c.content);
-        response.end();
-    }*/
-}
-
-/**
- * show triggers the view engine to display the content of the view referenced
- * by the parameter "view".
- *
- * @param view        - The template to generate content from.
- * @param context     - The context used when generating the view.
- * @param status      - The HTTP status to send with the response.
- */
-export const show = (view: string, context?: object, status = 200) =>
-    new Show(view, status, context);
-
-/**
  * accepted sends the "ACCEPTED" status to the client with optional body.
  * @param body        - Serializable data to be used as the response body.
  */
