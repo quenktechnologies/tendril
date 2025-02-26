@@ -6,7 +6,7 @@ import { assert } from '@quenk/test/lib/assert';
 import {} from '@quenk/noni/lib/control/monad/future';
 import { noop } from '@quenk/noni/lib/data/function';
 
-import { Server } from '../../../../src/net/http/server';
+import { Server } from '../../../../lib/net/http/server';
 
 const writeOk = (_: http.IncomingMessage, res: http.ServerResponse) => {
     res.write('ok');
