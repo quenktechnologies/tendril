@@ -94,10 +94,11 @@ export class App {
      * registerModule creates internal tracking information for newly created
      * modules.
      */
-    registerModule(module: Module) {
+    registerModule(module: Module): ModuleInfo {
         let parent = this.modules[getParent(module.address)];
         let conf = module.conf;
         let info = {
+            counts: counter++,
             path: conf?.app?.path ?? conf.id ?? '/',
             address: module.address,
             conf,
@@ -116,6 +117,7 @@ export class App {
         };
 
         this.modules[module.address] = info;
+        this.log.debug(`[system]: Registered module "${module.address}"`);
 
         return info;
     }
@@ -162,3 +164,5 @@ export class App {
         await this.vm.stop();
     }
 }
+
+let counter = 0;

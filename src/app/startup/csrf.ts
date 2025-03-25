@@ -6,7 +6,6 @@ import { PRS_VIEW_CONTEXT } from '../api/response';
 import { Filter } from '../api/request';
 import { ModuleInfo } from '../module';
 import { BaseStartupTask } from './';
-import { RequestContext } from '../api';
 
 export const EVENT_CSRF_TOKEN_FAILURE = 'CSRF_TOKEN_FAILURE';
 
@@ -95,15 +94,8 @@ export class CSRFTokenSupport extends BaseStartupTask {
                     next();
                 });
             }
-        }
 
-        mod.routing.globalFilters.push(setCSRFToken);
+            //TODO: set the CSRF token in PRS.
+        }
     }
 }
-
-// Ensures the csrf token is available via prs and to views.
-const setCSRFToken = async (ctx: RequestContext) => {
-    let token = ctx.request.toExpress().csrfToken();
-    ctx.request.prs.set(PRS_CSRF_TOKEN, token);
-    ctx.request.prs.set(PRS_VIEW_CSRF_TOKEN, token);
-};

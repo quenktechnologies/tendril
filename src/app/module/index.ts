@@ -9,14 +9,16 @@ import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 
-import { Filter, ClientRequest } from '../api/request';
-import { Connection } from '../connection';
+import {
+    Filter,
+    mkRequestMessage,
+} from '../api/request';
+import { Connection } from '../connection/pool';
 import { App } from '../';
 import { Middleware } from '../middleware';
 import { FilterChain, FullStaticDirConf, RouteConf } from '../conf';
 import { ModuleConf } from './conf';
 import { ERROR_TOKEN_INVALID } from '../startup/csrf';
-import { RequestContext } from '../api';
 
 /**
  * ModuleInfo holds all the internal runtime information about a Module within
@@ -148,56 +150,76 @@ export class Module extends Mutable {
      * routeHandler given a final RouteConf, produces an express request handler
      * that executes each filter sequentially.
      */
-    routeHandler = (route: RouteConf): express.RequestHandler =>
-        this.requestHandler(route.filters, route);
-
+    routeHandler =
+        (route: RouteConf) => 
+         (request: express.Request, response: express.Response) =>
+            this.handleRequest(request, response, route.filters, route);
+        
     errorHandler = async (
         err: Error,
-        req: express.Request,
-        res: express.Response,
+        request: express.Request,
+        response: express.Response,
         _: express.NextFunction
     ) => {
         if ((<Type>err).code === ERROR_TOKEN_INVALID) {
             if (this.conf?.app?.csrf?.on?.error) {
-                this.requestHandler([this.conf.app.csrf.on.error])(req, res);
+                this.handleRequest(request, response, [
+                    this.conf.app.csrf.on.error
+                ]);
             } else {
-                res.status(404).send('Token invalid!');
+                response.status(404).send('Token invalid!');
             }
         } else {
             //TODO: this.getLogger().error(err);
             if (this.conf?.app?.routing?.on?.error) {
                 let filter = this.conf.app.routing.on.error;
-                this.requestHandler([filter])(req, res);
+                this.handleRequest(request, response, [filter]);
             } else {
-                res.status(500).send('Internal Server Error!');
+                response.status(500).send('Internal Server Error!');
             }
         }
     };
 
-    noneHandler = async (req: express.Request, res: express.Response) => {
+    noneHandler = async (
+        request: express.Request,
+        response: express.Response
+    ) => {
         if (this.conf?.app?.routing?.on?.none) {
-            this.requestHandler([this.conf.app.routing.on.none])(req, res);
+            this.handleRequest(request, response, [
+                this.conf.app.routing.on.none
+            ]);
         } else {
-            res.status(404).send('Not Found');
+            response.status(404).send('Not Found');
         }
     };
 
-    requestHandler =
-        (filters: FilterChain, route?: RouteConf) =>
-        (req: express.Request, res: express.Response) => {
-            this.spawn({
-                create: (rtime: Runtime) =>
-                    new RequestHandler(
-                        rtime,
-                        {
-                            actor: this,
-                            request: ClientRequest.fromExpress(req, res, route)
-                        },
-                        res,
-                        filters
-                    )
-            });
-        };
+    async handleRequest(
+        request: express.Request,
+        response: express.Response,
+        filters: FilterChain,
+        route?: RouteConf
+    ) {
+        await this.spawn(async actor => {
+            let msg = mkRequestMessage(request, response, route);
+            let ctx = {
+                request: msg,
+                framework: { request, response },
+                actor
+            };
+            for (let filter of filters) {
+                let res = await filter(ctx);
+                if (res) {
+                    res.send(response);
+                    return;
+                }
+            }
+            //TODO: Log warning, rasie event.
+            console.warn(
+                `The route handler for ${request.path} did not send a response!`
+            );
+            response.sendStatus(500);
+        });
+    }
 
     async run() {
         let { modules, children = [] } = this.conf;
@@ -218,31 +240,5 @@ export class Module extends Mutable {
         }
 
         for (let child of children) await this.spawn(child);
-    }
-}
-
-export class RequestHandler extends Mutable {
-    constructor(
-        public runtime: Runtime,
-        public context: RequestContext,
-        public response: express.Response,
-        public handlers: FilterChain
-    ) {
-        super(runtime);
-    }
-
-    async run() {
-        let handler;
-        while ((handler = this.handlers.shift())) {
-            let res = await handler(this.context);
-
-            if (res) {
-                res.send(this.response);
-                return;
-            }
-        }
-
-        //TODO: Log warning, rasie event.
-        this.response.sendStatus(500);
     }
 }

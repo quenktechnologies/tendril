@@ -409,26 +409,6 @@ export interface FullStaticDirConf {
 }
 
 /**
- * ShowProvider is a function that will provide a Show.
- */
-export type ShowProvider = (...options: Type[]) => Show;
-
-/**
- * ShowConf allows the show function for a module to be configured.
- */
-export interface ShowConf {
-    /**
-     * provider for the Show.
-     */
-    provider: ShowProvider;
-
-    /**
-     * options passed to the provider (optionally).
-     */
-    options?: Type[];
-}
-
-/**
  * RouteConf describes a route to be installed in the application.
  */
 export interface RouteConf {

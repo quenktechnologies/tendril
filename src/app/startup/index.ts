@@ -45,11 +45,11 @@ export class StartupManager {
 
     async run(app: App) {
         for (let task of this.tasks(app)) {
-            app.log.debug(`[${this.name}]: Executing task: ${task.name}`);
             for (let mod of Object.values(app.modules)) {
+              app.log.debug(`[${task.name}]: Execution started for module "${mod.address}"`);
                 await task.execute(mod);
+                app.log.debug(`[${task.name}]: Execution complete for module "${mod.address}"`);
             }
-            app.log.debug(`[${this.name}]: Task complete: ${task.name}`);
         }
     }
 }

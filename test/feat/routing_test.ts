@@ -4,13 +4,12 @@ import { expect } from '@jest/globals';
 
 import { unflatten } from '@quenk/noni/lib/data/record/path';
 
-import { App } from '../../lib/app';
-import { createApp } from './fixtures/app';
 import { badRequest, error, ok } from '../../lib/app/api/response';
 import { ModuleInfo } from '../../lib/app/module';
-import { RequestContext } from '../../lib/app/api';
 import { FilterChain } from '../../lib/app/conf';
-import { Handler } from '../../lib/app/api/request';
+import { Handler, RequestContext } from '../../lib/app/api/request';
+import { App } from '../../lib/app';
+import { createApp } from './fixtures/app';
 
 const agent = axios.create({
     baseURL: 'http://localhost:2407',
@@ -39,7 +38,6 @@ describe('tendril', () => {
                             filters: [
                                 async (ctx: RequestContext) => {
                                     expect(ctx).toBeDefined();
-                                    expect(ctx.actor).toBe(m.module);
                                     wasCalled = true;
                                     return ok(m.address);
                                 }
@@ -126,7 +124,7 @@ describe('tendril', () => {
             res = await agent.get('/sub');
             expect(res.status).toEqual(200);
 
-            res = await agent.get('/sub/zero');
+             res = await agent.get('/sub/zero');
             expect(res.status).toEqual(200);
 
             expect(called).toMatchObject(expect.arrayContaining([1, 2, 3]));
@@ -364,6 +362,29 @@ describe('tendril', () => {
 
             let res = await agent.get('/');
             expect(res.status).toEqual(500);
+        });
+
+        it('should allow a route to be called multiple times', async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                filters: [async () => ok()]
+                            }
+                        ]
+                    }
+                }
+            });
+
+            for (let i = 0; i < 100; i++) {
+                let res = await agent.get('/');
+                expect(res.status).toEqual(200);
+            }
         });
     });
 });

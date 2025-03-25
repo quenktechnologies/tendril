@@ -13,7 +13,7 @@ import { Middleware } from '../middleware';
  * explicitly set on the module.
  */
 export class BuildGlobalFilters extends BaseStartupTask {
-    name = 'routing.global-filters';
+    name = 'routing.build-global-filters';
 
     async execute(mod: ModuleInfo) {
         for (let ancestor of [mod, ...mod.ancestors]) {
@@ -33,7 +33,7 @@ export class BuildGlobalFilters extends BaseStartupTask {
  * Note: The globalFilters list is added here to each route's list of filters.
  */
 export class BuildRouteFilters extends BaseStartupTask {
-    name = 'routing.route-filters';
+    name = 'routing.build-route-filters';
 
     async execute(mod: ModuleInfo) {
         let routes = mod.conf?.app?.routing?.routes
@@ -44,16 +44,18 @@ export class BuildRouteFilters extends BaseStartupTask {
             ...route,
             filters: [...mod.routing.globalFilters, ...route.filters]
         }));
+      if(mod.path === '/sub/zero')
+        x = mod.routing;
     }
 }
-
+let x:any;
 /**
  * BuildAvailableMiddleware stage builds a map of middleware available.
  *
  * Modules can only use its own available middleware or one from an ancestor.
  */
 export class BuildAvailableMiddleware extends BaseStartupTask {
-    name = 'routing.available-middleware';
+    name = 'routing.build-available-middleware';
 
     async execute(mod: ModuleInfo) {
         let mwares = mod.routing.middleware.available;
@@ -116,7 +118,7 @@ export class BuildEnabledMiddleware extends BaseStartupTask {
  * 4. mount child module to parent module (child modules only).
  */
 export class ConfigureRoutes extends BaseStartupTask {
-    name = 'configure-routes';
+    name = 'routing.configure-routes';
 
     async execute(mod: ModuleInfo) {
         let app = mod.express;
@@ -144,7 +146,7 @@ export class ConfigureRoutes extends BaseStartupTask {
  * ensure the other routes are actually triggered.
  */
 export class ConfigureFinalRoutes extends BaseStartupTask {
-    name = 'configure-final-routes';
+    name = 'routing.configure-final-routes';
 
     async execute(mod: ModuleInfo) {
         if (!isMain(mod)) return;

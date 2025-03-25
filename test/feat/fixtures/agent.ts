@@ -10,7 +10,7 @@ import { JSONParser } from '@quenk/jhr/lib/agent/parser/json';
 import { NoParser } from '@quenk/jhr/lib/agent/parser';
 import { BufferToStringAdapter } from '@quenk/jhr/lib/agent/transport/node/parser';
 
-const opts = () => merge(defaultOptions, { port: Number(process.env.PORT) });
+const opts = () => merge(defaultOptions, { port: 2407 });
 
 export const HOST = 'localhost';
 
@@ -34,7 +34,7 @@ export const createJSONAgent = (host: string = HOST) =>
         opts(),
         new NodeHTTPTransport(
             new JSONTransform(),
-            new BufferToStringAdapter(new JSONParser()),
+            new BufferToStringAdapter(new JSONParser({ lenient: true })),
             http.globalAgent
         ),
         []

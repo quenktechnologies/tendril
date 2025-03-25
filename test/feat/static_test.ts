@@ -70,13 +70,15 @@ describe('tendril', () => {
                     app: {
                         routing: {
                             dirs: {
-                                '/': `${STATIC_DIR}/public/files`.split(`${process.cwd()}/`)[1]
+                                '/': `${STATIC_DIR}/public/files`.split(
+                                    `${process.cwd()}/`
+                                )[1]
                             }
                         }
                     }
                 },
                 make: ['public/files/index.html'],
-                tests: {404: ['public/files/index.html'], 200:['index.html'] }
+                tests: { 404: ['public/files/index.html'], 200: ['index.html'] }
             }
         };
 
@@ -95,8 +97,7 @@ describe('tendril', () => {
                     for (let test of specs) {
                         let res = await agent.get(test);
                         expect(res.status).toBe(Number(status));
-                        if(res.status === 200)
-                        expect(res.data).toBe(key);
+                        if (res.status === 200) expect(res.data).toBe(key);
                     }
                 }
             });

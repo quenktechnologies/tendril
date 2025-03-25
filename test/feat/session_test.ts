@@ -34,7 +34,7 @@ describe('session', () => {
                                 method: 'get',
                                 path: '/value',
                                 filters: [
-                                    async ({ session }: RequestContext) =>
+                                    async ({ request: {session} }: RequestContext) =>
                                         ok(session.getOrElse('value', '?'))
                                 ],
                                 tags: {}
@@ -43,7 +43,7 @@ describe('session', () => {
                                 method: 'put',
                                 path: '/value',
                                 filters: [
-                                    async ({ session }: RequestContext) => {
+                                    async ({ request: {session} }: RequestContext) => {
                                         session.setWithDescriptor(
                                             'value',
                                             'foo',
@@ -120,7 +120,7 @@ describe('session', () => {
                                 method: 'get',
                                 path: '/value',
                                 filters: [
-                                    async ({ session }: RequestContext) =>
+                                    async ({ request: { session }}: RequestContext) =>
                                         ok(session.getOrElse('value', '?'))
                                 ],
                                 tags: {}
@@ -129,7 +129,7 @@ describe('session', () => {
                                 method: 'put',
                                 path: '/value',
                                 filters: [
-                                    async ({ session }: RequestContext) => {
+                                    async ({ request: { session }}: RequestContext) => {
                                         session.set('value', 'foo');
                                         return ok();
                                     }

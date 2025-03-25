@@ -1,24 +1,14 @@
 import * as express from 'express';
 
+import { Api } from '@quenk/potoo/lib/actor/api';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
-import { clone, merge, Record, rmerge } from '@quenk/noni/lib/data/record';
-import { isObject } from '@quenk/noni/lib/data/type';
+import { clone, Record } from '@quenk/noni/lib/data/record';
 
-import {
-    SessionStorage,
-    EnabledSessionStorage,
-    DisabledSessionStorage,
-    SESSION_DATA
-} from './storage/session';
+import { SessionStorage, EnabledSessionStorage } from './storage/session';
 import { PRSStorage } from './storage/prs';
-import {
-    CookieManager,
-    CookieStorage,
-    MapCookieManager
-} from './storage/cookie';
+import { CookieStorage } from './storage/cookie';
 import { RouteConf } from '../conf';
 import { Response } from './response';
-import { RequestContext } from '.';
 
 /**
  * Method
@@ -42,38 +32,38 @@ export type Filter = (ctx: RequestContext) => Promise<void | Response>;
 export type Handler = (ctx: RequestContext) => Promise<Response>;
 
 /**
- * PartialRequest describes the properties that can be specified to intialize
- * a new Request instance from partial data.
+ * RequestContext respresents the context the request is processed in.
  */
-export interface PartialRequest extends Partial<express.Request> {
+export interface RequestContext {
     /**
-     * routeConf specifies the route configuration that would have yielded this
-     * request.
+     * request message received from the client.
      */
-    routeConf?: RouteConf;
+    request: RequestMessage;
 
     /**
-     * prsData specifies the PRSStorage instance to use or an object that will
-     * be used as initial data.
+     * actor handling the received request.
      */
-    prsData?: PRSStorage | Object;
+    actor: Api;
 
     /**
-     * sessionStorage specifies the SessionStorage instance to use or an object
-     * that will be used as initial data.
+     * framework objects used to access express APIs.
      */
-    sessionData?: SessionStorage | Object;
-
-    /**
-     * cookieManager for setting and clearing cookies.
-     */
-    cookieManager?: CookieManager;
+    framework: FrameworkRequest;
 }
 
 /**
- * Request represents a client request.
+ * FrameworkRequest are the objects the underlying framework provdides for
+ * handling requests.
  */
-export interface Request {
+export interface FrameworkRequest {
+    request: express.Request;
+    response: express.Response;
+}
+
+/**
+ * RequestMessage respresents the request the client made to the app.
+ */
+export interface RequestMessage {
     /**
      * method of the request.
      */
@@ -147,33 +137,12 @@ export interface Request {
      * route is the RouteConf object that was used to generate the Request.
      */
     route?: RouteConf;
-
-    /**
-     * toExpress provides the **express** framework request object.
-     */
-    toExpress(): express.Request;
 }
 
-const defaults: PartialRequest = {
-    method: 'GET',
-    path: '/',
-    url: 'example.com',
-    params: {},
-    query: {},
-    body: {},
-    cookies: {},
-    signedCookies: {},
-    hostname: 'example.com',
-    ip: '127.0.0.1',
-    protocol: 'http',
-    prsData: {},
-    sessionData: {}
-};
-
 /**
- * ClientRequest class.
+ * DefaultRequestMessage implementation.
  */
-export class ClientRequest implements Request {
+export class DefaultRequestMessage implements RequestMessage {
     constructor(
         public method: string,
         public path: string,
@@ -187,95 +156,32 @@ export class ClientRequest implements Request {
         public protocol: string,
         public prs: PRSStorage,
         public session: SessionStorage,
-        public expressRequest: express.Request,
         public route?: RouteConf
     ) {}
-
-    /**
-     * fromExpress constructs a ClientRequest from the express framework's
-     * Request object.
-     */
-    static fromExpress(
-        req: express.Request,
-        res: express.Response,
-        route?: RouteConf
-    ): ClientRequest {
-        return new ClientRequest(
-            req.method,
-            req.path,
-            req.url,
-            req.params,
-            <Record<string>>req.query,
-            req.body,
-            new CookieStorage(req.cookies, res),
-            req.hostname,
-            req.ip || '',
-            req.protocol,
-            new PRSStorage(clone({ tags: route?.tags ?? [] })),
-            EnabledSessionStorage.fromExpress(req),
-            req,
-            route
-        );
-    }
-
-    /**
-     * fromPartial produces a ClientRequest using defaults merged with the
-     * specified PartialRequest.
-     *
-     * This method exists mainly for testing and should not be use in production.
-     */
-    static fromPartial(req: PartialRequest): ClientRequest {
-        let opts = merge(defaults, req);
-
-        opts.prsData =
-            isObject(opts.prsData) && opts.prsData instanceof PRSStorage
-                ? opts.prsData
-                : new PRSStorage(
-                      rmerge(
-                          { tags: (<RouteConf>opts.routeConf).tags },
-                          opts.prsData || {}
-                      )
-                  );
-
-        opts.sessionData =
-            (isObject(opts.sessionData) &&
-                opts.sessionData instanceof EnabledSessionStorage) ||
-            opts.sessionData instanceof DisabledSessionStorage
-                ? opts.sessionData
-                : new EnabledSessionStorage({
-                      [SESSION_DATA]: <Object>opts.sessionData || {}
-                  });
-
-        let signedCookies = opts.signedCookies ?? {};
-
-        let cookies = new CookieStorage(
-            signedCookies,
-            opts.cookieManager
-                ? opts.cookieManager
-                : new MapCookieManager(signedCookies)
-        );
-
-        let r = <express.Request>opts;
-
-        return new ClientRequest(
-            r.method,
-            r.path,
-            r.url,
-            r.params,
-            <Record<string>>r.query,
-            r.body,
-            cookies,
-            r.hostname,
-            r.ip || '',
-            r.protocol,
-            <PRSStorage>opts.prsData,
-            <SessionStorage>opts.sessionData,
-            r,
-            <RouteConf>opts.routeConf
-        );
-    }
-
-    toExpress() {
-        return this.expressRequest;
-    }
 }
+
+/**
+ * fromExpress constructs a ClientRequest from the express framework's
+ * Request object.
+ */
+export const mkRequestMessage = (
+    req: express.Request,
+    res: express.Response,
+    route?: RouteConf
+): RequestMessage => {
+    return new DefaultRequestMessage(
+        req.method,
+        req.path,
+        req.url,
+        req.params,
+        <Record<string>>req.query,
+        req.body,
+        new CookieStorage(req.cookies, res),
+        req.hostname,
+        req.ip || '',
+        req.protocol,
+        new PRSStorage(clone({ tags: route?.tags ?? [] })),
+        EnabledSessionStorage.fromExpress(req),
+        route
+    );
+};

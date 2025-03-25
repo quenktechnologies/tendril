@@ -5,7 +5,6 @@ import { Record, merge, map } from '@quenk/noni/lib/data/record';
 import { isObject, isNumber } from '@quenk/noni/lib/data/type';
 import { Object } from '@quenk/noni/lib/data/jsonx';
 
-import { MemoryConnection } from '../middleware/session/store/connection/memory';
 import {
     Descriptor,
     SESSION_DESCRIPTORS,
