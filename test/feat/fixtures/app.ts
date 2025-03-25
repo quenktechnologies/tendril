@@ -7,7 +7,10 @@ export const createApp = (conf: ModuleConf) =>
             app: {
                 ...conf.app,
                 vm: {
-                    log: { level: 'debug', sink: console }
+                    log: {
+                        level: process.env.LOG_LEVEL || 'warn',
+                        sink: console
+                    }
                 }
             },
             ...conf

@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "baseUrl": "src",
+        "lib": ["es2017", "DOM"],
+        "module": "commonjs",
+        "target": "ES2017",
+        "outDir": "lib",
+        "rootDir": "src",
+        "moduleResolution": "node",
+        "allowUnreachableCode": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "strict": true,
+        "sourceMap": true,
+        "declaration": true,
+        "types": ["node", "jest"],
+        "typeRoots": ["node_modules/@types"],
+        "noErrorTruncation": true
+    },
+    "include": ["src"],
+    "exclude": ["node_modules", "test"]
+}

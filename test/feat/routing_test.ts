@@ -124,7 +124,7 @@ describe('tendril', () => {
             res = await agent.get('/sub');
             expect(res.status).toEqual(200);
 
-             res = await agent.get('/sub/zero');
+            res = await agent.get('/sub/zero');
             expect(res.status).toEqual(200);
 
             expect(called).toMatchObject(expect.arrayContaining([1, 2, 3]));

@@ -1,5 +1,10 @@
 # Tendril
 
+## [1.0.0] - 2025-03-25
+
+Release marking the revival and sunset of the project. Future work will only 
+be done to support apps developed by QT.
+
 ## [0.43.14] - 2023-03-04
 
 ### Added

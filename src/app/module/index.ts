@@ -9,10 +9,7 @@ import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 
-import {
-    Filter,
-    mkRequestMessage,
-} from '../api/request';
+import { Filter, mkRequestMessage } from '../api/request';
 import { Connection } from '../connection/pool';
 import { App } from '../';
 import { Middleware } from '../middleware';
@@ -151,10 +148,10 @@ export class Module extends Mutable {
      * that executes each filter sequentially.
      */
     routeHandler =
-        (route: RouteConf) => 
-         (request: express.Request, response: express.Response) =>
+        (route: RouteConf) =>
+        (request: express.Request, response: express.Response) =>
             this.handleRequest(request, response, route.filters, route);
-        
+
     errorHandler = async (
         err: Error,
         request: express.Request,
