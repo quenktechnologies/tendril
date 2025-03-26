@@ -1,4 +1,4 @@
-import * as csurf from 'csurf';
+//import * as csurf from 'csurf';
 
 import { merge } from '@quenk/noni/lib/data/record';
 
@@ -22,7 +22,7 @@ const defaultOptions = {
     options: {}
 };
 
-const readMethods = ['GET', 'HEAD', 'OPTIONS'];
+//const readMethods = ['GET', 'HEAD', 'OPTIONS'];
 
 /**
  * CSRFTokenConf can be configured to enabled cross-site request forgery
@@ -84,15 +84,16 @@ export class CSRFTokenSupport extends BaseStartupTask {
         ) {
             let conf = merge(defaultOptions, mod.conf.app.csrf);
 
-            mod.express.use(csurf(conf.options));
+            // Disable until replacement implemented.
+            // mod.express.use(csurf(conf.options));
 
             if (conf.send_cookie) {
-                mod.express.all('*', (req, res, next) => {
-                    if (readMethods.indexOf(req.method) > -1)
-                        res.cookie(conf.send_cookie_name, req.csrfToken());
+             //   mod.express.all('*', (req, res, next) => {
+             //       if (readMethods.indexOf(req.method) > -1)
+           //             res.cookie(conf.send_cookie_name, req.csrfToken());
 
-                    next();
-                });
+            //        next();
+              //  });
             }
 
             //TODO: set the CSRF token in PRS.

@@ -44,10 +44,9 @@ export class BuildRouteFilters extends BaseStartupTask {
             ...route,
             filters: [...mod.routing.globalFilters, ...route.filters]
         }));
-        if (mod.path === '/sub/zero') x = mod.routing;
     }
 }
-let x: any;
+
 /**
  * BuildAvailableMiddleware stage builds a map of middleware available.
  *
