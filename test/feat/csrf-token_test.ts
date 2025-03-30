@@ -10,8 +10,7 @@ import { expect } from '@jest/globals';
 let token = '';
 
 //TODO: Actually read from PRS when supported.
-const fromPRS = async (_r: RequestContext) =>
-    ok()//r.framework.request.csrfToken());
+const fromPRS = async (_r: RequestContext) => ok(); //r.framework.request.csrfToken());
 
 let app: App | undefined;
 

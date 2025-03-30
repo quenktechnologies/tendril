@@ -139,6 +139,8 @@ export interface RequestMessage {
     route?: RouteConf;
 }
 
+export type Request = RequestMessage;
+
 /**
  * DefaultRequestMessage implementation.
  */
