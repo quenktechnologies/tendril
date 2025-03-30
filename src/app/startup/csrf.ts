@@ -88,12 +88,11 @@ export class CSRFTokenSupport extends BaseStartupTask {
             // mod.express.use(csurf(conf.options));
 
             if (conf.send_cookie) {
-             //   mod.express.all('*', (req, res, next) => {
-             //       if (readMethods.indexOf(req.method) > -1)
-           //             res.cookie(conf.send_cookie_name, req.csrfToken());
-
-            //        next();
-              //  });
+                //   mod.express.all('*', (req, res, next) => {
+                //       if (readMethods.indexOf(req.method) > -1)
+                //             res.cookie(conf.send_cookie_name, req.csrfToken());
+                //        next();
+                //  });
             }
 
             //TODO: set the CSRF token in PRS.
