@@ -204,9 +204,9 @@ export class Module extends Mutable {
                 actor
             };
             for (let filter of filters) {
-                let res = await filter(ctx);
-                if (res) {
-                    res.send(response);
+                let result = await filter(ctx);
+                if (result) {
+                    result.send(response);
                     return;
                 }
             }

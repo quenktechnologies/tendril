@@ -264,7 +264,7 @@ describe('tendril', () => {
         it('should inherit global filters', async () => {
             let payload = 0;
             let send = async () => {
-                return ok(payload);
+                return ok({ payload });
             };
             app = await createApp({
                 id: '/',
@@ -334,13 +334,13 @@ describe('tendril', () => {
             });
 
             let res = await agent.get('/');
-            expect(res.data).toEqual(1);
+            expect(res.data.payload).toEqual(1);
 
             res = await agent.get('/child');
-            expect(res.data).toEqual(2);
+            expect(res.data.payload).toEqual(2);
 
             res = await agent.get('/child/gchild');
-            expect(res.data).toEqual(3);
+            expect(res.data.payload).toEqual(3);
         });
 
         it('should 500 if no action taken', async () => {

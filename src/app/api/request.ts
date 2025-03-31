@@ -8,7 +8,7 @@ import { SessionStorage, EnabledSessionStorage } from './storage/session';
 import { PRSStorage } from './storage/prs';
 import { CookieStorage } from './storage/cookie';
 import { RouteConf } from '../conf';
-import { Response } from './response';
+import { notFound, Response } from './response';
 
 /**
  * Method
@@ -136,7 +136,7 @@ export interface RequestMessage {
     /**
      * route is the RouteConf object that was used to generate the Request.
      */
-    route?: RouteConf;
+    route: RouteConf;
 }
 
 export type Request = RequestMessage;
@@ -158,7 +158,7 @@ export class DefaultRequestMessage implements RequestMessage {
         public protocol: string,
         public prs: PRSStorage,
         public session: SessionStorage,
-        public route?: RouteConf
+        public route: RouteConf
     ) {}
 }
 
@@ -169,7 +169,12 @@ export class DefaultRequestMessage implements RequestMessage {
 export const mkRequestMessage = (
     req: express.Request,
     res: express.Response,
-    route?: RouteConf
+    route: RouteConf = {
+        method: <'get'>req.method,
+        path: req.path,
+        tags: {},
+        filters: [async () => notFound()]
+    }
 ): RequestMessage => {
     return new DefaultRequestMessage(
         req.method,

@@ -51,7 +51,6 @@ export abstract class Response {
         response.status(status);
 
         //TODO: add headers
-
         if (body) response.send(body);
 
         response.end();

@@ -1,13 +1,14 @@
 import { expect, jest } from '@jest/globals';
 
+import { MemoryStore } from 'express-session';
+
 import { App } from '../../lib/app';
 import { createApp } from './fixtures/app';
 import { ok } from '../../lib/app/api/response';
 import { RequestContext } from '../../lib/app/api/request';
-import { createJSONAgent } from './fixtures/agent';
-import { MemoryStore } from 'express-session';
+import { createAgent } from './fixtures/agent';
 
-const agent = createJSONAgent();
+const agent = createAgent();
 
 let app: App | undefined;
 

@@ -21,7 +21,7 @@ export const createAgent = (host: string = HOST) =>
         opts(),
         new NodeHTTPTransport(
             new FormTransform(),
-            new NoParser(),
+            new BufferToStringAdapter(new NoParser()),
             http.globalAgent
         ),
         []
