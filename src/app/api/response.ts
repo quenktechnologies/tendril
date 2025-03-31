@@ -45,8 +45,14 @@ export abstract class Response {
      */
     abstract status: Status;
 
+    getBody(): BodyValue {
+        return this.body;
+    }
+
     async send(response: Transport) {
-        let { status, body } = this;
+        let { status } = this;
+
+        let body = this.getBody();
 
         response.status(status);
 
