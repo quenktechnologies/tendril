@@ -158,7 +158,8 @@ export class DefaultRequestMessage implements RequestMessage {
         public protocol: string,
         public prs: PRSStorage,
         public session: SessionStorage,
-        public route: RouteConf
+        public route: RouteConf,
+        public original: express.Request
     ) {}
 }
 
@@ -189,6 +190,7 @@ export const mkRequestMessage = (
         req.protocol,
         new PRSStorage(clone({ tags: route?.tags ?? [] })),
         EnabledSessionStorage.fromExpress(req),
-        route
+        route,
+        req
     );
 };
