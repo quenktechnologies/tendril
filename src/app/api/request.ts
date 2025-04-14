@@ -137,6 +137,11 @@ export interface RequestMessage {
      * route is the RouteConf object that was used to generate the Request.
      */
     route: RouteConf;
+
+    /**
+     * original request object from the framework.
+     */
+    original: express.Request;
 }
 
 export type Request = RequestMessage;
