@@ -386,5 +386,33 @@ describe('tendril', () => {
                 expect(res.status).toEqual(200);
             }
         });
+
+        it('should allow route level middleware', async () => {
+            let counter = 0;
+            app = await createApp({
+                id: '/',
+                app: {
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                middleware: [
+                                    (_req, _res, next) => {
+                                        counter++;
+                                        next();
+                                    }
+                                ],
+                                filters: [async () => ok()]
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(counter).toBe(1);
+        });
     });
 });

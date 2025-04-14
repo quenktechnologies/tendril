@@ -423,12 +423,17 @@ export interface RouteConf {
     path: Path;
 
     /**
+     * middleware conifugred for this route only.
+     */
+    middleware?: Middleware[];
+
+    /**
      * tags is an object containing values set on the Request by the routing
      * configuration.
      *
      * These are useful for distinguishing what action take in common filters.
      */
-    tags: Object;
+    tags?: Object;
 
     /**
      * filters applied when the route is executed.

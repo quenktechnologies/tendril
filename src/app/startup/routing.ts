@@ -124,10 +124,14 @@ export class ConfigureRoutes extends BaseStartupTask {
         for (let mware of mod.routing.middleware.enabled) app.use(mware);
 
         for (let route of mod.routing.routes) {
-            app[<'get'>route.method](
-                route.path,
-                mod.module.routeHandler(route)
-            );
+            let method = <'get'>route.method;
+            if (route.middleware) {
+                for (let mware of route.middleware) {
+                    app[method](route.path, mware);
+                }
+            }
+
+            app[method](route.path, mod.module.routeHandler(route));
         }
 
         if (mod.parent) {
