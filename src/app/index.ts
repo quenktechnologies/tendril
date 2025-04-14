@@ -108,7 +108,7 @@ export class App {
             module,
             routing: {
                 middleware: { available: new Map(), enabled: [] },
-                globalFilters: [],
+                globalFilters: { before: [], after: [] },
                 handlers: {},
                 routes: [],
                 dirs: {}

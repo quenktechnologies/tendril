@@ -99,11 +99,6 @@ export interface AppConf {
     };
 
     /**
-     * filters (HTTP) to apply to all requests.
-     */
-    filters?: Filter[];
-
-    /**
      * routing configuration for the module.
      */
     routing?: {
@@ -111,6 +106,11 @@ export interface AppConf {
          * dirs to serve static files from.
          */
         dirs?: StaticConf;
+
+        /**
+         * filters (HTTP) to apply to all routes.
+         */
+        filters?: { before?: Filter[]; after: Filter[] };
 
         /**
          * routes provides the HTTP route configuration.

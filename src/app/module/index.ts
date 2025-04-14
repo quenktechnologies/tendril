@@ -91,12 +91,12 @@ export interface RoutingInfo {
     middleware: { available: Map<string, Middleware>; enabled: Middleware[] };
 
     /**
-     * globalFilters serve as application level middleware and are executed
-     * before each request is handled.
+     * globalFilters are filters that are executed before or after the filters
+     * of the route.
      *
-     * These are also inherited by child modules.
+     * These are innherited by child modules hence the name.
      */
-    globalFilters: Filter[];
+    globalFilters: { before: Filter[]; after: Filter[] };
 
     /**
      * handlers are used when certain error conditions are encountered such

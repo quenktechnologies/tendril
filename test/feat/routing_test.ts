@@ -269,12 +269,20 @@ describe('tendril', () => {
             app = await createApp({
                 id: '/',
                 app: {
-                    filters: [
-                        async () => {
-                            payload++;
-                        }
-                    ],
                     routing: {
+                        filters: {
+                            before: [
+                                async () => {
+                                    payload++;
+                                }
+                            ],
+
+                            after: [
+                                async () => {
+                                    payload++;
+                                }
+                            ]
+                        },
                         routes: () => [
                             {
                                 method: 'get',
@@ -334,13 +342,13 @@ describe('tendril', () => {
             });
 
             let res = await agent.get('/');
-            expect(res.data.payload).toEqual(1);
-
-            res = await agent.get('/child');
             expect(res.data.payload).toEqual(2);
 
+            res = await agent.get('/child');
+            expect(res.data.payload).toEqual(4);
+
             res = await agent.get('/child/gchild');
-            expect(res.data.payload).toEqual(3);
+            expect(res.data.payload).toEqual(6);
         });
 
         it('should 500 if no action taken', async () => {
