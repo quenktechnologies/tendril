@@ -1,6 +1,6 @@
 {
   "name": "@quenk/tendril",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Actor oriented web framework.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
