@@ -84,7 +84,9 @@ export class App {
         public pool = Pool,
         public server = TendrilServer.createInstance(
             conf.app?.server ?? {},
-            () => this.rootInfo.get().express
+            (req, res) => {
+                this.rootInfo.get().express(req, res);
+            }
         ),
         public events = new EventDispatcher(),
         public startup = new StartupManager(defaultStartupTasks),
