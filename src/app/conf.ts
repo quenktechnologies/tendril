@@ -16,6 +16,7 @@ import { Filter, Handler, Method } from './api/request';
 import { ModuleInfo } from './module';
 import { EventListener } from './events';
 import { Provider } from './connection/pool';
+import { ServerConfiguration } from '../net/http/server';
 
 /**
  * AppConf holds the bulk of the configuration directives for a tendril app.
@@ -451,14 +452,4 @@ export type FilterChain = [...Filter[], Handler];
  *
  * Matches the options argument of http.Server#listen
  */
-export interface ServerConf {
-    /**
-     * port to bind to.
-     */
-    port: number | string;
-
-    /**
-     * host to bind to.
-     */
-    host: string;
-}
+export type ServerConf = ServerConfiguration;

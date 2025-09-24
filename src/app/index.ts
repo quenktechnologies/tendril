@@ -8,7 +8,7 @@ import { getParent } from '@quenk/potoo/lib/actor/address';
 import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 import { LogSink } from '@quenk/potoo/lib/actor/system/vm/log';
 
-import { Server } from '../net/http/server';
+import { TendrilServer } from '../net/http/server';
 import { ModuleConf } from './module/conf';
 import { Pool } from './connection/pool';
 import { Module, ModuleInfo } from './module';
@@ -35,8 +35,6 @@ import {
 } from './startup/routing';
 import { CSRFTokenSupport } from './startup/csrf';
 import { StaticDirSupport } from './startup/static';
-
-const defaultServConf = { port: 2407, host: '0.0.0.0' };
 
 const dconf = { log: { level: 'error' } };
 
@@ -84,7 +82,10 @@ export class App {
         public modules: Record<ModuleInfo> = {},
         public rootInfo: Maybe<ModuleInfo> = Maybe.nothing(),
         public pool = Pool,
-        public server = new Server(conf.app?.server ?? defaultServConf),
+        public server = TendrilServer.createInstance(
+            conf.app?.server ?? {},
+            () => this.rootInfo.get().express
+        ),
         public events = new EventDispatcher(),
         public startup = new StartupManager(defaultStartupTasks),
         public log: LogSink = console
@@ -147,7 +148,7 @@ export class App {
         await this.events.dispatch(new ConnectedEvent());
 
         await Promise.allSettled([
-            this.server.listen(this.rootInfo.get().express),
+            this.server.start(),
             this.events.dispatch(new StartedEvent())
         ]);
     }

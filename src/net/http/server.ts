@@ -1,12 +1,12 @@
-import * as http from 'http';
-import * as net from 'net';
-import { Maybe, Nothing, just, nothing } from '@quenk/noni/lib/data/maybe';
-import {
-    Future,
-    fromCallback,
-    pure,
-    raise
-} from '@quenk/noni/lib/control/monad/future';
+import * as http from 'node:http';
+import * as https from 'node:https';
+import * as net from 'node:net';
+
+export const PROTOCOL_HTTP = 'http';
+export const PROTOCOL_HTTPS = 'https';
+
+export const DEFAULT_HOST = '0.0.0.0';
+export const DEFAULT_PORT = 2407;
 
 /**
  * Handler function type that is called with the incomming client request.
@@ -19,105 +19,113 @@ export type Handler = <
     res: R
 ) => void;
 
-/**
- * Configuration for a server.
- *
- * Matches the options argument of http.Server#listen
- */
-export interface Configuration {
+export interface ServerOptions {
     /**
-     * port to bind to.
+     * host address to bind to.
      */
-    port: number | string;
+    host?: string;
 
     /**
-     * host to bind to.
+     * port number to bind to.
      */
-    host: string;
+    port?: number;
+}
+
+export interface HTTPConfiguration extends ServerOptions, http.ServerOptions {}
+
+/**
+ * HTTPSConfiguration for secure http servers.
+ */
+export interface HTTPSConfiguration
+    extends ServerOptions,
+        https.ServerOptions {}
+
+/**
+ * ServerProtocol indicates which protocol the server should use.
+ */
+export type ServerProtocol = 'http' | 'https';
+
+/**
+ * ServerConfiguration
+ */
+export interface ServerConfiguration {
+    /**
+     * protocol to use.
+     */
+    protocol?: ServerProtocol;
+
+    /**
+     * http configuration to use when HTTP.
+     */
+    http?: HTTPConfiguration;
+
+    /**
+     * https configuration to use when HTTPS.
+     */
+    https?: HTTPSConfiguration;
 }
 
 /**
- * Server wraps around an http server to provide stop and restart
+ * TendrilServer wraps around an http server to provide stop and restart
  * facilities.
  *
  * This is necessary as node currently provides no way to stop a server
  * without waiting on clients.
  */
-export class Server {
-    constructor(public configuration: Configuration) {}
+export class TendrilServer {
+    constructor(
+        public server: net.Server,
+        public conf: ServerOptions = {},
+        public sockets: Map<net.Socket, net.Socket> = new Map()
+    ) {}
 
-    sockets: net.Socket[] = [];
-
-    handle: Maybe<http.Server> = nothing();
-
-    handler: Handler = (_: http.IncomingMessage, __: http.ServerResponse) => {};
-
-    /**
-     * listen for connections passing them to the provided handler.
-     */
-    listen(handler: Handler): Future<Server> {
-        if (this.handle instanceof Nothing) {
-            this.handler = handler;
-            this.handle = just(http.createServer(handler));
-
-            return this.handle
-                .map(
-                    h => <Future<Server>>fromCallback<Server>(cb => {
-                            h.on('connection', s => {
-                                this.sockets.push(s);
-
-                                s.on(
-                                    'close',
-                                    () =>
-                                        (this.sockets = this.sockets.filter(
-                                            sck => s !== sck
-                                        ))
-                                );
-                            })
-                                .on('listening', () => cb(undefined, this))
-                                .listen(this.configuration);
-                        })
-                )
-                .get();
-        } else {
-            return raise(new Error('listen: Server is already listening'));
-        }
+    static createInstance(conf: ServerConfiguration, handler: Handler) {
+        let config = conf.protocol === PROTOCOL_HTTPS ? conf.https : conf.http;
+        return new TendrilServer(
+            conf.protocol === PROTOCOL_HTTPS
+                ? https.createServer(config ?? {}, handler)
+                : http.createServer(config ?? {}, handler),
+            config
+        );
     }
 
     /**
-     * restart the Server.
+     * start the TendrilServer.
+     *
+     * This will commence listening for connections blocking until the server
+     * has been closed or an error encountered.
      */
-    restart(): Future<Server> {
-        return this.stop().chain(() => this.listen(this.handler));
-    }
-
-    /**
-     * stop the Server
-     */
-    stop(): Future<void> {
-        return this.flush()
-            .chain(s =>
-                s.handle
-                    .map(close(s))
-                    .orJust(() => pure(s))
-                    .get()
-            )
-            .map(() => {
-                this.handle = nothing();
+    async start(): Promise<void> {
+        return new Promise(resolve => {
+            this.server.on('connection', s => {
+                this.sockets.set(s, s);
+                s.on('close', () => this.sockets.delete(s));
             });
+
+            this.server.on('listening', resolve);
+
+            let { host = DEFAULT_HOST, port = DEFAULT_PORT } = this.conf;
+            this.server.listen({ host, port });
+        });
     }
 
     /**
-     * flush all currently connected clients to the server.
+     * flush closes all open client connections.
+     *
+     * The server itself is not closed and remains open for new connections.
      */
-    flush(): Future<Server> {
+    flush(): void {
         this.sockets.forEach(s => s.destroy());
-        this.sockets = [];
-        return pure(<Server>this);
+        this.sockets = new Map();
+    }
+
+    /**
+     * stop the TendrilServer.
+     *
+     * Open connections will be forced closed so that the server can exit.
+     */
+    async stop(): Promise<void> {
+        this.flush();
+        await new Promise(resolve => this.server.close(resolve));
     }
 }
-
-const close =
-    (s: Server) =>
-    (h: http.Server): Future<Server> =>
-        fromCallback<Server>(cb => h.close(() => cb(undefined, s)));
