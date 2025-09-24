@@ -1,3 +1,4 @@
+import { Lazy, evaluate } from '@quenk/noni/lib/data/lazy';
 import * as http from 'node:http';
 import * as https from 'node:https';
 import * as net from 'node:net';
@@ -79,12 +80,13 @@ export class TendrilServer {
         public sockets: Map<net.Socket, net.Socket> = new Map()
     ) {}
 
-    static createInstance(conf: ServerConfiguration, handler: Handler) {
+    static createInstance(conf: ServerConfiguration, handler: Lazy<Handler>) {
         let config = conf.protocol === PROTOCOL_HTTPS ? conf.https : conf.http;
+        let actualHandler = evaluate(handler);
         return new TendrilServer(
             conf.protocol === PROTOCOL_HTTPS
-                ? https.createServer(config ?? {}, handler)
-                : http.createServer(config ?? {}, handler),
+                ? https.createServer(config ?? {}, actualHandler)
+                : http.createServer(config ?? {}, actualHandler),
             config
         );
     }
