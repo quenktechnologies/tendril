@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as http from 'http';
 
 import { expect } from '@jest/globals';
 
@@ -10,9 +11,11 @@ import { FilterChain } from '../../lib/app/conf';
 import { Handler, RequestContext } from '../../lib/app/api/request';
 import { App } from '../../lib/app';
 import { createApp } from './fixtures/app';
+import { TEST_BASE_URL } from './fixtures/port';
 
 const agent = axios.create({
-    baseURL: 'http://localhost:2407',
+    baseURL: TEST_BASE_URL,
+    httpAgent: new http.Agent({ keepAlive: false }),
     validateStatus: () => true
 });
 

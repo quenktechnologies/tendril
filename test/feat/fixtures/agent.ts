@@ -9,8 +9,10 @@ import { MemoryContainer } from '@quenk/jhr/lib/cookie/container/memory';
 import { JSONParser } from '@quenk/jhr/lib/agent/parser/json';
 import { NoParser } from '@quenk/jhr/lib/agent/parser';
 import { BufferToStringAdapter } from '@quenk/jhr/lib/agent/transport/node/parser';
+import { TEST_PORT } from './port';
 
-const opts = () => merge(defaultOptions, { port: 2407 });
+const opts = () => merge(defaultOptions, { port: TEST_PORT });
+const newHTTPAgent = () => new http.Agent({ keepAlive: false });
 
 export const HOST = 'localhost';
 
@@ -22,7 +24,7 @@ export const createAgent = (host: string = HOST) =>
         new NodeHTTPTransport(
             new FormTransform(),
             new BufferToStringAdapter(new NoParser()),
-            http.globalAgent
+            newHTTPAgent()
         ),
         []
     );
@@ -35,7 +37,7 @@ export const createJSONAgent = (host: string = HOST) =>
         new NodeHTTPTransport(
             new JSONTransform(),
             new BufferToStringAdapter(new JSONParser({ lenient: true })),
-            http.globalAgent
+            newHTTPAgent()
         ),
         []
     );

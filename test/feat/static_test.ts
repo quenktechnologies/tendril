@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as http from 'http';
 
 import { expect } from '@jest/globals';
 
@@ -7,13 +8,15 @@ import { makeDir, removeDir, writeTextFile } from '@quenk/noni/lib/io/file';
 import { App } from '../../lib/app';
 import { dirname } from 'path/win32';
 import { createApp } from './fixtures/app';
+import { TEST_BASE_URL } from './fixtures/port';
 
 const TEST_DIR = `${process.cwd()}/test/feat`;
 const FIXTURES_DIR = `${TEST_DIR}/fixtures`;
 const STATIC_DIR = `${FIXTURES_DIR}/static`;
 
 const agent = axios.create({
-    baseURL: 'http://localhost:2407',
+    baseURL: TEST_BASE_URL,
+    httpAgent: new http.Agent({ keepAlive: false }),
     validateStatus: () => true
 });
 
