@@ -133,6 +133,73 @@ describe('tendril', () => {
             expect(called).toMatchObject(expect.arrayContaining([1, 2, 3]));
         });
 
+        it('should provide the handling module in the request context', async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                filters: [
+                                    async ({ module }: RequestContext) =>
+                                        ok({
+                                            address: module.address,
+                                            path: module.path,
+                                            confPath: module.conf.app?.path ?? null
+                                        })
+                                ]
+                            }
+                        ]
+                    }
+                },
+                modules: {
+                    child: {
+                        app: {
+                            path: '/custom',
+                            routing: {
+                                routes: () => [
+                                    {
+                                        method: 'get',
+                                        path: '/',
+                                        tags: {},
+                                        filters: [
+                                            async ({ module }: RequestContext) =>
+                                                ok({
+                                                    address: module.address,
+                                                    path: module.path,
+                                                    confPath:
+                                                        module.conf.app?.path ??
+                                                        null
+                                                })
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(res.data).toEqual({
+                address: '/',
+                path: '/',
+                confPath: null
+            });
+
+            res = await agent.get('/custom');
+            expect(res.status).toEqual(200);
+            expect(res.data).toEqual({
+                address: '/child',
+                path: '/custom',
+                confPath: '/custom'
+            });
+        });
+
         it('should execute each filter', async () => {
             let count = 0;
             app = await createApp({

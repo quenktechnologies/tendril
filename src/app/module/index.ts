@@ -198,8 +198,10 @@ export class Module extends Mutable {
     ) {
         await this.spawn(async actor => {
             let msg = mkRequestMessage(request, response, route);
+            let module = this.app.modules[this.address];
             let ctx = {
                 request: msg,
+                module,
                 framework: { request, response },
                 actor
             };

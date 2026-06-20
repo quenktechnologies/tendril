@@ -225,4 +225,4 @@ export const ok = (body?: BodyValue) => new Ok(body);
  * @param abort       - Flag indicating whether the response filter chain should
  *                      be terminated or not.
  */
-export const redirect = (url: string, code: number) => new Redirect(url, code);
+export const redirect = (url: string, code: number=301) => new Redirect(url, code);

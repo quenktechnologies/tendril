@@ -9,6 +9,7 @@ import { PRSStorage } from './storage/prs';
 import { CookieStorage } from './storage/cookie';
 import { RouteConf } from '../conf';
 import { notFound, Response } from './response';
+import type { ModuleInfo } from '../module';
 
 /**
  * Method
@@ -39,6 +40,11 @@ export interface RequestContext {
      * request message received from the client.
      */
     request: RequestMessage;
+
+    /**
+     * module handling the request.
+     */
+    module: ModuleInfo;
 
     /**
      * actor handling the received request.
