@@ -54,6 +54,8 @@ export interface RequestContext {
 
     /**
      * actor handling the received request.
+     *
+     * @deprecated
      */
     actor: Api;
 
