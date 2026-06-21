@@ -12,6 +12,14 @@ describe('prs', () => {
                 assert(mvalue.isJust()).true();
                 assert(mvalue.get()).equal(12);
             });
+
+            it('should treat dotted keys as nested paths', () => {
+                let s = new PRSStorage({ user: { profile: { id: 12 } } });
+                let mvalue = s.get('user.profile.id');
+
+                assert(mvalue.isJust()).true();
+                assert(mvalue.get()).equal(12);
+            });
         });
 
         describe('getOrElse', () => {
@@ -55,6 +63,14 @@ describe('prs', () => {
                 s.set('value', 12);
                 assert(s.data['value']).equal(12);
             });
+
+            it('should set nested values when keys are dotted', () => {
+                let s = new PRSStorage({});
+
+                s.set('user.profile.id', 12);
+
+                assert(s.data).equate({ user: { profile: { id: 12 } } });
+            });
         });
 
         describe('values', () => {
@@ -71,6 +87,16 @@ describe('prs', () => {
 
                 assert(s.values['mode']).equal('test');
             });
+
+            it('should proxy dotted keys as nested paths', () => {
+                let s = new PRSStorage({});
+
+                s.values['user.profile.id'] = 12;
+
+                assert(s.get('user.profile.id').isJust()).true();
+                assert(s.get('user.profile.id').get()).equal(12);
+                assert(s.data).equate({ user: { profile: { id: 12 } } });
+            });
         });
 
         describe('exists', () => {
@@ -79,6 +105,13 @@ describe('prs', () => {
 
                 assert(s.exists('value')).true();
                 assert(s.exists('value2')).false();
+            });
+
+            it('should treat dotted keys as nested paths', () => {
+                let s = new PRSStorage({ user: { profile: { id: 12 } } });
+
+                assert(s.exists('user.profile.id')).true();
+                assert(s.exists('user.profile.name')).false();
             });
         });
 
@@ -91,6 +124,16 @@ describe('prs', () => {
                 assert(s.data['value']).undefined();
 
                 assert(s.data['value2']).equal(10);
+            });
+
+            it('should delete nested values when keys are dotted', () => {
+                let s = new PRSStorage({
+                    user: { profile: { id: 12, name: 'test' } }
+                });
+
+                s.remove('user.profile.id');
+
+                assert(s.data).equate({ user: { profile: { name: 'test' } } });
             });
         });
     });
