@@ -200,6 +200,40 @@ describe('tendril', () => {
             });
         });
 
+        it('should provide the app in the request context', async () => {
+            app = await createApp({
+                id: '/',
+                modules: {
+                    child: {}
+                },
+                app: {
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                filters: [
+                                    async ({ app }: RequestContext) =>
+                                        ok({
+                                            root: app.modules['/'].address,
+                                            child: app.modules['/child'].address
+                                        })
+                                ]
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(res.data).toEqual({
+                root: '/',
+                child: '/child'
+            });
+        });
+
         it('should provide the request user when set by middleware', async () => {
             app = await createApp({
                 id: '/',

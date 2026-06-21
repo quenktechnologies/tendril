@@ -201,6 +201,7 @@ export class Module extends Mutable {
             let module = this.app.modules[this.address];
             let ctx = {
                 request: msg,
+                app: this.app,
                 module,
                 framework: { request, response },
                 actor
