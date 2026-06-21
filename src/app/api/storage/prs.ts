@@ -15,13 +15,49 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Storage } from './';
 
+const mkValues = (prs: PRSStorage): Object =>
+    <Object>new Proxy(
+        {},
+        {
+            get: (target, key) =>
+                typeof key === 'string'
+                    ? prs.exists(key)
+                        ? prs.getOrElse(key, <Value>undefined)
+                        : undefined
+                    : Reflect.get(target, key),
+            set: (_, key, value) => {
+                if (typeof key === 'string') prs.set(key, <Value>value);
+                return true;
+            },
+            deleteProperty: (_, key) => {
+                if (typeof key === 'string') prs.remove(key);
+                return true;
+            },
+            has: (_, key) => typeof key === 'string' && prs.exists(key),
+            ownKeys: () => Reflect.ownKeys(prs.getAll()),
+            getOwnPropertyDescriptor: (_, key) =>
+                typeof key === 'string' && prs.exists(key)
+                    ? {
+                          value: prs.getOrElse(key, <Value>undefined),
+                          enumerable: true,
+                          configurable: true,
+                          writable: true
+                      }
+                    : undefined
+        }
+    );
+
 /**
  * PRSStorage class.
  *
  * This is used behind the scens to provide the prs api.
  */
 export class PRSStorage implements Storage {
-    constructor(public data: Object = {}) {}
+    public values: Object;
+
+    constructor(public data: Object = {}) {
+        this.values = mkValues(this);
+    }
 
     get(key: string): Maybe<Value> {
         return path.get(key, this.data);

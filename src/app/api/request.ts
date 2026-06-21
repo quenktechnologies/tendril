@@ -115,6 +115,11 @@ export interface RequestMessage {
     body: Value;
 
     /**
+     * values proxy reads/writes directly from/to the PRS storage.
+     */
+    values: Object;
+
+    /**
      * authenticated user information if available.
      */
     user?: RequestUser;
@@ -166,6 +171,8 @@ export type Request = RequestMessage;
  * DefaultRequestMessage implementation.
  */
 export class DefaultRequestMessage implements RequestMessage {
+    public values: Object;
+
     constructor(
         public method: string,
         public path: string,
@@ -182,7 +189,9 @@ export class DefaultRequestMessage implements RequestMessage {
         public session: SessionStorage,
         public route: RouteConf,
         public original: express.Request
-    ) {}
+    ) {
+        this.values = prs.values;
+    }
 }
 
 /**

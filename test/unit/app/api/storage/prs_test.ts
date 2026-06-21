@@ -57,6 +57,22 @@ describe('prs', () => {
             });
         });
 
+        describe('values', () => {
+            it('should proxy values to storage', () => {
+                let s = new PRSStorage({});
+
+                s.values['value'] = 12;
+
+                assert(s.get('value').isJust()).true();
+                assert(s.get('value').get()).equal(12);
+                assert(s.values['value']).equal(12);
+
+                s.set('mode', 'test');
+
+                assert(s.values['mode']).equal('test');
+            });
+        });
+
         describe('exists', () => {
             it('should work', () => {
                 let s = new PRSStorage({ value: 12 });
