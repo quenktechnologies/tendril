@@ -10,12 +10,12 @@ import { Handler } from '../api/request';
 import { FilterChain } from '../conf';
 
 /**
- * BuildGlobalFilters stage builds the routing.globalFilters list for each module.
+ * BuildGlobalFiltersTask stage builds the routing.globalFilters list for each module.
  *
  * Global filters are inherited from the ancestors of a module as well as any
  * explicitly set on the module.
  */
-export class BuildGlobalFilters extends BaseStartupTask {
+export class BuildGlobalFiltersTask extends BaseStartupTask {
     name = 'routing.build-global-filters';
 
     async execute(mod: ModuleInfo) {
@@ -36,11 +36,11 @@ export class BuildGlobalFilters extends BaseStartupTask {
 }
 
 /**
- * BuildRouteFilters populates the routes from the module's configuration.
+ * BuildRouteFiltersTask populates the routes from the module's configuration.
  *
  * Note: The globalFilters list is added here to each route's list of filters.
  */
-export class BuildRouteFilters extends BaseStartupTask {
+export class BuildRouteFiltersTask extends BaseStartupTask {
     name = 'routing.build-route-filters';
 
     async execute(mod: ModuleInfo) {
@@ -71,11 +71,11 @@ export class BuildRouteFilters extends BaseStartupTask {
 }
 
 /**
- * BuildAvailableMiddleware stage builds a map of middleware available.
+ * BuildAvailableMiddlewareTask stage builds a map of middleware available.
  *
  * Modules can only use its own available middleware or one from an ancestor.
  */
-export class BuildAvailableMiddleware extends BaseStartupTask {
+export class BuildAvailableMiddlewareTask extends BaseStartupTask {
     name = 'routing.build-available-middleware';
 
     async execute(mod: ModuleInfo) {
@@ -97,12 +97,12 @@ export class BuildAvailableMiddleware extends BaseStartupTask {
 }
 
 /**
- * BuildEnabledMiddleware resolves the list of middleware specified in a module
+ * BuildEnabledMiddlewareTask resolves the list of middleware specified in a module
  * to the respective middleware handlers.
  *
  * This fails if any of the middleware are not found.
  */
-export class BuildEnabledMiddleware extends BaseStartupTask {
+export class BuildEnabledMiddlewareTask extends BaseStartupTask {
     name = 'routing.enabled-middleware';
 
     async execute(mod: ModuleInfo) {
@@ -128,7 +128,7 @@ export class BuildEnabledMiddleware extends BaseStartupTask {
 }
 
 /**
- * ConfigureRoutes sets up the routing for a module.
+ * ConfigureRoutesTask sets up the routing for a module.
  *
  * This is meant to be the final step in the routing process and involes
  * the following steps (in order):
@@ -138,7 +138,7 @@ export class BuildEnabledMiddleware extends BaseStartupTask {
  * 3. install routes
  * 4. mount child module to parent module (child modules only).
  */
-export class ConfigureRoutes extends BaseStartupTask {
+export class ConfigureRoutesTask extends BaseStartupTask {
     name = 'routing.configure-routes';
 
     async execute(mod: ModuleInfo) {
@@ -165,12 +165,12 @@ export class ConfigureRoutes extends BaseStartupTask {
 }
 
 /**
- * ConfigureFinalRoutes sets up the final routing for a module.
+ * ConfigureFinalRoutesTask sets up the final routing for a module.
  *
  * This adds the error and 404 handlers. These must be added last to
  * ensure the other routes are actually triggered.
  */
-export class ConfigureFinalRoutes extends BaseStartupTask {
+export class ConfigureFinalRoutesTask extends BaseStartupTask {
     name = 'routing.configure-final-routes';
 
     async execute(mod: ModuleInfo) {

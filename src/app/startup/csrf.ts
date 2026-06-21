@@ -68,11 +68,11 @@ export interface CSRFTokenConf {
 }
 
 /**
- * CSRFTokenSupport configures middleware to help protect against CSRF attacks.
+ * CSRFTokenSupportTask configures middleware to help protect against CSRF attacks.
  *
  * This requires app.session.enable to be set to true.
  */
-export class CSRFTokenSupport extends BaseStartupTask {
+export class CSRFTokenSupportTask extends BaseStartupTask {
     name = 'csrf-token-support';
 
     async execute(mod: ModuleInfo) {

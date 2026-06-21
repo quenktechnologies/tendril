@@ -10,14 +10,14 @@ const defaultOptions = {
 };
 
 /**
- * ConfigureRequestLogger configures the request logging middleware for each
+ * ConfigureRequestLoggerTask configures the request logging middleware for each
  * module enabled.
  *
  *
  * Enabling session support on a parent module will make it available for
  * all the children module as well so no need to repeat.
  */
-export class ConfigureRequestLogger extends BaseStartupTask {
+export class ConfigureRequestLoggerTask extends BaseStartupTask {
     name = 'configure-request-logger';
 
     async execute(mod: ModuleInfo) {

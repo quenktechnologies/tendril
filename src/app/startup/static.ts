@@ -9,7 +9,7 @@ import { ModuleInfo } from '../module';
 import { BaseStartupTask } from '.';
 
 /**
- * StaticDirSupport configures the serving of local folders as static
+ * StaticDirSupportTask configures the serving of local folders as static
  * directories.
  *
  * Each module has one virtual static directory in which users can specify sub
@@ -35,7 +35,7 @@ import { BaseStartupTask } from '.';
  * specifying the local path, an object with path and options, or an array
  * combining the two.
  */
-export class StaticDirSupport extends BaseStartupTask {
+export class StaticDirSupportTask extends BaseStartupTask {
     name = 'static-dir-support';
 
     async execute(mod: ModuleInfo) {

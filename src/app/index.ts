@@ -19,40 +19,40 @@ import {
     InitEvent,
     StartedEvent
 } from './events';
-import { ConfigureEventListeners } from './startup/events';
-import { PoolConnections } from './startup/connections';
-import { ConfigureRequestLogger } from './startup/log';
-import { SessionSupport } from './startup/session';
-import { CookieSupport } from './startup/cookie';
-import { ConfigureBodyParser } from './startup/body-parser';
+import { ConfigureEventListenersTask } from './startup/events';
+import { PoolConnectionsTask } from './startup/connections';
+import { ConfigureRequestLoggerTask } from './startup/log';
+import { SessionSupportTask } from './startup/session';
+import { CookieSupportTask } from './startup/cookie';
+import { ConfigureBodyParserTask } from './startup/body-parser';
 import {
-    BuildAvailableMiddleware,
-    BuildEnabledMiddleware,
-    BuildGlobalFilters,
-    BuildRouteFilters,
-    ConfigureFinalRoutes,
-    ConfigureRoutes
+    BuildAvailableMiddlewareTask,
+    BuildEnabledMiddlewareTask,
+    BuildGlobalFiltersTask,
+    BuildRouteFiltersTask,
+    ConfigureFinalRoutesTask,
+    ConfigureRoutesTask
 } from './startup/routing';
-import { CSRFTokenSupport } from './startup/csrf';
-import { StaticDirSupport } from './startup/static';
+import { CSRFTokenSupportTask } from './startup/csrf';
+import { StaticDirSupportTask } from './startup/static';
 
 const dconf = { log: { level: 'error' } };
 
 export const defaultStartupTasks = (app: App) => [
-    new ConfigureEventListeners(app),
-    new PoolConnections(app),
-    new ConfigureRequestLogger(app),
-    new SessionSupport(app),
-    new CookieSupport(app),
-    new ConfigureBodyParser(app),
-    new BuildGlobalFilters(app),
-    new BuildRouteFilters(app),
-    new BuildAvailableMiddleware(app),
-    new BuildEnabledMiddleware(app),
-    new CSRFTokenSupport(app),
-    new StaticDirSupport(app),
-    new ConfigureRoutes(app),
-    new ConfigureFinalRoutes(app)
+    new ConfigureEventListenersTask(app),
+    new PoolConnectionsTask(app),
+    new ConfigureRequestLoggerTask(app),
+    new SessionSupportTask(app),
+    new CookieSupportTask(app),
+    new ConfigureBodyParserTask(app),
+    new BuildGlobalFiltersTask(app),
+    new BuildRouteFiltersTask(app),
+    new BuildAvailableMiddlewareTask(app),
+    new BuildEnabledMiddlewareTask(app),
+    new CSRFTokenSupportTask(app),
+    new StaticDirSupportTask(app),
+    new ConfigureRoutesTask(app),
+    new ConfigureFinalRoutesTask(app)
 ];
 
 /**

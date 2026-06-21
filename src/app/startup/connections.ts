@@ -2,11 +2,11 @@ import { ModuleInfo } from '../module';
 import { BaseStartupTask } from './';
 
 /**
- * PoolConnections handles the pooling of connections for each module.
+ * PoolConnectionsTask handles the pooling of connections for each module.
  *
  * Connections are opened sequentially for each module.
  */
-export class PoolConnections extends BaseStartupTask {
+export class PoolConnectionsTask extends BaseStartupTask {
     name = 'pool-connections';
 
     async execute(mod: ModuleInfo) {

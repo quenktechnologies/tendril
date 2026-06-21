@@ -10,10 +10,10 @@ const defaults = {
 };
 
 /**
- * ConfigureBodyParser configures middleware for parsing request bodies into
+ * ConfigureBodyParserTask configures middleware for parsing request bodies into
  * desired values.
  */
-export class ConfigureBodyParser extends BaseStartupTask {
+export class ConfigureBodyParserTask extends BaseStartupTask {
     name = 'configure-body-parser';
 
     async execute(mod: ModuleInfo) {

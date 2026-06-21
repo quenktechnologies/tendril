@@ -37,7 +37,7 @@ const defaultOptions = {
 };
 
 /**
- * SessionSupport enables http session middleware for modules that declare it.
+ * SessionSupportTask enables http session middleware for modules that declare it.
  *
  * Enabling session support on a parent module will make it available for
  * all the children module as well so no need to repeat.
@@ -55,7 +55,7 @@ const defaultOptions = {
  * Note: If a session store is specified, this task will attempt to open its
  * connection and add it to the global pool.
  */
-export class SessionSupport extends BaseStartupTask {
+export class SessionSupportTask extends BaseStartupTask {
     name = 'session-support';
 
     async execute(mod: ModuleInfo) {

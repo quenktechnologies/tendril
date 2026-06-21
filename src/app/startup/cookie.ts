@@ -9,9 +9,9 @@ A random string will be generated and used however this means user sessions\
 will not be valid if the application restarts!';
 
 /**
- * CookieSupport configures middleware for parsing cookies.
+ * CookieSupportTask configures middleware for parsing cookies.
  */
-export class CookieSupport extends BaseStartupTask {
+export class CookieSupportTask extends BaseStartupTask {
     name = 'cookie-support';
 
     async execute(mod: ModuleInfo) {

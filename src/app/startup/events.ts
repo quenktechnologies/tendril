@@ -3,12 +3,12 @@ import { EventListener } from '../events';
 import { BaseStartupTask } from './';
 
 /**
- * ConfigureEventListeners installs each module's lifecycle event listener(s)
+ * ConfigureEventListenersTask installs each module's lifecycle event listener(s)
  * on the app.
  *
  * This task is also responsible for dispatching the "init" event.
  */
-export class ConfigureEventListeners extends BaseStartupTask {
+export class ConfigureEventListenersTask extends BaseStartupTask {
     name = 'configure-event-handlers';
 
     async execute(mod: ModuleInfo) {
