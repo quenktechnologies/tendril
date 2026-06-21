@@ -15,8 +15,7 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 
 import { Storage } from './';
 
-const mkValues = (prs: PRSStorage): Object =>
-    <Object>new Proxy(
+const mkValues = (prs: PRSStorage): Object => <Object>new Proxy(
         {},
         {
             get: (target, key) =>

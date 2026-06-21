@@ -148,7 +148,8 @@ describe('tendril', () => {
                                         ok({
                                             address: module.address,
                                             path: module.path,
-                                            confPath: module.conf.app?.path ?? null
+                                            confPath:
+                                                module.conf.app?.path ?? null
                                         })
                                 ]
                             }
@@ -166,7 +167,9 @@ describe('tendril', () => {
                                         path: '/',
                                         tags: {},
                                         filters: [
-                                            async ({ module }: RequestContext) =>
+                                            async ({
+                                                module
+                                            }: RequestContext) =>
                                                 ok({
                                                     address: module.address,
                                                     path: module.path,
