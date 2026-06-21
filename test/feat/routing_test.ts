@@ -200,6 +200,43 @@ describe('tendril', () => {
             });
         });
 
+        it('should provide the request user when set by middleware', async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    middleware: {
+                        enabled: [
+                            (req, _, next) => {
+                                (<typeof req & { user?: object }>req).user = {
+                                    id: 123,
+                                    role: 'admin'
+                                };
+                                next();
+                            }
+                        ]
+                    },
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                filters: [
+                                    async ({
+                                        request: { user }
+                                    }: RequestContext) => ok(user ?? null)
+                                ]
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(res.data).toEqual({ id: 123, role: 'admin' });
+        });
+
         it('should execute each filter', async () => {
             let count = 0;
             app = await createApp({

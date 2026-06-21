@@ -67,6 +67,11 @@ export interface FrameworkRequest {
 }
 
 /**
+ * RequestUser is the authenticated user information attached to a Request.
+ */
+export type RequestUser = Object & { id: string | number };
+
+/**
  * RequestMessage respresents the request the client made to the app.
  */
 export interface RequestMessage {
@@ -108,6 +113,11 @@ export interface RequestMessage {
      * The actual value depends on the body parser middleware enabled.
      */
     body: Value;
+
+    /**
+     * authenticated user information if available.
+     */
+    user?: RequestUser;
 
     /**
      * cookies sent with the request if the cookie parser is enabled.
@@ -163,6 +173,7 @@ export class DefaultRequestMessage implements RequestMessage {
         public params: Record<string>,
         public query: Record<string>,
         public body: Value,
+        public user: RequestUser | undefined,
         public cookies: CookieStorage,
         public hostname: string,
         public remoteAddress: string,
@@ -188,6 +199,7 @@ export const mkRequestMessage = (
         filters: [async () => notFound()]
     }
 ): RequestMessage => {
+    let { user } = <express.Request & { user?: RequestUser }>req;
     return new DefaultRequestMessage(
         req.method,
         req.path,
@@ -195,6 +207,7 @@ export const mkRequestMessage = (
         req.params,
         <Record<string>>req.query,
         req.body,
+        user,
         new CookieStorage(req.cookies, res),
         req.hostname,
         req.ip || '',
