@@ -7,6 +7,8 @@ import {
 
 import { AppConf } from '../conf';
 
+export { getModuleConfFromMetadata as fromMetadata } from '../api/module';
+
 /**
  * ModuleConf is the source configuration data used for creating Module
  * instances and related resources.
@@ -28,8 +30,8 @@ export interface ModuleConf extends Omit<SharedCreateTemplate, 'create'> {
     /**
      * modules to spawn after this one has been initialized.
      *
-     * This allows modules and there routes to be composed in a tree like
-     * structure.
+     * This directive is what allows for nested routes and submodules
+     * within an app.
      */
     modules?: Record<ModuleConf>;
 

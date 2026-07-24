@@ -54,7 +54,7 @@ xdescribe('csrf-token', () => {
                         {
                             method: 'get',
                             path: '/prs',
-                            filters: [fromPRS],
+                            handler: fromPRS,
                             tags: {}
                         }
                     ]
@@ -69,7 +69,7 @@ xdescribe('csrf-token', () => {
                                 {
                                     method: 'get',
                                     path: '/prs',
-                                    filters: [fromPRS],
+                                    handler: fromPRS,
                                     tags: {}
                                 }
                             ]

@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "baseUrl": "src",
-        "lib": ["es2017", "DOM"],
+        "lib": ["es2024", "DOM", "esnext.decorators"],
         "module": "commonjs",
-        "target": "ES2017",
+        "target": "es2024",
         "outDir": "lib",
         "rootDir": "src",
         "moduleResolution": "node",

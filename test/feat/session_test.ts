@@ -34,35 +34,29 @@ describe('session', () => {
                             {
                                 method: 'get',
                                 path: '/value',
-                                filters: [
-                                    async ({
-                                        request: { session }
-                                    }: RequestContext) =>
-                                        ok(session.getOrElse('value', '?'))
-                                ],
+                                handler: async ({
+                                    request: { session }
+                                }: RequestContext) =>
+                                    ok(session.getOrElse('value', '?')),
                                 tags: {}
                             },
                             {
                                 method: 'put',
                                 path: '/value',
-                                filters: [
-                                    async ({
-                                        request: { session }
-                                    }: RequestContext) => {
-                                        session.setWithDescriptor(
-                                            'value',
-                                            'foo',
-                                            { ttl: 3 }
-                                        );
-                                        return ok();
-                                    }
-                                ],
+                                handler: async ({
+                                    request: { session }
+                                }: RequestContext) => {
+                                    session.setWithDescriptor('value', 'foo', {
+                                        ttl: 3
+                                    });
+                                    return ok();
+                                },
                                 tags: {}
                             },
                             {
                                 method: 'get',
                                 path: '/status',
-                                filters: [async () => ok()],
+                                handler: async () => ok(),
                                 tags: {}
                             }
                         ]
@@ -124,25 +118,21 @@ describe('session', () => {
                             {
                                 method: 'get',
                                 path: '/value',
-                                filters: [
-                                    async ({
-                                        request: { session }
-                                    }: RequestContext) =>
-                                        ok(session.getOrElse('value', '?'))
-                                ],
+                                handler: async ({
+                                    request: { session }
+                                }: RequestContext) =>
+                                    ok(session.getOrElse('value', '?')),
                                 tags: {}
                             },
                             {
                                 method: 'put',
                                 path: '/value',
-                                filters: [
-                                    async ({
-                                        request: { session }
-                                    }: RequestContext) => {
-                                        session.set('value', 'foo');
-                                        return ok();
-                                    }
-                                ],
+                                handler: async ({
+                                    request: { session }
+                                }: RequestContext) => {
+                                    session.set('value', 'foo');
+                                    return ok();
+                                },
                                 tags: {}
                             }
                         ]

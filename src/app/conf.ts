@@ -439,7 +439,12 @@ export interface RouteConf {
     /**
      * filters applied when the route is executed.
      */
-    filters: FilterChain;
+    filters?: Filter[];
+
+    /**
+     * handler that terminates requests on the route.
+     */
+    handler: Handler;
 }
 
 /**

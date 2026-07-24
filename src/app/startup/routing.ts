@@ -1,13 +1,10 @@
 import { join } from 'path';
 
 import { isString } from '@quenk/noni/lib/data/type';
-import { tail } from '@quenk/noni/lib/data/array';
 
 import { BaseStartupTask } from './';
 import { isMain, ModuleInfo } from '../module';
 import { Middleware } from '../middleware';
-import { Handler } from '../api/request';
-import { FilterChain } from '../conf';
 
 /**
  * BuildGlobalFiltersTask stage builds the routing.globalFilters list for each module.
@@ -44,23 +41,19 @@ export class BuildRouteFiltersTask extends BaseStartupTask {
     name = 'routing.build-route-filters';
 
     async execute(mod: ModuleInfo) {
-        let routes = mod.conf?.app?.routing?.routes
-            ? mod.conf.app.routing.routes(mod)
-            : [];
+        let routes = [
+            ...(mod.conf?.app?.routing?.routes
+                ? mod.conf.app.routing.routes(mod)
+                : [])
+        ];
 
         mod.routing.routes = routes.map(route => {
-            let handler = <Handler>tail(route.filters);
-
-            // Avoid missing handler if it ever occurs. App will 500 instead of
-            // crash.
-            let filters = <FilterChain>(
-                [
-                    ...mod.routing.globalFilters.before,
-                    ...route.filters.filter(f => f != handler),
-                    ...mod.routing.globalFilters.after,
-                    handler
-                ].filter(f => f != null)
-            );
+            let filters = [
+                ...mod.routing.globalFilters.before,
+                ...(route.filters ?? []),
+                ...mod.routing.globalFilters.after,
+                route.handler
+            ].filter(f => f != null);
 
             return {
                 ...route,

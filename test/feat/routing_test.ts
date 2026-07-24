@@ -7,7 +7,6 @@ import { unflatten } from '@quenk/noni/lib/data/record/path';
 
 import { badRequest, error, ok } from '../../lib/app/api/response';
 import { ModuleInfo } from '../../lib/app/module';
-import { FilterChain } from '../../lib/app/conf';
 import { Handler, RequestContext } from '../../lib/app/api/request';
 import { App } from '../../lib/app';
 import { createApp } from './fixtures/app';
@@ -38,13 +37,11 @@ describe('tendril', () => {
                             method: 'get',
                             path: '/',
                             tags: { test: true },
-                            filters: [
-                                async (ctx: RequestContext) => {
-                                    expect(ctx).toBeDefined();
-                                    wasCalled = true;
-                                    return ok(m.address);
-                                }
-                            ]
+                            handler: async (ctx: RequestContext) => {
+                                expect(ctx).toBeDefined();
+                                wasCalled = true;
+                                return ok(m.address);
+                            }
                         }
                     ]
                 })
@@ -67,12 +64,10 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [
-                                    async () => {
-                                        called.push(1);
-                                        return ok();
-                                    }
-                                ]
+                                handler: async () => {
+                                    called.push(1);
+                                    return ok();
+                                }
                             }
                         ]
                     }
@@ -86,12 +81,10 @@ describe('tendril', () => {
                                         method: 'get',
                                         path: '/',
                                         tags: {},
-                                        filters: [
-                                            async () => {
-                                                called.push(2);
-                                                return ok();
-                                            }
-                                        ]
+                                        handler: async () => {
+                                            called.push(2);
+                                            return ok();
+                                        }
                                     }
                                 ]
                             }
@@ -105,12 +98,10 @@ describe('tendril', () => {
                                                 method: 'get',
                                                 path: '/',
                                                 tags: {},
-                                                filters: [
-                                                    async () => {
-                                                        called.push(3);
-                                                        return ok();
-                                                    }
-                                                ]
+                                                handler: async () => {
+                                                    called.push(3);
+                                                    return ok();
+                                                }
                                             }
                                         ]
                                     }
@@ -143,15 +134,12 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [
-                                    async ({ module }: RequestContext) =>
-                                        ok({
-                                            address: module.address,
-                                            path: module.path,
-                                            confPath:
-                                                module.conf.app?.path ?? null
-                                        })
-                                ]
+                                handler: async ({ module }: RequestContext) =>
+                                    ok({
+                                        address: module.address,
+                                        path: module.path,
+                                        confPath: module.conf.app?.path ?? null
+                                    })
                             }
                         ]
                     }
@@ -166,18 +154,16 @@ describe('tendril', () => {
                                         method: 'get',
                                         path: '/',
                                         tags: {},
-                                        filters: [
-                                            async ({
-                                                module
-                                            }: RequestContext) =>
-                                                ok({
-                                                    address: module.address,
-                                                    path: module.path,
-                                                    confPath:
-                                                        module.conf.app?.path ??
-                                                        null
-                                                })
-                                        ]
+                                        handler: async ({
+                                            module
+                                        }: RequestContext) =>
+                                            ok({
+                                                address: module.address,
+                                                path: module.path,
+                                                confPath:
+                                                    module.conf.app?.path ??
+                                                    null
+                                            })
                                     }
                                 ]
                             }
@@ -216,13 +202,11 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [
-                                    async ({ app }: RequestContext) =>
-                                        ok({
-                                            root: app.modules['/'].address,
-                                            child: app.modules['/child'].address
-                                        })
-                                ]
+                                handler: async ({ app }: RequestContext) =>
+                                    ok({
+                                        root: app.modules['/'].address,
+                                        child: app.modules['/child'].address
+                                    })
                             }
                         ]
                     }
@@ -258,11 +242,9 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [
-                                    async ({
-                                        request: { user }
-                                    }: RequestContext) => ok(user ?? null)
-                                ]
+                                handler: async ({
+                                    request: { user }
+                                }: RequestContext) => ok(user ?? null)
                             }
                         ]
                     }
@@ -291,9 +273,9 @@ describe('tendril', () => {
                                     },
                                     async () => {
                                         count++;
-                                    },
-                                    async () => ok()
-                                ]
+                                    }
+                                ],
+                                handler: async () => ok()
                             }
                         ]
                     }
@@ -343,9 +325,7 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [
-                                    async () => error(new Error('failed'))
-                                ]
+                                handler: async () => error(new Error('failed'))
                             }
                         ]
                     }
@@ -393,7 +373,7 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [async () => ok([])]
+                                handler: async () => ok([])
                             }
                         ]
                     }
@@ -432,7 +412,7 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [send]
+                                handler: send
                             }
                         ]
                     }
@@ -446,7 +426,7 @@ describe('tendril', () => {
                                         method: 'get',
                                         path: '/',
                                         tags: {},
-                                        filters: [send]
+                                        handler: send
                                     }
                                 ]
                             }
@@ -460,7 +440,7 @@ describe('tendril', () => {
                                                 method: 'get',
                                                 path: '/',
                                                 tags: {},
-                                                filters: [send]
+                                                handler: send
                                             }
                                         ]
                                     }
@@ -476,7 +456,7 @@ describe('tendril', () => {
                                         method: 'get',
                                         path: '/',
                                         tags: {},
-                                        filters: [async () => badRequest()]
+                                        handler: async () => badRequest()
                                     }
                                 ]
                             }
@@ -505,7 +485,9 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: <FilterChain>(<Handler[]>(<unknown>[]))
+                                handler: <Handler>(
+                                    (<unknown>(async () => undefined))
+                                )
                             }
                         ]
                     }
@@ -526,7 +508,7 @@ describe('tendril', () => {
                                 method: 'get',
                                 path: '/',
                                 tags: {},
-                                filters: [async () => ok()]
+                                handler: async () => ok()
                             }
                         ]
                     }
@@ -555,7 +537,7 @@ describe('tendril', () => {
                                         next();
                                     }
                                 ],
-                                filters: [async () => ok()]
+                                handler: async () => ok()
                             }
                         ]
                     }

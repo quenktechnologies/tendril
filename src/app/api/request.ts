@@ -213,7 +213,8 @@ export const mkRequestMessage = (
         method: <'get'>req.method,
         path: req.path,
         tags: {},
-        filters: [async () => notFound()]
+        filters: [],
+        handler: async () => notFound()
     }
 ): RequestMessage => {
     let { user } = <express.Request & { user?: RequestUser }>req;

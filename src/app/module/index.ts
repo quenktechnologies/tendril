@@ -13,9 +13,13 @@ import { Filter, mkRequestMessage } from '../api/request';
 import { Connection } from '../connection/pool';
 import { App } from '../';
 import { Middleware } from '../middleware';
-import { FilterChain, FullStaticDirConf, RouteConf } from '../conf';
+import { FullStaticDirConf, RouteConf } from '../conf';
 import { ModuleConf } from './conf';
 import { ERROR_TOKEN_INVALID } from '../startup/csrf';
+import {
+    DecoratedModuleController,
+    getModuleConfFromMetadata
+} from '../api/module';
 
 /**
  * ModuleInfo holds all the internal runtime information about a Module within
@@ -77,6 +81,13 @@ export interface ModuleInfo {
  * isMain tests if a ModuleInfo is the main module.
  */
 export const isMain = (mod: ModuleInfo) => mod.parent === undefined;
+
+/**
+ * fromMetadata generates a ModuleConf from an object decorated with
+ * @Module.
+ */
+export const fromMetadata = (target: object) =>
+    getModuleConfFromMetadata(target as DecoratedModuleController);
 
 /**
  * RoutingInfo holds all the Module's routing information.
@@ -141,7 +152,9 @@ export class Module extends Mutable {
         super(runtime);
     }
 
-    address = this.runtime.self;
+    get address() {
+        return this.runtime.self;
+    }
 
     /**
      * routeHandler given a final RouteConf, produces an express request handler
@@ -150,7 +163,7 @@ export class Module extends Mutable {
     routeHandler =
         (route: RouteConf) =>
         (request: express.Request, response: express.Response) =>
-            this.handleRequest(request, response, route.filters, route);
+            this.handleRequest(request, response, route.filters!, route);
 
     errorHandler = async (
         err: Error,
@@ -193,7 +206,7 @@ export class Module extends Mutable {
     async handleRequest(
         request: express.Request,
         response: express.Response,
-        filters: FilterChain,
+        filters: Filter[],
         route?: RouteConf
     ) {
         await this.spawn(async actor => {
