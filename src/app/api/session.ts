@@ -20,7 +20,7 @@ import { isFunction, isObject } from '@quenk/noni/lib/data/type';
 import { Maybe, nothing } from '@quenk/noni/lib/data/maybe';
 import { clone, rcompact } from '@quenk/noni/lib/data/record';
 
-import { Storage } from './';
+import { Storage } from '../storage';
 
 export const SESSION_DATA = 'tendril.$data';
 export const SESSION_DESCRIPTORS = 'tendril.$descriptors';

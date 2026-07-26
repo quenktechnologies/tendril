@@ -9,8 +9,8 @@ import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 import { LogSink } from '@quenk/potoo/lib/actor/system/vm/log';
 
 import { TendrilServer } from '../net/http/server';
-import { ModuleConf } from './module/conf';
-import { Pool } from './connection/pool';
+import { ModuleConf } from './conf';
+import { Pool } from './pool';
 import { Module, ModuleInfo } from './module';
 import { StartupManager } from './startup';
 import {

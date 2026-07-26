@@ -4,7 +4,7 @@ import { isString } from '@quenk/noni/lib/data/type';
 
 import { BaseStartupTask } from './';
 import { isMain, ModuleInfo } from '../module';
-import { Middleware } from '../middleware';
+import { Middleware } from '../api/middleware';
 
 /**
  * BuildGlobalFiltersTask stage builds the routing.globalFilters list for each module.

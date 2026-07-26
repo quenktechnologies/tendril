@@ -1,6 +1,6 @@
 import { assert } from '@quenk/test/lib/assert';
 
-import { PRSStorage } from '../../../../../lib/app/api/storage/prs';
+import { PRSStorage } from '../../../../lib/app/api/prs';
 
 describe('prs', () => {
     describe('PRSStorage', () => {

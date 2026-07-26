@@ -13,7 +13,7 @@ import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 import { clone } from '@quenk/noni/lib/data/record';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 
-import { Storage } from './';
+import { Storage } from '../storage';
 
 const mkValues = (prs: PRSStorage): Object => <Object>new Proxy(
         {},

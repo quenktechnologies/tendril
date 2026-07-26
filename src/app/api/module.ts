@@ -1,6 +1,6 @@
 import { isFunction } from '@quenk/noni/lib/data/type';
 
-import { ModuleConf } from '../module/conf';
+import { ModuleConf } from '../conf';
 import { DecoratedRouteController, getRouteConfFromMetadata } from './routing';
 
 export const MODULE_METADATA_KEY = Symbol('tendril.module');

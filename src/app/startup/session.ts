@@ -10,11 +10,11 @@ import {
     SESSION_DESCRIPTORS,
     SESSION_DATA,
     deleteSessionKey
-} from '../api/storage/session';
+} from '../api/session';
 import { ModuleInfo } from '../module';
 import { BaseStartupTask } from './';
 import { randomSecret } from './cookie';
-import { Pool } from '../connection/pool';
+import { Pool } from '../pool';
 
 export const SESSION_COOKIE_NAME = 'tendril.session.id';
 export const POOL_KEY_SESSION = '$tendril-session-store-connection';

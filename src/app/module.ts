@@ -9,17 +9,16 @@ import { Runtime } from '@quenk/potoo/lib/actor/system/vm/runtime';
 import { Address } from '@quenk/potoo/lib/actor/address';
 import { SPAWN_CONCERN_STARTED } from '@quenk/potoo/lib/actor/template';
 
-import { Filter, mkRequestMessage } from '../api/request';
-import { Connection } from '../connection/pool';
-import { App } from '../';
-import { Middleware } from '../middleware';
-import { FullStaticDirConf, RouteConf } from '../conf';
-import { ModuleConf } from './conf';
-import { ERROR_TOKEN_INVALID } from '../startup/csrf';
+import { Filter, mkRequestMessage } from './api/request';
+import { Connection } from './pool';
+import { App } from './';
+import { Middleware } from './api/middleware';
+import { FullStaticDirConf, ModuleConf, RouteConf } from './conf';
+import { ERROR_TOKEN_INVALID } from './startup/csrf';
 import {
     DecoratedModuleController,
     getModuleConfFromMetadata
-} from '../api/module';
+} from './api/module';
 
 /**
  * ModuleInfo holds all the internal runtime information about a Module within

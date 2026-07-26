@@ -11,12 +11,57 @@ import { Record } from '@quenk/noni/lib/data/record';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Object } from '@quenk/noni/lib/data/jsonx';
 
-import { Middleware } from './middleware';
+import {
+    SharedCreateTemplate,
+    Template
+} from '@quenk/potoo/lib/actor/template';
+
+import { Middleware } from './api/middleware';
 import { Filter, Handler, Method } from './api/request';
 import { ModuleInfo } from './module';
 import { EventListener } from './events';
-import { Provider } from './connection/pool';
+import { Provider } from './pool';
 import { ServerConfiguration } from '../net/http/server';
+import { DecoratedModuleController, getModuleConfFromMetadata } from './api/module';
+
+/**
+ * ServerConf for a server.
+ *
+ * Matches the options argument of http.Server#listen
+ */
+export type ServerConf = ServerConfiguration;
+
+/**
+ * ModuleConf is the source configuration data used for creating Module
+ * instances and related resources.
+ *
+ * A ModuleConf is also a potoo Template and is used to spawn the Module
+ * as an actor.
+ */
+export interface ModuleConf extends Omit<SharedCreateTemplate, 'create'> {
+    /**
+     * disabled indicates whether the module should be disabled or not.
+     */
+    disabled?: boolean;
+
+    /**
+     * app configuration settings.
+     */
+    app?: AppConf;
+
+    /**
+     * modules to spawn after this one has been initialized.
+     *
+     * This directive is what allows for nested routes and submodules
+     * within an app.
+     */
+    modules?: Record<ModuleConf>;
+
+    /**
+     * children templates to spawn after the module has been initialized.
+     */
+    children?: Template[];
+}
 
 /**
  * AppConf holds the bulk of the configuration directives for a tendril app.
@@ -152,6 +197,8 @@ export interface AppConf {
         started?: EventListener | EventListener[];
     };
 }
+
+export const fromMetadata = (target: object) => getModuleConfFromMetadata(target as  DecoratedModuleController);
 
 /**
  * ConnectionConf declares the configuration for a remote service connections.
@@ -447,14 +494,3 @@ export interface RouteConf {
     handler: Handler;
 }
 
-/**
- * FilterChain is always terminated with a Handler.
- */
-export type FilterChain = [...Filter[], Handler];
-
-/**
- * ServerConf for a server.
- *
- * Matches the options argument of http.Server#listen
- */
-export type ServerConf = ServerConfiguration;

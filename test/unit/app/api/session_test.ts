@@ -1,4 +1,4 @@
-import * as session from '../../../../../lib/app/api/storage/session';
+import * as session from '../../../../lib/app/api/session';
 
 import { assert } from '@quenk/test/lib/assert';
 import { Object } from '@quenk/noni/lib/data/jsonx';
@@ -8,7 +8,7 @@ import {
     EnabledSessionStorage,
     DisabledSessionStorage,
     SESSION_DATA
-} from '../../../../../lib/app/api/storage/session';
+} from '../../../../lib/app/api/session';
 
 describe('session', () => {
     describe('EnabledSessionStorage', () => {

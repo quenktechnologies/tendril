@@ -1,5 +1,5 @@
 import { App } from '../../../lib/app';
-import { ModuleConf } from '../../../lib/app/module/conf';
+import { ModuleConf } from '../../../lib/app/conf';
 import { TEST_PORT } from './port';
 
 export const createApp = (conf: ModuleConf) =>

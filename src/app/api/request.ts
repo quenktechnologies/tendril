@@ -4,9 +4,9 @@ import { Api } from '@quenk/potoo/lib/actor/api';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { clone, Record } from '@quenk/noni/lib/data/record';
 
-import { SessionStorage, EnabledSessionStorage } from './storage/session';
-import { PRSStorage } from './storage/prs';
-import { CookieStorage } from './storage/cookie';
+import { SessionStorage, EnabledSessionStorage } from './session';
+import { PRSStorage } from './prs';
+import { CookieStorage } from './cookie';
 import { RouteConf } from '../conf';
 import { notFound, Response } from './response';
 import type { App } from '../';
