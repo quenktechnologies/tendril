@@ -22,7 +22,10 @@ import { ModuleInfo } from './module';
 import { EventListener } from './events';
 import { Provider } from './pool';
 import { ServerConfiguration } from '../net/http/server';
-import { DecoratedModuleController, getModuleConfFromMetadata } from './api/module';
+import {
+    DecoratedModuleController,
+    getModuleConfFromMetadata
+} from './api/module';
 
 /**
  * ServerConf for a server.
@@ -198,7 +201,8 @@ export interface AppConf {
     };
 }
 
-export const fromMetadata = (target: object) => getModuleConfFromMetadata(target as  DecoratedModuleController);
+export const fromMetadata = (target: object) =>
+    getModuleConfFromMetadata(target as DecoratedModuleController);
 
 /**
  * ConnectionConf declares the configuration for a remote service connections.
@@ -493,4 +497,3 @@ export interface RouteConf {
      */
     handler: Handler;
 }
-

@@ -1,7 +1,18 @@
-import { Method } from './request';
-import { RouteConf } from '../conf';
-
+import { Maybe } from '@quenk/noni/lib/data/maybe';
+import { Either } from '@quenk/noni/lib/data/either';
 import { Path } from '@quenk/noni/lib/io/file';
+
+import { Method, RequestContext } from './request';
+import { RouteConf } from '../conf';
+import {
+    Response,
+    Status,
+    OK,
+    conflict,
+    notFound,
+    error,
+    fromStatusCode
+} from './response';
 
 export const ROUTE_METADATA_KEY = Symbol('tendril.routes');
 
@@ -17,7 +28,15 @@ export interface DecoratedRouteController {
  * RouteDecoratorOptions are used to configure the routing decoraters.
  */
 export interface RouteDecoratorOptions
-    extends Omit<Partial<RouteConf>, 'method' | 'path' | 'handler'> {}
+    extends Omit<Partial<RouteConf>, 'method' | 'path' | 'handler'> {
+    /**
+     * status code to respond with when the handler resolves successfully
+     * (a plain value, a Just, or a Right).
+     *
+     * Defaults to 200 (OK).
+     */
+    status?: Status;
+}
 
 export type MappedRouteConfs = Map<string, RouteConf>;
 
@@ -92,12 +111,54 @@ const routeDecorator =
                 ...options,
                 method,
                 path,
-                handler: f.bind(this)
+                handler: dispatchHandler(this, f, options.status)
             });
 
             (this as DecoratedRouteController)[ROUTE_METADATA_KEY] = existing;
         });
     };
+
+/**
+ * dispatchHandler wraps a decorated method so it can focus on business logic
+ * instead of constructing a Response.
+ *
+ * The wrapped function may return:
+ * - a Response, which is sent unchanged.
+ * - a Maybe, sent as 404 if Nothing, otherwise the Just value at `status`.
+ * - an Either, sent as 409 with the Left value, otherwise the Right value at
+ *   `status`.
+ * - any other value, sent as the body at `status`.
+ *
+ * If the wrapped function throws or its Promise rejects, a 500 is sent with
+ * the error as the body.
+ */
+const dispatchHandler = (
+    instance: unknown,
+    handler: Function,
+    status: Status = OK
+) => {
+    return async (ctx: RequestContext): Promise<Response> => {
+        try {
+            let result = await handler.call(instance, ctx);
+
+            if (result instanceof Response) return result;
+
+            if (Maybe.is(result))
+                return result.isJust()
+                    ? fromStatusCode(status, result.get())
+                    : notFound();
+
+            if (Either.is(result))
+                return result.isRight()
+                    ? fromStatusCode(status, result.right())
+                    : conflict(result.left());
+
+            return fromStatusCode(status, result);
+        } catch (e) {
+            return error(e as Error);
+        }
+    };
+};
 
 /**
  * getRouteConfFromMetadata generates a RouteConf list from an object whose
@@ -109,3 +170,13 @@ export const getRouteConfFromMetadata = (
     let meta = instance[ROUTE_METADATA_KEY] ?? new Map();
     return [...meta.values()];
 };
+
+/**
+ * fromMetadata generates a RouteConf list from an object decorated with
+ * @Get, @Post etc.
+ *
+ * Accepts any object, so callers don't need to declare it as a
+ * DecoratedRouteController via interface merging.
+ */
+export const fromMetadata = (target: object): RouteConf[] =>
+    getRouteConfFromMetadata(target as DecoratedRouteController);

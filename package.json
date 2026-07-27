@@ -37,7 +37,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@quenk/noni": "^1.52.12",
+    "@quenk/noni": "^1.52.22",
     "@quenk/potoo": "^4.1.5",
     "@types/body-parser": "^1.19.0",
     "@types/cookie-parser": "^1.4.2",

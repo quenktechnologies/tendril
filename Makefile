@@ -9,3 +9,8 @@ lib: $(shell find src -type f)
 .PHONY: clean
 clean:
 	rm -R lib || true
+
+
+.PHONY: fmt
+fmt:
+	./node_modules/.bin/prettier --write src test || true

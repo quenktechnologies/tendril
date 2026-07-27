@@ -1,5 +1,6 @@
-import { assert } from '@quenk/test/lib/assert';
 import { Type } from '@quenk/noni/lib/data/type';
+import { Maybe } from '@quenk/noni/lib/data/maybe';
+import { Either } from '@quenk/noni/lib/data/either';
 
 import {
     Get,
@@ -7,21 +8,23 @@ import {
     Put,
     Patch,
     Delete,
-    DecoratedRouteController,
-    getRouteConfFromMetadata
+    fromMetadata
 } from '../../../../lib/app/api/routing';
 import { RequestContext } from '../../../../lib/app/api/request';
-import { Response, ok } from '../../../../lib/app/api/response';
+import {
+    Response,
+    ok,
+    OK,
+    CREATED,
+    NOT_FOUND,
+    CONFLICT,
+    INTERNAL_SERVER_ERROR
+} from '../../../../lib/app/api/response';
 
 const noop = async (_ctx: RequestContext): Promise<Response> => ok();
 const preFilter = async (_ctx: RequestContext): Promise<void> => {};
 const mw = () => {};
 
-// Declaration merge: tells TypeScript MockDecoratedRouteController satisfies
-// DecoratedRouteController without emitting any field initializer that would
-// overwrite the Map set by addInitializer at construction time.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface MockDecoratedRouteController extends DecoratedRouteController {}
 class MockDecoratedRouteController {
     value = 42;
 
@@ -67,116 +70,147 @@ class MockDecoratedRouteController {
 
     @Get('/value')
     async getValue(_ctx: RequestContext): Promise<Response> {
-        assert(this.value).equal(42);
+        expect(this.value).toBe(42);
         return ok();
+    }
+}
+
+class DispatchHandlerController {
+    @Get('/response')
+    response(_ctx: RequestContext) {
+        return ok({ id: 3 });
+    }
+
+    @Get('/plain')
+    async plain(_ctx: RequestContext) {
+        return { id: 1 };
+    }
+
+    @Get('/plain-status', { status: CREATED })
+    async plainStatus(_ctx: RequestContext) {
+        return { id: 2 };
+    }
+
+    @Get('/just')
+    async just(_ctx: RequestContext) {
+        return Maybe.just({ id: 4 });
+    }
+
+    @Get('/nothing')
+    async nothing(_ctx: RequestContext) {
+        return Maybe.nothing();
+    }
+
+    @Get('/right')
+    async right(_ctx: RequestContext) {
+        return Either.right({ id: 5 });
+    }
+
+    @Get('/left')
+    async left(_ctx: RequestContext) {
+        return Either.left({ reason: 'conflict' });
+    }
+
+    @Get('/reject')
+    async reject(_ctx: RequestContext) {
+        throw new Error('boom');
+    }
+
+    @Get('/throw')
+    async throwSync(_ctx: RequestContext) {
+        throw new Error('kaboom');
     }
 }
 
 describe('routing', () => {
     describe('decorators', () => {
         it('@Get registers a GET route at the given path', () => {
-            const routes = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            );
-            assert(
+            const routes = fromMetadata(new MockDecoratedRouteController());
+            expect(
                 routes.some(r => r.method === 'get' && r.path === '/users')
-            ).true();
+            ).toBe(true);
         });
 
         it('@Post registers a POST route at the given path', () => {
-            const routes = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            );
-            assert(
+            const routes = fromMetadata(new MockDecoratedRouteController());
+            expect(
                 routes.some(r => r.method === 'post' && r.path === '/users')
-            ).true();
+            ).toBe(true);
         });
 
         it('@Put registers a PUT route at the given path', () => {
-            const routes = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            );
-            assert(
+            const routes = fromMetadata(new MockDecoratedRouteController());
+            expect(
                 routes.some(r => r.method === 'put' && r.path === '/users/:id')
-            ).true();
+            ).toBe(true);
         });
 
         it('@Patch registers a PATCH route at the given path', () => {
-            const routes = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            );
-            assert(
+            const routes = fromMetadata(new MockDecoratedRouteController());
+            expect(
                 routes.some(
                     r => r.method === 'patch' && r.path === '/users/:id'
                 )
-            ).true();
+            ).toBe(true);
         });
 
         it('@Delete registers a DELETE route at the given path', () => {
-            const routes = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            );
-            assert(
+            const routes = fromMetadata(new MockDecoratedRouteController());
+            expect(
                 routes.some(
                     r => r.method === 'delete' && r.path === '/users/:id'
                 )
-            ).true();
+            ).toBe(true);
         });
 
         it('stores pre-filters in the route from RouteDecoratorOptions', () => {
-            const route = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            ).find(r => r.path === '/filtered');
-            assert(route?.filters?.length).equal(1);
-            assert(route?.filters?.[0]).equal(preFilter);
+            const route = fromMetadata(new MockDecoratedRouteController()).find(
+                r => r.path === '/filtered'
+            );
+            expect(route?.filters?.length).toBe(1);
+            expect(route?.filters?.[0]).toBe(preFilter);
         });
 
         it('stores tags in the route from RouteDecoratorOptions', () => {
-            const route = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            ).find(r => r.path === '/tagged');
-            assert((route?.tags as Type).role).equal('admin');
+            const route = fromMetadata(new MockDecoratedRouteController()).find(
+                r => r.path === '/tagged'
+            );
+            expect((route?.tags as Type).role).toBe('admin');
         });
 
         it('stores middleware in the route from RouteDecoratorOptions', () => {
-            const route = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            ).find(r => r.path === '/with-middleware');
-            assert(route?.middleware).equate([mw]);
+            const route = fromMetadata(new MockDecoratedRouteController()).find(
+                r => r.path === '/with-middleware'
+            );
+            expect(route?.middleware).toEqual([mw]);
         });
 
         it('registers all decorated methods as separate routes', () => {
-            const routes = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            );
-            assert(routes.length).equal(9);
+            const routes = fromMetadata(new MockDecoratedRouteController());
+            expect(routes.length).toBe(9);
         });
     });
 
-    describe('getRouteConfFromMetadata', () => {
+    describe('fromMetadata', () => {
         it('returns an empty array for an undecorated instance', () => {
-            interface C extends DecoratedRouteController {}
             class C {}
-            assert(getRouteConfFromMetadata(new C()).length).equal(0);
+            expect(fromMetadata(new C()).length).toBe(0);
         });
 
         it('does not set filters when none are given', () => {
-            const route = getRouteConfFromMetadata(
-                new MockDecoratedRouteController()
-            ).find(r => r.path === '/users' && r.method === 'get');
-            assert(route?.filters).undefined();
+            const route = fromMetadata(new MockDecoratedRouteController()).find(
+                r => r.path === '/users' && r.method === 'get'
+            );
+            expect(route?.filters).toBeUndefined();
         });
 
         it('binds the handler to the instance', async () => {
             const instance = new MockDecoratedRouteController();
-            const route = getRouteConfFromMetadata(instance).find(
-                r => r.path === '/value'
-            );
+            const route = fromMetadata(instance).find(r => r.path === '/value');
             await route!.handler(<Type>{});
         });
 
         it('replaces a route when the same method+path is re-declared', () => {
-            interface C extends DecoratedRouteController {}
             class C {
                 @Get('/ping')
                 ping(_ctx: RequestContext) {
@@ -189,9 +223,69 @@ describe('routing', () => {
                 }
             }
 
-            const routes = getRouteConfFromMetadata(new C());
-            assert(routes.length).equal(1);
-            assert(routes[0].path).equal('/ping');
+            const routes = fromMetadata(new C());
+            expect(routes.length).toBe(1);
+            expect(routes[0].path).toBe('/ping');
+        });
+    });
+
+    describe('dispatchHandler', () => {
+        const run = async (path: string): Promise<Response> => {
+            const route = fromMetadata(new DispatchHandlerController()).find(
+                r => r.path === path
+            );
+            return route!.handler(<Type>{});
+        };
+
+        it('passes a Response through unchanged', async () => {
+            const res = await run('/response');
+            expect(res.status).toBe(OK);
+            expect(res.getBody()).toEqual({ id: 3 });
+        });
+
+        it('wraps a plain value at the default status', async () => {
+            const res = await run('/plain');
+            expect(res.status).toBe(OK);
+            expect(res.getBody()).toEqual({ id: 1 });
+        });
+
+        it('wraps a plain value at the configured status', async () => {
+            const res = await run('/plain-status');
+            expect(res.status).toBe(CREATED);
+            expect(res.getBody()).toEqual({ id: 2 });
+        });
+
+        it('sends the configured status with the value of a Just', async () => {
+            const res = await run('/just');
+            expect(res.status).toBe(OK);
+            expect(res.getBody()).toEqual({ id: 4 });
+        });
+
+        it('sends 404 for a Nothing', async () => {
+            const res = await run('/nothing');
+            expect(res.status).toBe(NOT_FOUND);
+        });
+
+        it('sends the configured status with the value of a Right', async () => {
+            const res = await run('/right');
+            expect(res.status).toBe(OK);
+            expect(res.getBody()).toEqual({ id: 5 });
+        });
+
+        it('sends 409 with the value of a Left', async () => {
+            const res = await run('/left');
+            expect(res.status).toBe(CONFLICT);
+            expect(res.getBody()).toEqual({ reason: 'conflict' });
+        });
+
+        it('sends 500 when the handler rejects', async () => {
+            const res = await run('/reject');
+            expect(res.status).toBe(INTERNAL_SERVER_ERROR);
+        });
+
+        it('sends 500 when the handler throws synchronously', async () => {
+            const res = await run('/throw');
+            expect(res.status).toBe(INTERNAL_SERVER_ERROR);
         });
     });
 });

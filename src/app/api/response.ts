@@ -227,3 +227,36 @@ export const ok = (body?: BodyValue) => new Ok(body);
  */
 export const redirect = (url: string, code: number = 301) =>
     new Redirect(url, code);
+
+/**
+ * statuses maps status codes to the Response function used to construct the
+ * Response for that code.
+ */
+const statuses = new Map<Status, (body?: BodyValue) => Response>([
+    [OK, ok],
+    [ACCEPTED, accepted],
+    [NO_CONTENT, noContent],
+    [CREATED, created],
+    [BAD_REQUEST, badRequest],
+    [UNAUTHORIZED, unauthorized],
+    [FORBIDDEN, forbidden],
+    [NOT_FOUND, notFound],
+    [CONFLICT, conflict],
+    [INTERNAL_SERVER_ERROR, internalError]
+]);
+
+/**
+ * fromStatusCode invokes the Response function mapped to the given status
+ * code, optionally passing along a body.
+ *
+ * Sends an InternalServerError (500) if the status code has no mapped
+ * Response function.
+ *
+ * @param code        - The HTTP status code to lookup.
+ * @param body        - Serializable data to be used as the response body.
+ */
+export const fromStatusCode = (code: Status, body?: BodyValue): Response => {
+    let f = statuses.get(code);
+
+    return f ? f(body) : internalError(body);
+};
