@@ -12,9 +12,9 @@ import {
 } from '../../../../lib/app/api/routing';
 import {
     RequestContext,
-    Param,
-    Query,
-    Body
+    GetParam,
+    GetQuery,
+    GetBody
 } from '../../../../lib/app/api/request';
 import {
     Response,
@@ -129,9 +129,9 @@ class DispatchHandlerController {
 
 class ParamQueryBodyController {
     @Get('/users/:id')
-    @Param('id')
-    @Query('sort')
-    @Body('name')
+    @GetParam('id')
+    @GetQuery('sort')
+    @GetBody('name')
     async getUser(
         _ctx: RequestContext,
         id: string,
@@ -309,7 +309,7 @@ describe('routing', () => {
         });
     });
 
-    describe('Param, Query, Body integration', () => {
+    describe('GetParam, GetQuery, GetBody integration', () => {
         it('composes with @Get and dispatchHandler', async () => {
             let route = fromMetadata(new ParamQueryBodyController()).find(
                 r => r.path === '/users/:id'

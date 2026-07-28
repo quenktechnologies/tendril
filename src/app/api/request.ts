@@ -13,7 +13,7 @@ import { PRSStorage } from './prs';
 import { CookieStorage } from './cookie';
 import { RouteConf } from '../conf';
 import { notFound, Response } from './response';
-import type { App as AppInstance } from '../';
+import type { App } from '../';
 import type { ModuleInfo } from '../module';
 
 /**
@@ -49,7 +49,7 @@ export interface RequestContext {
     /**
      * app instance for the running app.
      */
-    app: AppInstance;
+    app: App;
 
     /**
      * module handling the request.
@@ -261,111 +261,111 @@ const extractDecorator =
         } as unknown as T;
 
 /**
- * Param is a method decorator that injects a value from the current
+ * GetParam is a method decorator that injects a value from the current
  * request's route parameters as an additional argument to the decorated
  * method.
  *
- * Param, Query and Body can be combined on the same method. Extracted
- * values are appended as arguments in the order the decorators are
- * declared (top to bottom), immediately after the RequestContext.
+ * GetParam, GetQuery and GetBody can be combined on the same method.
+ * Extracted values are appended as arguments in the order the decorators
+ * are declared (top to bottom), immediately after the RequestContext.
  *
  * Usage:
  *   class UserController {
  *     @Get('/users/:id')
- *     @Param('id')
+ *     @GetParam('id')
  *     async getUser(ctx: RequestContext, id: string): Promise<Response> { ... }
  *   }
  *
  * @param path - Optional property path into the params object. When
  *               omitted, the entire params object is provided.
  */
-export const Param = (path?: RecordPath) =>
+export const GetParam = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.request.params, path);
 
 /**
- * Query is a method decorator that injects a value from the current
+ * GetQuery is a method decorator that injects a value from the current
  * request's query string as an additional argument to the decorated
  * method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @param path - Optional property path into the query object. When
  *               omitted, the entire query object is provided.
  */
-export const Query = (path?: RecordPath) =>
+export const GetQuery = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.request.query, path);
 
 /**
- * Body is a method decorator that injects a value from the current
+ * GetBody is a method decorator that injects a value from the current
  * request's body as an additional argument to the decorated method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @param path - Optional property path into the body. When omitted, the
  *               entire body is provided.
  */
-export const Body = (path?: RecordPath) =>
+export const GetBody = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.request.body, path);
 
 /**
- * Request is a method decorator that injects the current RequestMessage as
- * an additional argument to the decorated method.
+ * GetRequest is a method decorator that injects the current RequestMessage
+ * as an additional argument to the decorated method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @param path - Optional property path into the RequestMessage. When
  *               omitted, the entire RequestMessage is provided.
  */
-export const Request = (path?: RecordPath) =>
+export const GetRequest = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.request, path);
 
 /**
- * App is a method decorator that injects the running App instance as an
+ * GetApp is a method decorator that injects the running App instance as an
  * additional argument to the decorated method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @param path - Optional property path into the App instance. When
  *               omitted, the entire App instance is provided.
  */
-export const App = (path?: RecordPath) =>
+export const GetApp = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.app, path);
 
 /**
- * Module is a method decorator that injects the ModuleInfo handling the
+ * GetModule is a method decorator that injects the ModuleInfo handling the
  * current request as an additional argument to the decorated method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @param path - Optional property path into the ModuleInfo. When omitted,
  *               the entire ModuleInfo is provided.
  */
-export const Module = (path?: RecordPath) =>
+export const GetModule = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.module, path);
 
 /**
- * Actor is a method decorator that injects the actor handling the current
- * request as an additional argument to the decorated method.
+ * GetActor is a method decorator that injects the actor handling the
+ * current request as an additional argument to the decorated method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @deprecated follows RequestContext#actor.
  *
  * @param path - Optional property path into the actor. When omitted, the
  *               entire actor is provided.
  */
-export const Actor = (path?: RecordPath) =>
+export const GetActor = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.actor, path);
 
 /**
- * Framework is a method decorator that injects the FrameworkRequest objects
- * as an additional argument to the decorated method.
+ * GetFramework is a method decorator that injects the FrameworkRequest
+ * objects as an additional argument to the decorated method.
  *
- * See Param for details on how extraction decorators compose.
+ * See GetParam for details on how extraction decorators compose.
  *
  * @param path - Optional property path into the FrameworkRequest object.
  *               When omitted, the entire FrameworkRequest object is
  *               provided.
  */
-export const Framework = (path?: RecordPath) =>
+export const GetFramework = (path?: RecordPath) =>
     extractDecorator(ctx => ctx.framework, path);

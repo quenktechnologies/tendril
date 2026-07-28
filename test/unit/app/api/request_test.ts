@@ -5,14 +5,14 @@ import { Record } from '@quenk/noni/lib/data/record';
 
 import {
     mkRequestMessage,
-    Param,
-    Query,
-    Body,
-    Request,
-    App,
-    Module,
-    Actor,
-    Framework,
+    GetParam,
+    GetQuery,
+    GetBody,
+    GetRequest,
+    GetApp,
+    GetModule,
+    GetActor,
+    GetFramework,
     RequestContext,
     RequestMessage
 } from '../../../../lib/app/api/request';
@@ -56,10 +56,10 @@ describe('request', () => {
         });
     });
 
-    describe('Param', () => {
+    describe('GetParam', () => {
         it('provides the entire params object when no path is given', () => {
             class C {
-                @Param()
+                @GetParam()
                 method(_ctx: RequestContext, params: Record<string>) {
                     return params;
                 }
@@ -73,7 +73,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @Param('id')
+                @GetParam('id')
                 method(_ctx: RequestContext, id: string) {
                     return id;
                 }
@@ -86,7 +86,7 @@ describe('request', () => {
 
         it('provides undefined when the path is not found', () => {
             class C {
-                @Param('missing')
+                @GetParam('missing')
                 method(_ctx: RequestContext, value: Value) {
                     return value;
                 }
@@ -98,10 +98,10 @@ describe('request', () => {
         });
     });
 
-    describe('Query', () => {
+    describe('GetQuery', () => {
         it('provides the entire query object when no path is given', () => {
             class C {
-                @Query()
+                @GetQuery()
                 method(_ctx: RequestContext, query: Record<string>) {
                     return query;
                 }
@@ -114,7 +114,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @Query('sort')
+                @GetQuery('sort')
                 method(_ctx: RequestContext, sort: string) {
                     return sort;
                 }
@@ -126,10 +126,10 @@ describe('request', () => {
         });
     });
 
-    describe('Body', () => {
+    describe('GetBody', () => {
         it('provides the entire body when no path is given', () => {
             class C {
-                @Body()
+                @GetBody()
                 method(_ctx: RequestContext, body: Record<string>) {
                     return body;
                 }
@@ -142,7 +142,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @Body('name')
+                @GetBody('name')
                 method(_ctx: RequestContext, name: string) {
                     return name;
                 }
@@ -155,7 +155,7 @@ describe('request', () => {
 
         it('extracts a value at a nested path', () => {
             class C {
-                @Body('user.name')
+                @GetBody('user.name')
                 method(_ctx: RequestContext, name: string) {
                     return name;
                 }
@@ -167,10 +167,10 @@ describe('request', () => {
         });
     });
 
-    describe('Request', () => {
+    describe('GetRequest', () => {
         it('provides the entire RequestMessage when no path is given', () => {
             class C {
-                @Request()
+                @GetRequest()
                 method(_ctx: RequestContext, request: RequestMessage) {
                     return request;
                 }
@@ -184,7 +184,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @Request('method')
+                @GetRequest('method')
                 method(_ctx: RequestContext, method: string) {
                     return method;
                 }
@@ -196,10 +196,10 @@ describe('request', () => {
         });
     });
 
-    describe('App', () => {
+    describe('GetApp', () => {
         it('provides the entire App instance when no path is given', () => {
             class C {
-                @App()
+                @GetApp()
                 method(_ctx: RequestContext, app: Type) {
                     return app;
                 }
@@ -213,7 +213,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @App('name')
+                @GetApp('name')
                 method(_ctx: RequestContext, name: string) {
                     return name;
                 }
@@ -225,10 +225,10 @@ describe('request', () => {
         });
     });
 
-    describe('Module', () => {
+    describe('GetModule', () => {
         it('provides the entire ModuleInfo when no path is given', () => {
             class C {
-                @Module()
+                @GetModule()
                 method(_ctx: RequestContext, module: Type) {
                     return module;
                 }
@@ -242,7 +242,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @Module('id')
+                @GetModule('id')
                 method(_ctx: RequestContext, id: string) {
                     return id;
                 }
@@ -254,10 +254,10 @@ describe('request', () => {
         });
     });
 
-    describe('Actor', () => {
+    describe('GetActor', () => {
         it('provides the entire actor when no path is given', () => {
             class C {
-                @Actor()
+                @GetActor()
                 method(_ctx: RequestContext, actor: Type) {
                     return actor;
                 }
@@ -270,10 +270,10 @@ describe('request', () => {
         });
     });
 
-    describe('Framework', () => {
+    describe('GetFramework', () => {
         it('provides the entire FrameworkRequest when no path is given', () => {
             class C {
-                @Framework()
+                @GetFramework()
                 method(_ctx: RequestContext, framework: Type) {
                     return framework;
                 }
@@ -287,7 +287,7 @@ describe('request', () => {
 
         it('extracts a value at the given path', () => {
             class C {
-                @Framework('request')
+                @GetFramework('request')
                 method(_ctx: RequestContext, request: Type) {
                     return request;
                 }
@@ -300,12 +300,12 @@ describe('request', () => {
         });
     });
 
-    describe('composing Param, Query and Body', () => {
+    describe('composing GetParam, GetQuery and GetBody', () => {
         it('appends each extracted value in declaration order', () => {
             class C {
-                @Param('id')
-                @Query('sort')
-                @Body('name')
+                @GetParam('id')
+                @GetQuery('sort')
+                @GetBody('name')
                 method(
                     _ctx: RequestContext,
                     id: string,

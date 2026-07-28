@@ -145,13 +145,13 @@ const dispatchHandler = (
 
             if (Maybe.is(result))
                 return result.isJust()
-                    ? fromStatusCode(status, result.get())
+                    ? fromStatusCode(status, result.get() as object)
                     : notFound();
 
             if (Either.is(result))
                 return result.isRight()
-                    ? fromStatusCode(status, result.right())
-                    : conflict(result.left());
+                    ? fromStatusCode(status, result.right() as object)
+                    : conflict(result.left() as object);
 
             return fromStatusCode(status, result);
         } catch (e) {
