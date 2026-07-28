@@ -10,7 +10,12 @@ import {
     Delete,
     fromMetadata
 } from '../../../../lib/app/api/routing';
-import { RequestContext } from '../../../../lib/app/api/request';
+import {
+    RequestContext,
+    Param,
+    Query,
+    Body
+} from '../../../../lib/app/api/request';
 import {
     Response,
     ok,
@@ -122,31 +127,46 @@ class DispatchHandlerController {
     }
 }
 
+class ParamQueryBodyController {
+    @Get('/users/:id')
+    @Param('id')
+    @Query('sort')
+    @Body('name')
+    async getUser(
+        _ctx: RequestContext,
+        id: string,
+        sort: string,
+        name: string
+    ) {
+        return { id, sort, name };
+    }
+}
+
 describe('routing', () => {
     describe('decorators', () => {
         it('@Get registers a GET route at the given path', () => {
-            const routes = fromMetadata(new MockDecoratedRouteController());
+            let routes = fromMetadata(new MockDecoratedRouteController());
             expect(
                 routes.some(r => r.method === 'get' && r.path === '/users')
             ).toBe(true);
         });
 
         it('@Post registers a POST route at the given path', () => {
-            const routes = fromMetadata(new MockDecoratedRouteController());
+            let routes = fromMetadata(new MockDecoratedRouteController());
             expect(
                 routes.some(r => r.method === 'post' && r.path === '/users')
             ).toBe(true);
         });
 
         it('@Put registers a PUT route at the given path', () => {
-            const routes = fromMetadata(new MockDecoratedRouteController());
+            let routes = fromMetadata(new MockDecoratedRouteController());
             expect(
                 routes.some(r => r.method === 'put' && r.path === '/users/:id')
             ).toBe(true);
         });
 
         it('@Patch registers a PATCH route at the given path', () => {
-            const routes = fromMetadata(new MockDecoratedRouteController());
+            let routes = fromMetadata(new MockDecoratedRouteController());
             expect(
                 routes.some(
                     r => r.method === 'patch' && r.path === '/users/:id'
@@ -155,7 +175,7 @@ describe('routing', () => {
         });
 
         it('@Delete registers a DELETE route at the given path', () => {
-            const routes = fromMetadata(new MockDecoratedRouteController());
+            let routes = fromMetadata(new MockDecoratedRouteController());
             expect(
                 routes.some(
                     r => r.method === 'delete' && r.path === '/users/:id'
@@ -164,7 +184,7 @@ describe('routing', () => {
         });
 
         it('stores pre-filters in the route from RouteDecoratorOptions', () => {
-            const route = fromMetadata(new MockDecoratedRouteController()).find(
+            let route = fromMetadata(new MockDecoratedRouteController()).find(
                 r => r.path === '/filtered'
             );
             expect(route?.filters?.length).toBe(1);
@@ -172,21 +192,21 @@ describe('routing', () => {
         });
 
         it('stores tags in the route from RouteDecoratorOptions', () => {
-            const route = fromMetadata(new MockDecoratedRouteController()).find(
+            let route = fromMetadata(new MockDecoratedRouteController()).find(
                 r => r.path === '/tagged'
             );
             expect((route?.tags as Type).role).toBe('admin');
         });
 
         it('stores middleware in the route from RouteDecoratorOptions', () => {
-            const route = fromMetadata(new MockDecoratedRouteController()).find(
+            let route = fromMetadata(new MockDecoratedRouteController()).find(
                 r => r.path === '/with-middleware'
             );
             expect(route?.middleware).toEqual([mw]);
         });
 
         it('registers all decorated methods as separate routes', () => {
-            const routes = fromMetadata(new MockDecoratedRouteController());
+            let routes = fromMetadata(new MockDecoratedRouteController());
             expect(routes.length).toBe(9);
         });
     });
@@ -198,15 +218,15 @@ describe('routing', () => {
         });
 
         it('does not set filters when none are given', () => {
-            const route = fromMetadata(new MockDecoratedRouteController()).find(
+            let route = fromMetadata(new MockDecoratedRouteController()).find(
                 r => r.path === '/users' && r.method === 'get'
             );
             expect(route?.filters).toBeUndefined();
         });
 
         it('binds the handler to the instance', async () => {
-            const instance = new MockDecoratedRouteController();
-            const route = fromMetadata(instance).find(r => r.path === '/value');
+            let instance = new MockDecoratedRouteController();
+            let route = fromMetadata(instance).find(r => r.path === '/value');
             await route!.handler(<Type>{});
         });
 
@@ -223,69 +243,93 @@ describe('routing', () => {
                 }
             }
 
-            const routes = fromMetadata(new C());
+            let routes = fromMetadata(new C());
             expect(routes.length).toBe(1);
             expect(routes[0].path).toBe('/ping');
         });
     });
 
     describe('dispatchHandler', () => {
-        const run = async (path: string): Promise<Response> => {
-            const route = fromMetadata(new DispatchHandlerController()).find(
+        let run = async (path: string): Promise<Response> => {
+            let route = fromMetadata(new DispatchHandlerController()).find(
                 r => r.path === path
             );
             return route!.handler(<Type>{});
         };
 
         it('passes a Response through unchanged', async () => {
-            const res = await run('/response');
+            let res = await run('/response');
             expect(res.status).toBe(OK);
             expect(res.getBody()).toEqual({ id: 3 });
         });
 
         it('wraps a plain value at the default status', async () => {
-            const res = await run('/plain');
+            let res = await run('/plain');
             expect(res.status).toBe(OK);
             expect(res.getBody()).toEqual({ id: 1 });
         });
 
         it('wraps a plain value at the configured status', async () => {
-            const res = await run('/plain-status');
+            let res = await run('/plain-status');
             expect(res.status).toBe(CREATED);
             expect(res.getBody()).toEqual({ id: 2 });
         });
 
         it('sends the configured status with the value of a Just', async () => {
-            const res = await run('/just');
+            let res = await run('/just');
             expect(res.status).toBe(OK);
             expect(res.getBody()).toEqual({ id: 4 });
         });
 
         it('sends 404 for a Nothing', async () => {
-            const res = await run('/nothing');
+            let res = await run('/nothing');
             expect(res.status).toBe(NOT_FOUND);
         });
 
         it('sends the configured status with the value of a Right', async () => {
-            const res = await run('/right');
+            let res = await run('/right');
             expect(res.status).toBe(OK);
             expect(res.getBody()).toEqual({ id: 5 });
         });
 
         it('sends 409 with the value of a Left', async () => {
-            const res = await run('/left');
+            let res = await run('/left');
             expect(res.status).toBe(CONFLICT);
             expect(res.getBody()).toEqual({ reason: 'conflict' });
         });
 
         it('sends 500 when the handler rejects', async () => {
-            const res = await run('/reject');
+            let res = await run('/reject');
             expect(res.status).toBe(INTERNAL_SERVER_ERROR);
         });
 
         it('sends 500 when the handler throws synchronously', async () => {
-            const res = await run('/throw');
+            let res = await run('/throw');
             expect(res.status).toBe(INTERNAL_SERVER_ERROR);
+        });
+    });
+
+    describe('Param, Query, Body integration', () => {
+        it('composes with @Get and dispatchHandler', async () => {
+            let route = fromMetadata(new ParamQueryBodyController()).find(
+                r => r.path === '/users/:id'
+            );
+
+            let ctx = <RequestContext>(<unknown>{
+                request: {
+                    params: { id: '1' },
+                    query: { sort: 'asc' },
+                    body: { name: 'bob' }
+                }
+            });
+
+            let res = await route!.handler(ctx);
+            expect(res.status).toBe(OK);
+            expect(res.getBody()).toEqual({
+                id: '1',
+                sort: 'asc',
+                name: 'bob'
+            });
         });
     });
 });

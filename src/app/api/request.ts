@@ -3,13 +3,17 @@ import * as express from 'express';
 import { Api } from '@quenk/potoo/lib/actor/api';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { clone, Record } from '@quenk/noni/lib/data/record';
+import {
+    Path as RecordPath,
+    unsafeGet
+} from '@quenk/noni/lib/data/record/path';
 
 import { SessionStorage, EnabledSessionStorage } from './session';
 import { PRSStorage } from './prs';
 import { CookieStorage } from './cookie';
 import { RouteConf } from '../conf';
 import { notFound, Response } from './response';
-import type { App } from '../';
+import type { App as AppInstance } from '../';
 import type { ModuleInfo } from '../module';
 
 /**
@@ -45,7 +49,7 @@ export interface RequestContext {
     /**
      * app instance for the running app.
      */
-    app: App;
+    app: AppInstance;
 
     /**
      * module handling the request.
@@ -236,3 +240,132 @@ export const mkRequestMessage = (
         req
     );
 };
+
+/**
+ * extractDecorator produces a method decorator that appends a value
+ * extracted from the RequestContext as an additional argument to the
+ * decorated method, immediately after any arguments already added by
+ * decorators applied before it (i.e. those declared below it, closer to the
+ * method).
+ */
+const extractDecorator =
+    <S>(source: (ctx: RequestContext) => S, path?: RecordPath) =>
+    <T extends Function>(value: T, _context: ClassMethodDecoratorContext): T =>
+        function (this: unknown, ...args: unknown[]) {
+            let ctx = args[0] as RequestContext;
+            let target = source(ctx);
+            let extracted = path
+                ? unsafeGet(path, target as unknown as Record<Value>)
+                : target;
+            return value.apply(this, [...args, extracted]);
+        } as unknown as T;
+
+/**
+ * Param is a method decorator that injects a value from the current
+ * request's route parameters as an additional argument to the decorated
+ * method.
+ *
+ * Param, Query and Body can be combined on the same method. Extracted
+ * values are appended as arguments in the order the decorators are
+ * declared (top to bottom), immediately after the RequestContext.
+ *
+ * Usage:
+ *   class UserController {
+ *     @Get('/users/:id')
+ *     @Param('id')
+ *     async getUser(ctx: RequestContext, id: string): Promise<Response> { ... }
+ *   }
+ *
+ * @param path - Optional property path into the params object. When
+ *               omitted, the entire params object is provided.
+ */
+export const Param = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.request.params, path);
+
+/**
+ * Query is a method decorator that injects a value from the current
+ * request's query string as an additional argument to the decorated
+ * method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @param path - Optional property path into the query object. When
+ *               omitted, the entire query object is provided.
+ */
+export const Query = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.request.query, path);
+
+/**
+ * Body is a method decorator that injects a value from the current
+ * request's body as an additional argument to the decorated method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @param path - Optional property path into the body. When omitted, the
+ *               entire body is provided.
+ */
+export const Body = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.request.body, path);
+
+/**
+ * Request is a method decorator that injects the current RequestMessage as
+ * an additional argument to the decorated method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @param path - Optional property path into the RequestMessage. When
+ *               omitted, the entire RequestMessage is provided.
+ */
+export const Request = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.request, path);
+
+/**
+ * App is a method decorator that injects the running App instance as an
+ * additional argument to the decorated method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @param path - Optional property path into the App instance. When
+ *               omitted, the entire App instance is provided.
+ */
+export const App = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.app, path);
+
+/**
+ * Module is a method decorator that injects the ModuleInfo handling the
+ * current request as an additional argument to the decorated method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @param path - Optional property path into the ModuleInfo. When omitted,
+ *               the entire ModuleInfo is provided.
+ */
+export const Module = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.module, path);
+
+/**
+ * Actor is a method decorator that injects the actor handling the current
+ * request as an additional argument to the decorated method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @deprecated follows RequestContext#actor.
+ *
+ * @param path - Optional property path into the actor. When omitted, the
+ *               entire actor is provided.
+ */
+export const Actor = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.actor, path);
+
+/**
+ * Framework is a method decorator that injects the FrameworkRequest objects
+ * as an additional argument to the decorated method.
+ *
+ * See Param for details on how extraction decorators compose.
+ *
+ * @param path - Optional property path into the FrameworkRequest object.
+ *               When omitted, the entire FrameworkRequest object is
+ *               provided.
+ */
+export const Framework = (path?: RecordPath) =>
+    extractDecorator(ctx => ctx.framework, path);
