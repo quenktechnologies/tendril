@@ -521,6 +521,98 @@ describe('tendril', () => {
             }
         });
 
+        it("should merge the owning module's tags into each route's tags", async () => {
+            let tags: unknown;
+            app = await createApp({
+                id: '/',
+                app: {
+                    tags: { region: 'us' },
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: { role: 'admin' },
+                                handler: async ({
+                                    request
+                                }: RequestContext) => {
+                                    tags = request.route.tags;
+                                    return ok();
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(tags).toEqual({ region: 'us', role: 'admin' });
+        });
+
+        it("should let a route's own tags take precedence over the module's", async () => {
+            let tags: unknown;
+            app = await createApp({
+                id: '/',
+                app: {
+                    tags: { role: 'guest' },
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: { role: 'admin' },
+                                handler: async ({
+                                    request
+                                }: RequestContext) => {
+                                    tags = request.route.tags;
+                                    return ok();
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(tags).toEqual({ role: 'admin' });
+        });
+
+        it('should inherit tags from parent modules', async () => {
+            let tags: unknown;
+            app = await createApp({
+                id: '/',
+                app: { tags: { region: 'us', role: 'guest' } },
+                modules: {
+                    child: {
+                        app: {
+                            tags: { role: 'admin' },
+                            routing: {
+                                routes: () => [
+                                    {
+                                        method: 'get',
+                                        path: '/',
+                                        tags: {},
+                                        handler: async ({
+                                            module
+                                        }: RequestContext) => {
+                                            tags = module.tags;
+                                            return ok();
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            });
+
+            let res = await agent.get('/child');
+            expect(res.status).toEqual(200);
+            expect(tags).toEqual({ region: 'us', role: 'admin' });
+        });
+
         it('should allow route level middleware', async () => {
             let counter = 0;
             app = await createApp({

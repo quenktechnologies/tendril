@@ -29,6 +29,7 @@ import {
     BuildAvailableMiddlewareTask,
     BuildEnabledMiddlewareTask,
     BuildGlobalFiltersTask,
+    BuildModuleTagsTask,
     BuildRouteFiltersTask,
     ConfigureFinalRoutesTask,
     ConfigureRoutesTask
@@ -45,6 +46,7 @@ export const defaultStartupTasks = (app: App) => [
     new SessionSupportTask(app),
     new CookieSupportTask(app),
     new ConfigureBodyParserTask(app),
+    new BuildModuleTagsTask(app),
     new BuildGlobalFiltersTask(app),
     new BuildRouteFiltersTask(app),
     new BuildAvailableMiddlewareTask(app),
@@ -107,6 +109,7 @@ export class App {
             conf,
             parent,
             ancestors: parent ? [...parent.ancestors, parent] : [],
+            tags: {},
             express: express(),
             module,
             routing: {

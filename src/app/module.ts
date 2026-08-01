@@ -2,6 +2,7 @@ import * as express from 'express';
 
 import { Type } from '@quenk/noni/lib/data/type';
 import { Record } from '@quenk/noni/lib/data/record';
+import { Object } from '@quenk/noni/lib/data/jsonx';
 import { Path } from '@quenk/noni/lib/io/file';
 
 import { Mutable } from '@quenk/potoo/lib/actor/framework/resident';
@@ -59,6 +60,14 @@ export interface ModuleInfo {
      * conf object used to create the module.
      */
     conf: ModuleConf;
+
+    /**
+     * tags configured for the module, merged with those of its ancestors.
+     *
+     * Tags set on the module itself take precedence over those inherited
+     * from a parent (closer ancestors take precedence over further ones).
+     */
+    tags: Object;
 
     /**
      * express app for the module.

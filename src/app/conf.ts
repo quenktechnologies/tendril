@@ -199,6 +199,16 @@ export interface AppConf {
          */
         started?: EventListener | EventListener[];
     };
+
+    /**
+     * tags are inherited by modules and routes and can be used for miscellaneous
+     * configuration settings.
+     *
+     * In request handlers, these will be merged into the route.tags object
+     * whereas their value can be referenced by prefixing a "$"  indicating 
+     * a variable elsewhere. Example "$pathName".
+     */
+    tags?: Object;
 }
 
 export const fromMetadata = (target: object) =>

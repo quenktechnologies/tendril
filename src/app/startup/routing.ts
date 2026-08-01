@@ -7,6 +7,29 @@ import { isMain, ModuleInfo } from '../module';
 import { Middleware } from '../api/middleware';
 
 /**
+ * BuildModuleTagsTask populates the tags for a module.
+ *
+ * Tags are inherited from the ancestors of a module and merged with any
+ * explicitly set on the module, with tags of closer ancestors (and the
+ * module itself) taking precedence over those set further up the chain.
+ */
+export class BuildModuleTagsTask extends BaseStartupTask {
+    name = 'routing.build-module-tags';
+
+    async execute(mod: ModuleInfo) {
+        let tags = {};
+
+        for (let ancestor of [mod, ...[...mod.ancestors].reverse()]) {
+            if (ancestor.conf.app?.tags) {
+                tags = { ...ancestor.conf.app.tags, ...tags };
+            }
+        }
+
+        mod.tags = tags;
+    }
+}
+
+/**
  * BuildGlobalFiltersTask stage builds the routing.globalFilters list for each module.
  *
  * Global filters are inherited from the ancestors of a module as well as any
@@ -35,7 +58,9 @@ export class BuildGlobalFiltersTask extends BaseStartupTask {
 /**
  * BuildRouteFiltersTask populates the routes from the module's configuration.
  *
- * Note: The globalFilters list is added here to each route's list of filters.
+ * Note: The globalFilters list is added here to each route's list of filters
+ * and the owning module's tags are merged into each route's tags (route
+ * tags take precedence over the module's on conflict).
  */
 export class BuildRouteFiltersTask extends BaseStartupTask {
     name = 'routing.build-route-filters';
@@ -57,7 +82,8 @@ export class BuildRouteFiltersTask extends BaseStartupTask {
 
             return {
                 ...route,
-                filters
+                filters,
+                tags: { ...mod.tags, ...(route.tags ?? {}) }
             };
         });
     }
