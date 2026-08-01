@@ -2,9 +2,10 @@
  * The APIs here are used in app routes to send a response to clients.
  */
 
-import * as express from 'express';
-
 import { Value } from '@quenk/noni/lib/data/jsonx';
+
+import { resolveRoutePath } from '../common/routing';
+import type { RequestContext } from './request';
 
 export const PRS_VIEW_CONTEXT = '$view.context';
 
@@ -27,8 +28,6 @@ export const INTERNAL_SERVER_ERROR = 500;
  */
 export type Status = number;
 
-export type Transport = express.Response;
-
 export type BodyValue = Value | object;
 
 /**
@@ -49,10 +48,12 @@ export abstract class Response {
         return this.body;
     }
 
-    async send(response: Transport) {
+    async send(ctx: RequestContext) {
         let { status } = this;
 
         let body = this.getBody();
+
+        let { response } = ctx.framework;
 
         response.status(status);
 
@@ -127,6 +128,9 @@ export class Ok extends Response {
 
 /**
  * Redirect action.
+ *
+ * The url may reference a tag on the handling module (see resolveRoutePath),
+ * resolved when the response is sent.
  */
 export class Redirect extends Response {
     constructor(
@@ -136,8 +140,10 @@ export class Redirect extends Response {
         super();
     }
 
-    async send(response: Transport) {
-        response.redirect(this.url, this.status);
+    async send(ctx: RequestContext) {
+        let url = resolveRoutePath(ctx.module.tags, this.url);
+
+        ctx.framework.response.redirect(url, this.status);
     }
 }
 

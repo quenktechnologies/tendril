@@ -230,7 +230,7 @@ export class Module extends Mutable {
             for (let filter of filters) {
                 let result = await filter(ctx);
                 if (result) {
-                    result.send(response);
+                    result.send(ctx);
                     return;
                 }
             }

@@ -5,7 +5,7 @@ import { expect } from '@jest/globals';
 
 import { unflatten } from '@quenk/noni/lib/data/record/path';
 
-import { badRequest, error, ok } from '../../lib/app/api/response';
+import { badRequest, error, ok, redirect } from '../../lib/app/api/response';
 import { ModuleInfo, fromMetadata } from '../../lib/app/module';
 import { Handler, RequestContext } from '../../lib/app/api/request';
 import { Get } from '../../lib/app/api/routing';
@@ -661,6 +661,51 @@ describe('tendril', () => {
 
             res = await agent.get('/from-module');
             expect(res.status).toEqual(404);
+        });
+
+        it("should resolve a redirect's url from the module's tags", async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    tags: { loginUrl: '/login' },
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                handler: async () => redirect('$loginUrl')
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/', { maxRedirects: 0 });
+            expect(res.status).toEqual(301);
+            expect(res.headers.location).toEqual('/login');
+        });
+
+        it("should use a redirect's url as specified when the tag is not found", async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '/',
+                                tags: {},
+                                handler: async () => redirect('$loginUrl')
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/', { maxRedirects: 0 });
+            expect(res.status).toEqual(301);
+            expect(res.headers.location).toEqual('$loginUrl');
         });
 
         it('should merge @Tags from a decorated class and method into a route', async () => {
