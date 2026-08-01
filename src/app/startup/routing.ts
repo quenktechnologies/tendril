@@ -5,6 +5,7 @@ import { isString } from '@quenk/noni/lib/data/type';
 import { BaseStartupTask } from './';
 import { isMain, ModuleInfo } from '../module';
 import { Middleware } from '../api/middleware';
+import { resolveRoutePath } from '../common/routing';
 
 /**
  * BuildModuleTagsTask populates the tags for a module.
@@ -58,9 +59,10 @@ export class BuildGlobalFiltersTask extends BaseStartupTask {
 /**
  * BuildRouteFiltersTask populates the routes from the module's configuration.
  *
- * Note: The globalFilters list is added here to each route's list of filters
- * and the owning module's tags are merged into each route's tags (route
- * tags take precedence over the module's on conflict).
+ * Note: The globalFilters list is added here to each route's list of filters,
+ * the owning module's tags are merged into each route's tags (route tags
+ * take precedence over the module's on conflict) and the route's path is
+ * resolved against those tags (see resolveRoutePath).
  */
 export class BuildRouteFiltersTask extends BaseStartupTask {
     name = 'routing.build-route-filters';
@@ -80,10 +82,13 @@ export class BuildRouteFiltersTask extends BaseStartupTask {
                 route.handler
             ].filter(f => f != null);
 
+            let tags = { ...mod.tags, ...(route.tags ?? {}) };
+
             return {
                 ...route,
                 filters,
-                tags: { ...mod.tags, ...(route.tags ?? {}) }
+                tags,
+                path: resolveRoutePath(tags, route.path)
             };
         });
     }

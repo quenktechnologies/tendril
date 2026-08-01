@@ -2,6 +2,7 @@ import { isFunction } from '@quenk/noni/lib/data/type';
 
 import { ModuleConf } from '../conf';
 import { DecoratedRouteController, getRouteConfFromMetadata } from './routing';
+import { DecoratedTagsClass, TAGS_METADATA_KEY } from './tag';
 
 export const MODULE_METADATA_KEY = Symbol('tendril.module');
 
@@ -46,6 +47,10 @@ export const Module =
  * is to say either as part of @Module() options or directly via @Get etc.
  *
  * Mixing both can lead to unexpected results.
+ *
+ * Tags attached to the class via @Tags are merged into the module's tags,
+ * with tags declared directly in @Module's conf (mod.app.tags) taking
+ * precedence on conflict.
  */
 export const getModuleConfFromMetadata = (
     target: DecoratedModuleController
@@ -54,10 +59,15 @@ export const getModuleConfFromMetadata = (
 
     const routes = getRouteConfFromMetadata(target as DecoratedRouteController);
 
+    const classTags = (target.constructor as DecoratedTagsClass)[
+        TAGS_METADATA_KEY
+    ];
+
     return {
         ...mod,
         app: {
             ...mod.app,
+            tags: { ...classTags, ...mod.app?.tags },
             routing: {
                 ...mod.app?.routing,
                 routes: m => {

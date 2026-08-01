@@ -7,6 +7,7 @@ import {
     DecoratedModuleController
 } from '../../../../lib/app/api/module';
 import { Get, Post } from '../../../../lib/app/api/routing';
+import { Tags } from '../../../../lib/app/api/tag';
 import { RequestContext } from '../../../../lib/app/api/request';
 import { Response, ok } from '../../../../lib/app/api/response';
 import { RouteConf } from '../../../../lib/app/conf';
@@ -129,6 +130,40 @@ describe('module', () => {
 
             expect(routes[2].method === 'post').toBe(true);
             expect(routes[2].path === '/items').toBe(true);
+        });
+
+        it('should merge tags from @Tags into the module tags', () => {
+            @Tags({ area: 'admin' })
+            @Module()
+            class C {}
+
+            const conf = getModuleConfFromMetadata(
+                new C() as unknown as DecoratedModuleController
+            );
+            expect(conf.app?.tags).toEqual({ area: 'admin' });
+        });
+
+        it("should let @Module's own tags take precedence over @Tags on conflict", () => {
+            @Tags({ area: 'admin', role: 'guest' })
+            @Module({ app: { tags: { role: 'owner' } } })
+            class C {}
+
+            const conf = getModuleConfFromMetadata(
+                new C() as unknown as DecoratedModuleController
+            );
+            expect(conf.app?.tags).toEqual({ area: 'admin', role: 'owner' });
+        });
+
+        it('should merge tags when @Tags is applied to a class more than once', () => {
+            @Tags({ role: 'owner' })
+            @Tags({ area: 'admin', role: 'guest' })
+            @Module()
+            class C {}
+
+            const conf = getModuleConfFromMetadata(
+                new C() as unknown as DecoratedModuleController
+            );
+            expect(conf.app?.tags).toEqual({ area: 'admin', role: 'owner' });
         });
     });
 });

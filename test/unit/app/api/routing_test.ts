@@ -10,6 +10,7 @@ import {
     Delete,
     fromMetadata
 } from '../../../../lib/app/api/routing';
+import { Tags } from '../../../../lib/app/api/tag';
 import {
     RequestContext,
     GetParam,
@@ -65,6 +66,18 @@ class MockDecoratedRouteController {
 
     @Get('/tagged', { tags: { role: 'admin', status: 200 } })
     withTags(_ctx: RequestContext) {
+        return noop(_ctx);
+    }
+
+    @Tags({ role: 'owner', area: 'admin' })
+    @Get('/tagged-by-decorator')
+    taggedByDecorator(_ctx: RequestContext) {
+        return noop(_ctx);
+    }
+
+    @Tags({ role: 'owner' })
+    @Get('/tagged-by-both', { tags: { role: 'admin' } })
+    taggedByBoth(_ctx: RequestContext) {
         return noop(_ctx);
     }
 
@@ -198,6 +211,20 @@ describe('routing', () => {
             expect((route?.tags as Type).role).toBe('admin');
         });
 
+        it('merges tags from @Tags into the route declared on the same method', () => {
+            let route = fromMetadata(new MockDecoratedRouteController()).find(
+                r => r.path === '/tagged-by-decorator'
+            );
+            expect(route?.tags).toEqual({ role: 'owner', area: 'admin' });
+        });
+
+        it("lets a route's own tags take precedence over @Tags on conflict", () => {
+            let route = fromMetadata(new MockDecoratedRouteController()).find(
+                r => r.path === '/tagged-by-both'
+            );
+            expect(route?.tags).toEqual({ role: 'admin' });
+        });
+
         it('stores middleware in the route from RouteDecoratorOptions', () => {
             let route = fromMetadata(new MockDecoratedRouteController()).find(
                 r => r.path === '/with-middleware'
@@ -207,7 +234,7 @@ describe('routing', () => {
 
         it('registers all decorated methods as separate routes', () => {
             let routes = fromMetadata(new MockDecoratedRouteController());
-            expect(routes.length).toBe(9);
+            expect(routes.length).toBe(11);
         });
     });
 

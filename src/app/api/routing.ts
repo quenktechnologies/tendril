@@ -4,6 +4,7 @@ import { Path } from '@quenk/noni/lib/io/file';
 
 import { Method, RequestContext } from './request';
 import { RouteConf } from '../conf';
+import { DecoratedTagsController, TAGS_METADATA_KEY } from './tag';
 import {
     Response,
     Status,
@@ -38,7 +39,18 @@ export interface RouteDecoratorOptions
     status?: Status;
 }
 
-export type MappedRouteConfs = Map<string, RouteConf>;
+/**
+ * StoredRouteConf is a RouteConf as stored in metadata, along with the name
+ * of the property (method) it was declared on.
+ *
+ * The propertyKey is used to look up any tags attached to the same method
+ * via @Tags.
+ */
+interface StoredRouteConf extends RouteConf {
+    propertyKey: PropertyKey;
+}
+
+export type MappedRouteConfs = Map<string, StoredRouteConf>;
 
 /**
  * Get declares a method as a handler for HTTP GET requests at the given path.
@@ -111,7 +123,8 @@ const routeDecorator =
                 ...options,
                 method,
                 path,
-                handler: dispatchHandler(this, f, options.status)
+                handler: dispatchHandler(this, f, options.status),
+                propertyKey: context.name
             });
 
             (this as DecoratedRouteController)[ROUTE_METADATA_KEY] = existing;
@@ -163,12 +176,21 @@ const dispatchHandler = (
 /**
  * getRouteConfFromMetadata generates a RouteConf list from an object whose
  * constructor has route metadata embedded.
+ *
+ * Tags attached to a route's originating method via @Tags are merged into
+ * that route's tags, with tags declared directly on the route (e.g. via
+ * @Get(path, { tags })) taking precedence on conflict.
  */
 export const getRouteConfFromMetadata = (
     instance: DecoratedRouteController
 ): RouteConf[] => {
     let meta = instance[ROUTE_METADATA_KEY] ?? new Map();
-    return [...meta.values()];
+    let methodTags = (instance as DecoratedTagsController)[TAGS_METADATA_KEY];
+
+    return [...meta.values()].map(({ propertyKey, tags, ...route }) => ({
+        ...route,
+        tags: { ...methodTags?.[propertyKey], ...tags }
+    }));
 };
 
 /**

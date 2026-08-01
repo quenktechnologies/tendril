@@ -6,8 +6,11 @@ import { expect } from '@jest/globals';
 import { unflatten } from '@quenk/noni/lib/data/record/path';
 
 import { badRequest, error, ok } from '../../lib/app/api/response';
-import { ModuleInfo } from '../../lib/app/module';
+import { ModuleInfo, fromMetadata } from '../../lib/app/module';
 import { Handler, RequestContext } from '../../lib/app/api/request';
+import { Get } from '../../lib/app/api/routing';
+import { Module } from '../../lib/app/api/module';
+import { Tags } from '../../lib/app/api/tag';
 import { App } from '../../lib/app';
 import { createApp } from './fixtures/app';
 import { TEST_BASE_URL } from './fixtures/port';
@@ -611,6 +614,71 @@ describe('tendril', () => {
             let res = await agent.get('/child');
             expect(res.status).toEqual(200);
             expect(tags).toEqual({ region: 'us', role: 'admin' });
+        });
+
+        it("should resolve a route's path from the module's tags", async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    tags: { pathName: '/resolved' },
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '$pathName',
+                                tags: {},
+                                handler: async () => ok()
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/resolved');
+            expect(res.status).toEqual(200);
+        });
+
+        it("should use a route's own tags to resolve its path over the module's", async () => {
+            app = await createApp({
+                id: '/',
+                app: {
+                    tags: { pathName: '/from-module' },
+                    routing: {
+                        routes: () => [
+                            {
+                                method: 'get',
+                                path: '$pathName',
+                                tags: { pathName: '/from-route' },
+                                handler: async () => ok()
+                            }
+                        ]
+                    }
+                }
+            });
+
+            let res = await agent.get('/from-route');
+            expect(res.status).toEqual(200);
+
+            res = await agent.get('/from-module');
+            expect(res.status).toEqual(404);
+        });
+
+        it('should merge @Tags from a decorated class and method into a route', async () => {
+            @Tags({ area: 'admin' })
+            @Module({ id: '/' })
+            class Controller {
+                @Tags({ role: 'owner' })
+                @Get('/')
+                async index({ request }: RequestContext) {
+                    return ok(request.route.tags);
+                }
+            }
+
+            app = await createApp(fromMetadata(new Controller()));
+
+            let res = await agent.get('/');
+            expect(res.status).toEqual(200);
+            expect(res.data).toEqual({ area: 'admin', role: 'owner' });
         });
 
         it('should allow route level middleware', async () => {

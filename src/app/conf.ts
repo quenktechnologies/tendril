@@ -205,7 +205,7 @@ export interface AppConf {
      * configuration settings.
      *
      * In request handlers, these will be merged into the route.tags object
-     * whereas their value can be referenced by prefixing a "$"  indicating 
+     * whereas their value can be referenced by prefixing a "$"  indicating
      * a variable elsewhere. Example "$pathName".
      */
     tags?: Object;
