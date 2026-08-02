@@ -164,7 +164,7 @@ export class EnabledSessionStorage implements SessionStorage {
     /**
      * @private
      */
-    constructor(public data: Object) {}
+    constructor(public req: express.Request) {}
 
     /**
      * fromExpress constructs a SessionStorage instance from an express
@@ -175,8 +175,19 @@ export class EnabledSessionStorage implements SessionStorage {
      */
     static fromExpress(r: express.Request): SessionStorage {
         return isObject(r.session)
-            ? new EnabledSessionStorage(<Object>(<object>r.session))
+            ? new EnabledSessionStorage(r)
             : new DisabledSessionStorage();
+    }
+
+    /**
+     * data is the current express session record.
+     *
+     * This is read from req.session on each access (rather than cached at
+     * construction) so that operations like regenerate(), which replace
+     * req.session with a new object, are reflected immediately.
+     */
+    get data(): Object {
+        return <Object>(<object>this.req.session);
     }
 
     /**

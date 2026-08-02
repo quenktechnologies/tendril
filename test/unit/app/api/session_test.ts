@@ -31,7 +31,9 @@ describe('session', () => {
         describe('get', () => {
             it('should retreive values', () => {
                 let sessionData = { [session.SESSION_DATA]: { value: 12 } };
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
                 let mvalue = s.get('value');
 
                 assert(mvalue.isJust()).true();
@@ -42,7 +44,9 @@ describe('session', () => {
         describe('getOrElse', () => {
             it('should retreive values', () => {
                 let sessionData = { [session.SESSION_DATA]: { value: 12 } };
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
                 let value = s.getOrElse('value', 0);
 
                 assert(value).equal(12);
@@ -50,7 +54,9 @@ describe('session', () => {
 
             it('should provide the alternative', () => {
                 let sessionData = { [session.SESSION_DATA]: {} };
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
                 let value = s.getOrElse('value', 10);
 
                 assert(value).equal(10);
@@ -59,17 +65,19 @@ describe('session', () => {
 
         describe('getAll', () => {
             it('should return all values', () => {
-                let s = new EnabledSessionStorage({
-                    [SESSION_DATA]: { level: 12 }
+                let s = new EnabledSessionStorage(<Type>{
+                    session: { [SESSION_DATA]: { level: 12 } }
                 });
 
                 assert(s.getAll()).equate({ level: 12 });
             });
 
             it('should return a copy', () => {
-                let s = new EnabledSessionStorage({
-                    [SESSION_DATA]: {
-                        level: 12
+                let s = new EnabledSessionStorage(<Type>{
+                    session: {
+                        [SESSION_DATA]: {
+                            level: 12
+                        }
                     }
                 });
 
@@ -84,7 +92,9 @@ describe('session', () => {
         describe('set', () => {
             it('should set session values', () => {
                 let sessionData = <Type>{ [session.SESSION_DATA]: <Object>{} };
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
 
                 s.set('value', 12);
 
@@ -99,7 +109,9 @@ describe('session', () => {
         describe('setWithDescriptor', () => {
             it('should set session values with descriptors', () => {
                 let sessionData = <Type>{ [session.SESSION_DATA]: <Object>{} };
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
 
                 s.setWithDescriptor('value', 12, { ttl: 10 });
 
@@ -121,7 +133,9 @@ describe('session', () => {
                     [session.SESSION_DATA]: <Object>{ value: 12 }
                 };
 
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
 
                 assert(s.exists('value')).true();
                 assert(s.exists('value2')).false();
@@ -138,13 +152,38 @@ describe('session', () => {
                     }
                 };
 
-                let s = new EnabledSessionStorage(sessionData);
+                let s = new EnabledSessionStorage(<Type>{
+                    session: sessionData
+                });
 
                 s.remove('value');
 
                 assert(sessionData[session.SESSION_DATA]['value']).undefined();
 
                 assert(sessionData[session.SESSION_DATA]['value2']).equal(10);
+            });
+        });
+
+        describe('regenerate', () => {
+            it('should read from the current req.session after it is replaced', () => {
+                let req = <Type>{
+                    session: { [session.SESSION_DATA]: { value: 12 } }
+                };
+
+                let s = new EnabledSessionStorage(req);
+
+                assert(s.get('value').get()).equal(12);
+
+                // Simulate what express-session's regenerate() does: it
+                // replaces req.session with a brand new object rather than
+                // mutating the existing one.
+                req.session = { [session.SESSION_DATA]: { value: 34 } };
+
+                assert(s.get('value').get()).equal(34);
+
+                s.set('other', 1);
+
+                assert(req.session[session.SESSION_DATA]['other']).equal(1);
             });
         });
     });
